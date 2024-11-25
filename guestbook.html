@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astronomy Guestbook</title>
+    <meta name="description" content="Welcome to the Astronomy Guestbook! Share your celestial experiences and connect with fellow stargazers.">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <img id="logo" src="logo.jpg" alt="Logo">
+        <h1>Astronomy Guestbook</h1>
+        <h5>Share your celestial experiences!</h5>
+        <!-- Button to go back to the main page -->
+        <div class="button-container">
+            <a href="index.html" class="button">Back to Main Page</a>
+        </div>
+    </header>
+    <main>
+        <form id="messageForm">
+            <input type="text" id="firstName" placeholder="First Name" required>
+            <input type="text" id="lastName" placeholder="Last Name" required>
+            <textarea id="messageInput" placeholder="Write about the stars, planets, or any cosmic event" required></textarea>
+            <input type="url" id="imageInput" placeholder="Image URL (optional)">
+            <button type="submit">Submit</button>
+        </form>
+        <div id="messages"></div>
+    </main>
+    <script>
+        // Function to handle form submission and save data to localStorage
+        document.getElementById("messageForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            const firstName = document.getElementById("firstName").value;
+            const lastName = document.getElementById("lastName").value;
+            const message = document.getElementById("messageInput").value;
+            const imageUrl = document.getElementById("imageInput").value;
+
+            // Retrieve existing entries from localStorage, or initialize as an empty array
+            const entries = JSON.parse(localStorage.getItem("guestbookEntries")) || [];
+            
+            // Create a new entry object
+            const entry = { firstName, lastName, message, imageUrl, timestamp: new Date().toISOString() };
+            
+            // Add the new entry to the entries array
+            entries.push(entry);
+
+            // Save the updated entries array to localStorage
+            localStorage.setItem("guestbookEntries", JSON.stringify(entries));
+
+            // Clear the form
+            document.getElementById("messageForm").reset();
+
+            // Optionally display a success message
+            alert("Your entry has been saved! It will be visible on the main page.");
+        });
+
+        // Optional: If there were other functions in guestbook.js, they would be included here.
+    </script>
+</body>
+</html>
