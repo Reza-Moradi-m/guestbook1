@@ -1,70 +1,70 @@
-// Import and initialize Firebase
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { initializeApp } from "firebase/app";
-import { firebaseConfig } from "./firebase-config.js"; // Ensure firebaseConfig.js has been set up correctly
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFirestore, addDoc, collection } from "firebase/firestore";
+import { app } from "./firebase-config.js";
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase Storage and Firestore
 const storage = getStorage(app);
+const db = getFirestore(app);
 
+const messageForm = document.getElementById("messageForm");
+const fileInput = document.getElementById("fileInput");
+const messagesDiv = document.getElementById("messages");
 
-// Handle form submission
-document.getElementById("messageForm").addEventListener("submit", async function (event) {
+// Form submission handler
+messageForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
-    const message = document.getElementById("messageInput").value;
-    const fileInput = document.getElementById("fileInput").files[0];
+    const firstName = document.getElementById("firstName").value.trim();
+    const lastName = document.getElementById("lastName").value.trim();
+    const message = document.getElementById("messageInput").value.trim();
+    const file = fileInput.files[0];
 
-    if (!fileInput) {
-        alert("Please upload an image or video.");
+    if (!file) {
+        alert("Please upload a file!");
         return;
     }
 
     try {
-        // Create a reference to the file in Firebase Storage
-        const storageRef = ref(storage, `uploads/${fileInput.name}`);
-        const uploadTask = uploadBytesResumable(storageRef, fileInput);
+        // Upload file to Firebase Storage
+        const storageRef = ref(storage, `uploads/${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const fileURL = await getDownloadURL(snapshot.ref);
 
-        // Show upload progress
-        uploadTask.on(
-            "state_changed",
-            (snapshot) => {
-                const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-                console.log(`Upload is ${progress}% done`);
-            },
-            (error) => {
-                console.error("Error during upload:", error);
-                alert("File upload failed.");
-            },
-            async () => {
-                // Get the file's download URL after upload
-                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+        // Save message and file URL to Firestore
+        await addDoc(collection(db, "guestbook"), {
+            firstName,
+            lastName,
+            message,
+            fileURL,
+            timestamp: new Date(),
+        });
 
-                // Save entry details to Firestore or local storage
-                const entry = {
-                    firstName,
-                    lastName,
-                    message,
-                    fileName: fileInput.name,
-                    fileURL: downloadURL,
-                    fileType: fileInput.type,
-                    timestamp: new Date().toISOString(),
-                };
-
-                // Save to localStorage for testing (replace with Firestore later if needed)
-                const entries = JSON.parse(localStorage.getItem("guestbookEntries")) || [];
-                entries.push(entry);
-                localStorage.setItem("guestbookEntries", JSON.stringify(entries));
-
-                // Clear the form
-                document.getElementById("messageForm").reset();
-                alert("Your entry has been saved!");
-            }
-        );
+        alert("Message and file uploaded successfully!");
+        displayMessages();
+        messageForm.reset();
     } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("An unexpected error occurred. Please try again.");
+        console.error("Error uploading file or saving message:", error);
+        alert("Failed to upload file and save message. Please try again.");
     }
 });
+
+// Fetch and display messages from Firestore
+async function displayMessages() {
+    messagesDiv.innerHTML = ""; // Clear current messages
+
+    const querySnapshot = await getFirestore().collection("guestbook").orderBy("timestamp", "desc").get();
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const messageElement = document.createElement("div");
+        messageElement.classList.add("message");
+
+        messageElement.innerHTML = `
+            <p><strong>${data.firstName} ${data.lastName}:</strong> ${data.message}</p>
+            ${data.fileURL ? `<a href="${data.fileURL}" target="_blank">View Attachment</a>` : ""}
+        `;
+        messagesDiv.appendChild(messageElement);
+    });
+}
+
+// Initial fetch of messages
+displayMessages();
