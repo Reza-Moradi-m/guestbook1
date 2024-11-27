@@ -11,6 +11,17 @@
 </head>
 <body>
     <header>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="guestbook.html">Guestbook</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="explore.html">Explore Posts</a></li>
+                <li><a href="auth.html">Login/Signup</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="messenger.html">Messenger</a></li>
+            </ul>
+        </nav>
         <img id="logo" src="images/logo.jpg" alt="Logo">
         <h1>Astronomy Guestbook</h1>
         <h3>Welcome to the Astronomy Guestbook!</h3>
@@ -20,8 +31,6 @@
         <h4>Post your thoughts, pictures, and videos to contribute to our growing collection of celestial knowledge. Dive into the mysteries of space, share your latest astronomical discoveries, and be a part of a passionate community dedicated to exploring the stars.</h4>
     </header>
     <main>
-        <a href="guestbook.html" id="guestbookLink">Go to Guestbook</a>
-        <img src="images/main.jpg" alt="Starry Sky">
         <section id="latest-entry">
             <h2>Latest Guestbook Entries</h2>
             <button id="clearAllButton" class="button">Clear All Entries</button>
@@ -30,55 +39,7 @@
             </div>
         </section>
     </main>
-    <script>
-        // Function to load all guestbook entries from localStorage
-        function loadEntries() {
-            const entryPreview = document.getElementById("entry-preview");
-            entryPreview.innerHTML = ''; // Clear existing content
-
-            // Retrieve all entries from localStorage
-            const entries = JSON.parse(localStorage.getItem("guestbookEntries")) || [];
-
-            if (entries.length === 0) {
-                entryPreview.innerHTML = "<p>No recent entries.</p>";
-                return;
-            }
-
-            entries.forEach((entry, index) => {
-                const entryElement = document.createElement("div");
-                entryElement.classList.add("entry", "message-card");
-
-                entryElement.innerHTML = `
-                    <p><strong>Name:</strong> ${entry.firstName} ${entry.lastName}</p>
-                    <p><strong>Message:</strong> ${entry.message}</p>
-                    ${entry.imageUrl ? `<img src="${entry.imageUrl}" alt="Uploaded Image" />` : ''}
-                    <p><small>Posted on: ${new Date(entry.timestamp).toLocaleString()}</small></p>
-                    <button onclick="removeEntry(${index})" class="remove-button">Remove</button>
-                `;
-
-                entryPreview.appendChild(entryElement);
-            });
-        }
-
-        // Function to remove a specific entry
-        function removeEntry(index) {
-            let entries = JSON.parse(localStorage.getItem("guestbookEntries")) || [];
-            entries.splice(index, 1); // Remove the entry at the specified index
-            localStorage.setItem("guestbookEntries", JSON.stringify(entries)); // Update localStorage
-            loadEntries(); // Refresh the displayed entries
-        }
-
-        // Function to clear all entries
-        function clearAllEntries() {
-            localStorage.removeItem("guestbookEntries"); // Remove all entries from localStorage
-            loadEntries(); // Refresh the displayed entries
-        }
-
-        // Load entries on page load
-        document.addEventListener("DOMContentLoaded", loadEntries);
-
-        // Event listener for the "Clear All" button
-        document.getElementById("clearAllButton").addEventListener("click", clearAllEntries);
-    </script>
+    <script src="JS/app.js"></script>
 </body>
 </html>
+
