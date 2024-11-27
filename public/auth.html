@@ -4,13 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Authentication</title>
-  <link rel="stylesheet" href="./CSS/auth.css">
+  <link rel="stylesheet" href="CSS/auth.css">
 </head>
+
+<header>  
+  <nav id="main-nav">
+    <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="guestbook.html">Guestbook</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="explore.html">Explore Posts</a></li>
+        <li><a href="auth.html">Login/Signup</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="messenger.html">Messenger</a></li>
+    </ul>
+</nav>
+
+
+</header>
 <body>
+
   <h1>Login or Signup</h1>
 
   <!-- Signup Form -->
-  <div>
+  <div class="auth-container">
     <h2>Sign Up</h2>
     <form id="signup-form">
       <input type="email" id="signup-email" placeholder="Email" required>
@@ -20,7 +37,7 @@
   </div>
 
   <!-- Login Form -->
-  <div>
+  <div class="auth-container">
     <h2>Login</h2>
     <form id="login-form">
       <input type="email" id="login-email" placeholder="Email" required>
@@ -30,10 +47,10 @@
   </div>
 
   <!-- Logout Button -->
-  <div>
+  <div class="auth-container">
     <button id="logout-button" style="display: none;">Log Out</button>
   </div>
 
-  <script src="./JS/auth.js" type="module"></script>
+  <script src="JS/auth.js" type="module"></script>
 </body>
 </html>

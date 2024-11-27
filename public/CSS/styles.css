@@ -208,3 +208,22 @@ main a {
     background-color: #e7c24f;
     color: #396e94;
 }
+
+/* styles.css */
+
+/* File input styles */
+input[type="file"] {
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* Adjustments for form spacing */
+form label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
