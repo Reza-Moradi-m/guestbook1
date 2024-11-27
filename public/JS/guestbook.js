@@ -1,4 +1,5 @@
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "./firebase-config.js"; // Make sure this is correct
 import { getFirestore, addDoc, collection } from "firebase/firestore";
 import { app } from "./firebase-config.js";
 
@@ -68,3 +69,12 @@ async function displayMessages() {
 
 // Initial fetch of messages
 displayMessages();
+
+const storageRef = ref(storage, `uploads/${file.name}`);
+console.log("Storage Reference: ", storageRef);
+
+const snapshot = await uploadBytes(storageRef, file);
+console.log("Snapshot: ", snapshot);
+
+const fileURL = await getDownloadURL(snapshot.ref);
+console.log("File URL: ", fileURL);
