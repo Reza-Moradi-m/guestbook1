@@ -1,0 +1,66 @@
+/* auth.css */
+
+/* Global styles for auth pages */
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f9f9f9;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+/* Form container styles */
+.auth-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.auth-container h2 {
+    margin-bottom: 20px;
+    color: #396e94;
+}
+
+/* Input field styles */
+.auth-container input {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+}
+
+/* Button styles */
+.auth-container button {
+    width: 100%;
+    background-color: #396e94;
+    color: #fff;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: background-color 0.2s;
+}
+
+.auth-container button:hover {
+    background-color: #2f557a;
+}
+
+/* Link styles */
+.auth-container a {
+    display: block;
+    margin-top: 10px;
+    color: #396e94;
+    text-decoration: none;
+}
+
+.auth-container a:hover {
+    color: #e7c24f;
+}
