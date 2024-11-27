@@ -7,6 +7,7 @@ import { firebaseConfig } from "./firebase-config.js"; // Ensure firebaseConfig.
 const app = initializeApp(firebaseConfig);
 const storage = getStorage(app);
 
+
 // Handle form submission
 document.getElementById("messageForm").addEventListener("submit", async function (event) {
     event.preventDefault();
