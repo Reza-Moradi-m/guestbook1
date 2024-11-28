@@ -11,7 +11,7 @@
 <!-- Firebase Firestore -->
 <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js"></script>
 <!-- Firebase Authentication -->
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js"></script>
+<!-- <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js"></script> -->
 <script>
     // Firebase configuration
     const firebaseConfig = {
@@ -26,8 +26,10 @@
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
-    const storage = firebase.storage();
+
+    // Initialize Firestore and Storage
     const db = firebase.firestore();
+    const storage = firebase.storage();
 </script>
 
     <meta name="description" content="Welcome to the Astronomy Guestbook! Share your celestial experiences and connect with fellow stargazers.">

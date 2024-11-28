@@ -1,7 +1,3 @@
-const messageForm = document.getElementById("messageForm");
-const fileInput = document.getElementById("fileInput");
-const messagesDiv = document.getElementById("messages");
-
 // Form submission handler
 messageForm.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -18,12 +14,12 @@ messageForm.addEventListener("submit", async (event) => {
 
     try {
         // Upload file to Firebase Storage
-        const storageRef = firebase.storage().ref(`uploads/${file.name}`);
+        const storageRef = storage.ref(`uploads/${file.name}`);
         const snapshot = await storageRef.put(file);
         const fileURL = await snapshot.ref.getDownloadURL();
 
         // Save message and file URL to Firestore
-        await firebase.firestore().collection("guestbook").add({
+        await db.collection("guestbook").add({
             firstName,
             lastName,
             message,
@@ -45,7 +41,7 @@ async function displayMessages() {
     messagesDiv.innerHTML = ""; // Clear current messages
 
     try {
-        const querySnapshot = await firebase.firestore()
+        const querySnapshot = await db
             .collection("guestbook")
             .orderBy("timestamp", "desc")
             .get();
