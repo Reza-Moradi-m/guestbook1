@@ -1,12 +1,3 @@
-// Import Firebase modules
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { getFirestore, addDoc, collection, query, orderBy, getDocs } from "firebase/firestore";
-import { app } from "./firebase-config.js";
-
-// Initialize Firebase Storage and Firestore
-const storage = getStorage(app);
-const db = getFirestore(app);
-
 const messageForm = document.getElementById("messageForm");
 const fileInput = document.getElementById("fileInput");
 const messagesDiv = document.getElementById("messages");
@@ -27,12 +18,12 @@ messageForm.addEventListener("submit", async (event) => {
 
     try {
         // Upload file to Firebase Storage
-        const storageRef = ref(storage, `uploads/${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const fileURL = await getDownloadURL(snapshot.ref);
+        const storageRef = firebase.storage().ref(`uploads/${file.name}`);
+        const snapshot = await storageRef.put(file);
+        const fileURL = await snapshot.ref.getDownloadURL();
 
         // Save message and file URL to Firestore
-        await addDoc(collection(db, "guestbook"), {
+        await firebase.firestore().collection("guestbook").add({
             firstName,
             lastName,
             message,
@@ -54,8 +45,10 @@ async function displayMessages() {
     messagesDiv.innerHTML = ""; // Clear current messages
 
     try {
-        const q = query(collection(db, "guestbook"), orderBy("timestamp", "desc"));
-        const querySnapshot = await getDocs(q);
+        const querySnapshot = await firebase.firestore()
+            .collection("guestbook")
+            .orderBy("timestamp", "desc")
+            .get();
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
