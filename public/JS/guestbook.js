@@ -1,5 +1,5 @@
 // Import Firebase services
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+import  initializeApp  from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
 import { getFirestore, collection, addDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
 
