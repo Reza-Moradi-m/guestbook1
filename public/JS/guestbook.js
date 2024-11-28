@@ -1,6 +1,6 @@
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { storage } from "./firebase-config.js"; // Make sure this is correct
-import { getFirestore, addDoc, collection } from "firebase/firestore";
+// Import Firebase modules
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { getFirestore, addDoc, collection, query, orderBy, getDocs } from "firebase/firestore";
 import { app } from "./firebase-config.js";
 
 // Initialize Firebase Storage and Firestore
@@ -53,28 +53,26 @@ messageForm.addEventListener("submit", async (event) => {
 async function displayMessages() {
     messagesDiv.innerHTML = ""; // Clear current messages
 
-    const querySnapshot = await getFirestore().collection("guestbook").orderBy("timestamp", "desc").get();
-    querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const messageElement = document.createElement("div");
-        messageElement.classList.add("message");
+    try {
+        const q = query(collection(db, "guestbook"), orderBy("timestamp", "desc"));
+        const querySnapshot = await getDocs(q);
 
-        messageElement.innerHTML = `
-            <p><strong>${data.firstName} ${data.lastName}:</strong> ${data.message}</p>
-            ${data.fileURL ? `<a href="${data.fileURL}" target="_blank">View Attachment</a>` : ""}
-        `;
-        messagesDiv.appendChild(messageElement);
-    });
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message");
+
+            messageElement.innerHTML = `
+                <p><strong>${data.firstName} ${data.lastName}:</strong> ${data.message}</p>
+                ${data.fileURL ? `<a href="${data.fileURL}" target="_blank">View Attachment</a>` : ""}
+            `;
+            messagesDiv.appendChild(messageElement);
+        });
+    } catch (error) {
+        console.error("Error fetching messages:", error);
+        alert("Failed to load messages. Please refresh the page.");
+    }
 }
 
-// Initial fetch of messages
+// Initial call to display messages
 displayMessages();
-
-const storageRef = ref(storage, `uploads/${file.name}`);
-console.log("Storage Reference: ", storageRef);
-
-const snapshot = await uploadBytes(storageRef, file);
-console.log("Snapshot: ", snapshot);
-
-const fileURL = await getDownloadURL(snapshot.ref);
-console.log("File URL: ", fileURL);
