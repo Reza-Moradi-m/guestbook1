@@ -1,4 +1,25 @@
-// Reference to form and input elements
+// Import Firebase services
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+import { getFirestore, collection, addDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
+
+// Firebase configuration
+const firebaseConfig = {
+    apiKey: "AIzaSyDjQvmQKE77NmdCNMjwQ9D8dEtxdo0ZrUc",
+    authDomain: "astronomy-guestbook.firebaseapp.com",
+    projectId: "astronomy-guestbook",
+    storageBucket: "astronomy-guestbook.appspot.com", // Corrected storage bucket
+    messagingSenderId: "680979689903",
+    appId: "1:680979689903:web:b31210872fff1d641b7f5a",
+    measurementId: "G-LDFCYT5NGY",
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// Form Elements
 const messageForm = document.getElementById("messageForm");
 const fileInput = document.getElementById("fileInput");
 const messagesDiv = document.getElementById("messages");
@@ -19,12 +40,12 @@ messageForm.addEventListener("submit", async (event) => {
 
     try {
         // Upload file to Firebase Storage
-        const storageRef = storage.ref(`uploads/${file.name}`);
-        const snapshot = await storageRef.put(file);
-        const fileURL = await snapshot.ref.getDownloadURL();
+        const storageRef = ref(storage, `uploads/${file.name}`);
+        const snapshot = await uploadBytes(storageRef, file);
+        const fileURL = await getDownloadURL(snapshot.ref);
 
         // Save message and file URL to Firestore
-        await db.collection("guestbook").add({
+        await addDoc(collection(db, "guestbook"), {
             firstName,
             lastName,
             message,
@@ -46,10 +67,8 @@ async function displayMessages() {
     messagesDiv.innerHTML = ""; // Clear current messages
 
     try {
-        const querySnapshot = await db
-            .collection("guestbook")
-            .orderBy("timestamp", "desc")
-            .get();
+        const q = query(collection(db, "guestbook"), orderBy("timestamp", "desc"));
+        const querySnapshot = await getDocs(q);
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
