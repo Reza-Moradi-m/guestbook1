@@ -1,11 +1,7 @@
-// Form Elements
+// Reference to form and input elements
 const messageForm = document.getElementById("messageForm");
 const fileInput = document.getElementById("fileInput");
 const messagesDiv = document.getElementById("messages");
-
-// Firebase services initialization
-const storage = firebase.storage();
-const db = firebase.firestore();
 
 // Form submission handler
 messageForm.addEventListener("submit", async (event) => {
@@ -33,11 +29,11 @@ messageForm.addEventListener("submit", async (event) => {
             lastName,
             message,
             fileURL,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            timestamp: new Date(),
         });
 
         alert("Message and file uploaded successfully!");
-        displayMessages(); // Refresh displayed messages
+        displayMessages();
         messageForm.reset();
     } catch (error) {
         console.error("Error uploading file or saving message:", error);
