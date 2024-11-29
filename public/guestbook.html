@@ -4,19 +4,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Astronomy Guestbook</title>
-    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
+
 <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDjQvmQKE77NmdCNMjwQ9D8dEtxdo0ZrUc",
-      authDomain: "astronomy-guestbook.firebaseapp.com",
-      projectId: "astronomy-guestbook",
-      storageBucket: "astronomy-guestbook.appspot.com",
-      messagingSenderId: "680979689903",
-      appId: "1:680979689903:web:b31210872fff1d641b7f5a",
-      measurementId: "G-LDFCYT5NGY"
-    };
+     const firebaseConfig = {
+    apiKey: "AIzaSyDjQvmQKE77NmdCNMjwQ9D8dEtxdo0ZrUc",
+    authDomain: "astronomy-guestbook.firebaseapp.com",
+    projectId: "astronomy-guestbook",
+    storageBucket: "astronomy-guestbook.appspot.com",
+    messagingSenderId: "680979689903",
+    appId: "1:680979689903:web:b31210872fff1d641b7f5a",
+    measurementId: "G-LDFCYT5NGY"
+  };
   
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
