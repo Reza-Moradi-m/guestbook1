@@ -1,3 +1,13 @@
+document.addEventListener("DOMContentLoaded", () => {
+    const messageForm = document.getElementById("messageForm");
+    const fileInput = document.getElementById("fileInput");
+    const messagesDiv = document.getElementById("messages");
+  
+    console.log("DOM fully loaded and parsed.");
+    // Add your existing Firebase code here
+  });
+  
+
 document.getElementById("messageForm").addEventListener("submit", async (event) => {
     event.preventDefault();
 
@@ -32,3 +42,6 @@ document.getElementById("messageForm").addEventListener("submit", async (event) 
         alert("Failed to upload. Please try again.");
     }
 });
+
+console.log("Firestore DB Reference:", db);
+console.log("Storage Reference:", storage);

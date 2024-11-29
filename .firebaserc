@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "astronomy-guestbook"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }
