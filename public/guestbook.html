@@ -4,49 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Astronomy Guestbook</title>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
 
-<script>
-     const firebaseConfig = {
-    apiKey: "AIzaSyDjQvmQKE77NmdCNMjwQ9D8dEtxdo0ZrUc",
-    authDomain: "astronomy-guestbook.firebaseapp.com",
-    projectId: "astronomy-guestbook",
-    storageBucket: "astronomy-guestbook.appspot.com",
-    messagingSenderId: "680979689903",
-    appId: "1:680979689903:web:b31210872fff1d641b7f5a",
-    measurementId: "G-LDFCYT5NGY"
-  };
-  
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-  
-    // Initialize Firestore and Storage
-    const db = firebase.firestore();
-    const storage = firebase.storage();
-     // Debug Firestore Connection
-  db.collection("guestbook").get()
-    .then((snapshot) => {
-      snapshot.forEach((doc) => {
-        console.log("Firestore Document Data:", doc.data());
-      });
-    })
-    .catch((error) => {
-      console.error("Error fetching data from Firestore:", error);
-    });
 
-  // Debug Storage Connection
-  const storageRef = storage.ref("test-file.txt");
-  storageRef.putString("Hello, world!")
-    .then(() => {
-      console.log("File uploaded successfully to Firebase Storage!");
-    })
-    .catch((error) => {
-      console.error("Error uploading file to Firebase Storage:", error);
-    });
-  </script>
+
   
     <link rel="stylesheet" href="CSS/styles.css">
 </head>
@@ -102,6 +62,33 @@
         const app = initializeApp(firebaseConfig);
         const analytics = getAnalytics(app);
       </script> -->
+      <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+        import { getStorage } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
+      
+        // Firebase configuration
+        const firebaseConfig = {
+    apiKey: "AIzaSyDjQvmQKE77NmdCNMjwQ9D8dEtxdo0ZrUc",
+    authDomain: "astronomy-guestbook.firebaseapp.com",
+    projectId: "astronomy-guestbook",
+    storageBucket: "astronomy-guestbook.firebasestorage.app",
+    messagingSenderId: "680979689903",
+    appId: "1:680979689903:web:b31210872fff1d641b7f5a",
+    measurementId: "G-LDFCYT5NGY"
+  };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+      
+        // Export `db` and `storage` so you can use them in your JS files
+        export { db, storage };
+        console.log(db, storage);
+      </script>
+      
       <script src="JS/guestbook.js" defer></script>
 </body>
 </html>
