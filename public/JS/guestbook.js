@@ -1,4 +1,6 @@
-import { db, storage } from "guestbook.html"; // Path to your file where `db` and `storage` are exported
+//import { db, storage } from "./guestbook.html"; // Path to your file where `db` and `storage` are exported
+const db = window.db;
+const storage = window.Storage;
 import { collection, addDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
 

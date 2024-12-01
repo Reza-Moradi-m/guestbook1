@@ -58,11 +58,10 @@
     
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
+        window.db = getFirestore(app);
+        window.storage = getStorage(app);
     
-        // Export `db` and `storage` so you can use them in your JS files
-        export { db, storage };
+        // Export `db` and `storage` so you can use them in your JS files     export { db, storage };
     </script>
     
       
