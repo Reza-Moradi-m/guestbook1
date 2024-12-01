@@ -1,4 +1,4 @@
-import { db, storage } from "./guestbook.html"; // Path to your file where `db` and `storage` are exported
+import { db, storage } from "guestbook.html"; // Path to your file where `db` and `storage` are exported
 import { collection, addDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
 
@@ -76,3 +76,5 @@ async function displayMessages() {
 
 // Initial call to display messages
 displayMessages();
+console.log("Firestore DB Reference:", db);
+console.log("Storage Reference:", storage);
