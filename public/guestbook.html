@@ -51,21 +51,28 @@
             appId: "1:680979689903:web:b31210872fff1d641b7f5a",
             measurementId: "G-LDFCYT5NGY"
         };
-    
-        // Initialize Firebase
-        import("https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js").then(({ initializeApp }) => {
-            const app = initializeApp(firebaseConfig);
+        window.firebaseReady = false; // Flag to indicate Firebase readiness
 
-            import("https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js").then(({ getFirestore }) => {
-                window.db = getFirestore(app);
-                console.log("Firestore initialized");
-            });
+// Initialize Firebase and attach services to `window`
+import("https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js").then(({ initializeApp }) => {
+    const app = initializeApp(firebaseConfig);
 
-            import("https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js").then(({ getStorage }) => {
-                window.storage = getStorage(app);
-                console.log("Storage initialized");
-            });
-        });
+    Promise.all([
+        import("https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js").then(({ getFirestore }) => {
+            window.db = getFirestore(app);
+            console.log("Firestore initialized");
+        }),
+        import("https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js").then(({ getStorage }) => {
+            window.storage = getStorage(app);
+            console.log("Storage initialized");
+        }),
+    ]).then(() => {
+        window.firebaseReady = true; // Set the flag to true when ready
+        console.log("Firebase services ready");
+    }).catch((error) => {
+        console.error("Error initializing Firebase services:", error);
+    });
+});
     
         // Export `db` and `storage` so you can use them in your JS files     export { db, storage };
     </script>
