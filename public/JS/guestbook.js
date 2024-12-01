@@ -1,9 +1,3 @@
-//import { db, storage } from "./guestbook.html"; // Path to your file where `db` and `storage` are exported
-const db = window.db;
-const storage = window.Storage;
-import { collection, addDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
-import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
-
 // Reference to form and input elements
 const messageForm = document.getElementById("messageForm");
 const fileInput = document.getElementById("fileInput");
@@ -24,13 +18,18 @@ messageForm.addEventListener("submit", async (event) => {
     }
 
     try {
+        // Ensure `db` and `storage` are available
+        if (!window.db || !window.storage) {
+            throw new Error("Firebase services are not initialized yet.");
+        }
+
         // Upload file to Firebase Storage
-        const storageRef = ref(storage, `uploads/${file.name}`);
-        const snapshot = await uploadBytes(storageRef, file);
-        const fileURL = await getDownloadURL(snapshot.ref);
+        const storageRef = window.storage.ref(`uploads/${file.name}`);
+        const snapshot = await window.storage.uploadBytes(storageRef, file);
+        const fileURL = await window.storage.getDownloadURL(snapshot.ref);
 
         // Save message and file URL to Firestore
-        await addDoc(collection(db, "guestbook"), {
+        await window.db.collection("guestbook").add({
             firstName,
             lastName,
             message,
@@ -52,8 +51,8 @@ async function displayMessages() {
     messagesDiv.innerHTML = ""; // Clear current messages
 
     try {
-        const q = query(collection(db, "guestbook"), orderBy("timestamp", "desc"));
-        const querySnapshot = await getDocs(q);
+        const q = window.db.collection("guestbook").orderBy("timestamp", "desc");
+        const querySnapshot = await q.get();
 
         querySnapshot.forEach((doc) => {
             const data = doc.data();
@@ -78,5 +77,3 @@ async function displayMessages() {
 
 // Initial call to display messages
 displayMessages();
-console.log("Firestore DB Reference:", db);
-console.log("Storage Reference:", storage);

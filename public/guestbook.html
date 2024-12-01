@@ -39,11 +39,7 @@
         <div id="messages"></div>
     </main>
     
-    <script type="module">
-        // Import Firebase modules
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js";
+    <script>
     
         // Firebase configuration
         const firebaseConfig = {
@@ -57,9 +53,19 @@
         };
     
         // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        window.db = getFirestore(app);
-        window.storage = getStorage(app);
+        import("https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js").then(({ initializeApp }) => {
+            const app = initializeApp(firebaseConfig);
+
+            import("https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js").then(({ getFirestore }) => {
+                window.db = getFirestore(app);
+                console.log("Firestore initialized");
+            });
+
+            import("https://www.gstatic.com/firebasejs/9.17.1/firebase-storage.js").then(({ getStorage }) => {
+                window.storage = getStorage(app);
+                console.log("Storage initialized");
+            });
+        });
     
         // Export `db` and `storage` so you can use them in your JS files     export { db, storage };
     </script>
