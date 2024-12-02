@@ -8,7 +8,7 @@ async function displayLatestEntries() {
         const querySnapshot = await window.db
             .collection("guestbook")
             .orderBy("timestamp", "desc")
-            .limit(5) // Fetch the last 5 entries
+            
             .get();
 
         // Clear any existing content
