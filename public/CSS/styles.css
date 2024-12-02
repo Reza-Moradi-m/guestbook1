@@ -227,3 +227,19 @@ form label {
     margin-bottom: 5px;
 }
 
+.entry {
+    border: 1px solid #ccc;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.entry h3 {
+    margin-top: 0;
+}
+
+.entry img, .entry video {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-top: 10px;
+}
