@@ -8,13 +8,13 @@ async function displayLatestEntries() {
         const querySnapshot = await window.db
             .collection("guestbook")
             .orderBy("timestamp", "desc")
-            .limit(5) // Fetch the last 5 entries (adjust as needed)
+            .limit(5) // Fetch the last 5 entries
             .get();
 
         // Clear any existing content
         entryPreviewDiv.innerHTML = "";
 
-        querySnapshot.forEach(async (doc) => {
+        querySnapshot.forEach((doc) => {
             const data = doc.data();
 
             // Create a container for each entry
@@ -36,17 +36,20 @@ async function displayLatestEntries() {
                     mediaElement = document.createElement("img");
                     mediaElement.src = data.fileURL;
                     mediaElement.alt = "User uploaded image";
+                    mediaElement.classList.add("entry-image");
                 } else if (data.fileURL.match(/\.(mp4|webm|ogg)$/)) {
                     // It's a video
                     mediaElement = document.createElement("video");
                     mediaElement.src = data.fileURL;
                     mediaElement.controls = true;
+                    mediaElement.classList.add("entry-video");
                 } else {
                     // Other file types
                     mediaElement = document.createElement("a");
                     mediaElement.href = data.fileURL;
                     mediaElement.textContent = "Download Attachment";
                     mediaElement.target = "_blank";
+                    mediaElement.classList.add("entry-link");
                 }
             }
 
