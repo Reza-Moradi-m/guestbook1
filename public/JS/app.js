@@ -28,37 +28,34 @@ async function displayLatestEntries() {
             const messageElement = document.createElement("p");
             messageElement.textContent = data.message;
 
-            // Create an element for the image or video
-            let mediaElement;
+            // Create an element for the image, video, or file preview
+            let mediaElement = '';
             if (data.fileURL) {
-                if (data.fileURL.match(/\.(jpeg|jpg|gif|png)$/)) {
+                const fileType = data.fileURL.split('.').pop().toLowerCase(); // Extract file extension
+                if (['jpeg', 'jpg', 'gif', 'png'].includes(fileType)) {
                     // It's an image
-                    mediaElement = document.createElement("img");
-                    mediaElement.src = data.fileURL;
-                    mediaElement.alt = "User uploaded image";
-                    mediaElement.classList.add("entry-image");
-                } else if (data.fileURL.match(/\.(mp4|webm|ogg)$/)) {
+                    mediaElement = `<img src="${data.fileURL}" alt="Uploaded Image" class="entry-image" />`;
+                } else if (['mp4', 'webm', 'ogg'].includes(fileType)) {
                     // It's a video
-                    mediaElement = document.createElement("video");
-                    mediaElement.src = data.fileURL;
-                    mediaElement.controls = true;
-                    mediaElement.classList.add("entry-video");
+                    mediaElement = `
+                        <video class="entry-video" controls>
+                            <source src="${data.fileURL}" type="video/${fileType}" />
+                            Your browser does not support the video tag.
+                        </video>`;
                 } else {
                     // Other file types
-                    mediaElement = document.createElement("a");
-                    mediaElement.href = data.fileURL;
-                    mediaElement.textContent = "Download Attachment";
-                    mediaElement.target = "_blank";
-                    mediaElement.classList.add("entry-link");
+                    mediaElement = `<a href="${data.fileURL}" target="_blank" class="entry-link">Download Attachment</a>`;
                 }
             }
 
             // Append elements to the entry div
-            entryDiv.appendChild(nameElement);
-            entryDiv.appendChild(messageElement);
-            if (mediaElement) {
-                entryDiv.appendChild(mediaElement);
-            }
+            entryDiv.innerHTML = `
+                <div class="entry-content">
+                    <h3>${data.firstName} ${data.lastName}</h3>
+                    <p>${data.message}</p>
+                    ${mediaElement}
+                </div>
+            `;
 
             // Append the entry div to the entry preview div
             entryPreviewDiv.appendChild(entryDiv);

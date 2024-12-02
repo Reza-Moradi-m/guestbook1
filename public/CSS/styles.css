@@ -227,38 +227,23 @@ form label {
     margin-bottom: 5px;
 }
 
-.entry {
-    border: 1px solid #ccc;
-    padding: 15px;
-    margin-bottom: 15px;
-}
-
-.entry h3 {
-    margin-top: 0;
-}
-
-.entry img, .entry video {
-    max-width: 100%;
-    height: auto;
-    display: block;
-    margin-top: 10px;
-}
-
 /* Style for the entry container */
 .entry {
-    border: 1px solid #ccc;
+    border: 1px solid #ddd;
     border-radius: 8px;
-    margin: 16px 0;
     padding: 16px;
+    margin-bottom: 16px;
     background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Style for entry images */
 .entry-image {
     max-width: 100%;
     height: auto;
-    margin-top: 10px;
+    margin-top: 8px;
     border-radius: 8px;
+    display: block;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
@@ -267,15 +252,15 @@ form label {
     width: 100%;
     max-width: 600px;
     height: auto;
-    margin-top: 10px;
+    margin-top: 8px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Style for download links */
 .entry-link {
+    margin-top: 8px;
     display: inline-block;
-    margin-top: 10px;
     color: #007bff;
     text-decoration: none;
     font-weight: bold;
