@@ -14,7 +14,7 @@ async function displayLatestEntries() {
         // Clear any existing content
         entryPreviewDiv.innerHTML = "";
 
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach(async (doc) => {
             const data = doc.data();
 
             // Create a container for each entry
@@ -32,22 +32,29 @@ async function displayLatestEntries() {
             const timestamp = new Date(data.timestamp.seconds * 1000); // Convert Firestore timestamp to Date
             timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
 
-            // Determine the media type and create the appropriate HTML element
+            // Determine the media type using a HEAD request
             let mediaElement = "";
             if (data.fileURL) {
-                const fileExtension = data.fileURL.split(".").pop().toLowerCase(); // Get the file extension
-                if (["jpeg", "jpg", "gif", "png"].includes(fileExtension)) {
-                    // It's an image
-                    mediaElement = `<img src="${data.fileURL}" alt="Uploaded Image" style="display: block; margin: auto; max-width: 100%; height: auto; cursor: zoom-in;" />`;
-                } else if (["mp4", "webm", "ogg"].includes(fileExtension)) {
-                    // It's a video
-                    mediaElement = `
-                        <video controls style="display: block; margin: auto; max-width: 100%; height: auto;">
-                            <source src="${data.fileURL}" type="video/${fileExtension}">
-                            Your browser does not support the video tag.
-                        </video>`;
-                } else {
-                    // Other file types
+                try {
+                    const response = await fetch(data.fileURL, { method: "HEAD" });
+                    const contentType = response.headers.get("Content-Type"); // Get the MIME type
+
+                    if (contentType.startsWith("image/")) {
+                        // It's an image
+                        mediaElement = `<img src="${data.fileURL}" alt="Uploaded Image" style="display: block; margin: auto; max-width: 100%; height: auto; cursor: zoom-in;" />`;
+                    } else if (contentType.startsWith("video/")) {
+                        // It's a video
+                        mediaElement = `
+                            <video controls style="display: block; margin: auto; max-width: 100%; height: auto;">
+                                <source src="${data.fileURL}" type="${contentType}">
+                                Your browser does not support the video tag.
+                            </video>`;
+                    } else {
+                        // Other file types
+                        mediaElement = `<a href="${data.fileURL}" target="_blank" class="entry-link">Download Attachment</a>`;
+                    }
+                } catch (error) {
+                    console.error("Error fetching file metadata:", error);
                     mediaElement = `<a href="${data.fileURL}" target="_blank" class="entry-link">Download Attachment</a>`;
                 }
             }
