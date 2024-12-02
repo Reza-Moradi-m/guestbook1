@@ -23,10 +23,14 @@ async function displayLatestEntries() {
 
             // Create elements for name and message
             const nameElement = document.createElement("h3");
-            nameElement.textContent = `${data.firstName} ${data.lastName}`;
+            nameElement.textContent = `Name: ${data.firstName} ${data.lastName}`;
 
             const messageElement = document.createElement("p");
-            messageElement.textContent = data.message;
+            messageElement.textContent = `Message: ${data.message}`;
+
+            const timestampElement = document.createElement("p");
+            const timestamp = new Date(data.timestamp.seconds * 1000); // Convert Firestore timestamp to Date
+            timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
 
             // Create an element for the image, video, or file preview
             let mediaElement = '';
@@ -51,8 +55,9 @@ async function displayLatestEntries() {
             // Append elements to the entry div
             entryDiv.innerHTML = `
                 <div class="entry-content">
-                    <h3>${data.firstName} ${data.lastName}</h3>
-                    <p>${data.message}</p>
+                    ${nameElement.outerHTML}
+                    ${messageElement.outerHTML}
+                    ${timestampElement.outerHTML}
                     ${mediaElement}
                 </div>
             `;
@@ -65,6 +70,34 @@ async function displayLatestEntries() {
         alert("Failed to load latest entries. Please try again later.");
     }
 }
+
+// Clear all entries function (if needed for your application)
+async function clearAllEntries() {
+    if (confirm("Are you sure you want to delete all entries?")) {
+        try {
+            const querySnapshot = await window.db.collection("guestbook").get();
+            const batch = window.db.batch();
+
+            querySnapshot.forEach((doc) => {
+                batch.delete(doc.ref);
+            });
+
+            await batch.commit();
+            alert("All entries have been deleted!");
+            displayLatestEntries(); // Refresh the entries on the page
+        } catch (error) {
+            console.error("Error deleting all entries:", error);
+            alert("Failed to delete entries. Please try again later.");
+        }
+    }
+}
+
+// Add a button to clear all entries (optional)
+const clearButton = document.createElement("button");
+clearButton.textContent = "Clear All Entries";
+clearButton.classList.add("clear-button");
+clearButton.addEventListener("click", clearAllEntries);
+entryPreviewDiv.before(clearButton);
 
 // Call the function to display entries when the page loads
 window.onload = displayLatestEntries;
