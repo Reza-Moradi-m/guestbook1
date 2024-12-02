@@ -32,18 +32,18 @@ async function displayLatestEntries() {
             const timestamp = new Date(data.timestamp.seconds * 1000); // Convert Firestore timestamp to Date
             timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
 
-            // Create an element for the image, video, or file preview
+            // Determine the media type and create the appropriate element
             let mediaElement = '';
             if (data.fileURL) {
-                const fileType = data.fileURL.split('.').pop().toLowerCase(); // Extract file extension
-                if (['jpeg', 'jpg', 'gif', 'png'].includes(fileType)) {
+                const fileExtension = data.fileURL.split('.').pop().toLowerCase(); // Get the file extension
+                if (['jpeg', 'jpg', 'gif', 'png'].includes(fileExtension)) {
                     // It's an image
                     mediaElement = `<img src="${data.fileURL}" alt="Uploaded Image" class="entry-image" />`;
-                } else if (['mp4', 'webm', 'ogg'].includes(fileType)) {
+                } else if (['mp4', 'webm', 'ogg'].includes(fileExtension)) {
                     // It's a video
                     mediaElement = `
                         <video class="entry-video" controls>
-                            <source src="${data.fileURL}" type="video/${fileType}" />
+                            <source src="${data.fileURL}" type="video/${fileExtension}" />
                             Your browser does not support the video tag.
                         </video>`;
                 } else {
