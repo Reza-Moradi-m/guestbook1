@@ -1,7 +1,7 @@
 [
     {
       "origin": ["https://astronomy-guestbook.web.app"],
-      "method": ["GET", "POST", "PUT", "DELETE"],
+      "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
       "responseHeader": ["Content-Type", "Authorization"],
       "maxAgeSeconds": 3600
     }
