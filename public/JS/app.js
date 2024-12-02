@@ -32,18 +32,18 @@ async function displayLatestEntries() {
             const timestamp = new Date(data.timestamp.seconds * 1000); // Convert Firestore timestamp to Date
             timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
 
-            // Determine the media type and create the appropriate element
-            let mediaElement = '';
+            // Determine the media type and create the appropriate HTML element
+            let mediaElement = "";
             if (data.fileURL) {
-                const fileExtension = data.fileURL.split('.').pop().toLowerCase(); // Get the file extension
-                if (['jpeg', 'jpg', 'gif', 'png'].includes(fileExtension)) {
+                const fileExtension = data.fileURL.split(".").pop().toLowerCase(); // Get the file extension
+                if (["jpeg", "jpg", "gif", "png"].includes(fileExtension)) {
                     // It's an image
-                    mediaElement = `<img src="${data.fileURL}" alt="Uploaded Image" class="entry-image" />`;
-                } else if (['mp4', 'webm', 'ogg'].includes(fileExtension)) {
+                    mediaElement = `<img src="${data.fileURL}" alt="Uploaded Image" style="display: block; margin: auto; max-width: 100%; height: auto; cursor: zoom-in;" />`;
+                } else if (["mp4", "webm", "ogg"].includes(fileExtension)) {
                     // It's a video
                     mediaElement = `
-                        <video class="entry-video" controls>
-                            <source src="${data.fileURL}" type="video/${fileExtension}" />
+                        <video controls style="display: block; margin: auto; max-width: 100%; height: auto;">
+                            <source src="${data.fileURL}" type="video/${fileExtension}">
                             Your browser does not support the video tag.
                         </video>`;
                 } else {
@@ -70,34 +70,6 @@ async function displayLatestEntries() {
         alert("Failed to load latest entries. Please try again later.");
     }
 }
-
-// Clear all entries function (if needed for your application)
-async function clearAllEntries() {
-    if (confirm("Are you sure you want to delete all entries?")) {
-        try {
-            const querySnapshot = await window.db.collection("guestbook").get();
-            const batch = window.db.batch();
-
-            querySnapshot.forEach((doc) => {
-                batch.delete(doc.ref);
-            });
-
-            await batch.commit();
-            alert("All entries have been deleted!");
-            displayLatestEntries(); // Refresh the entries on the page
-        } catch (error) {
-            console.error("Error deleting all entries:", error);
-            alert("Failed to delete entries. Please try again later.");
-        }
-    }
-}
-
-// Add a button to clear all entries (optional)
-const clearButton = document.createElement("button");
-clearButton.textContent = "Clear All Entries";
-clearButton.classList.add("clear-button");
-clearButton.addEventListener("click", clearAllEntries);
-entryPreviewDiv.before(clearButton);
 
 // Call the function to display entries when the page loads
 window.onload = displayLatestEntries;
