@@ -87,17 +87,12 @@ async function displayLatestEntries() {
             const commentInput = document.createElement("input");
             commentInput.type = "text";
             commentInput.placeholder = "Write a comment...";
-            commentInput.style.width = "100%";
-            commentInput.style.margin = "10px 0";
-            commentInput.style.padding = "8px";
-            commentInput.style.border = "1px solid #ccc";
-            commentInput.style.borderRadius = "4px";
+            commentInput.classList.add("comment-input");
 
             // Create the submit button for comments
             const commentSubmit = document.createElement("button");
             commentSubmit.textContent = "Submit";
-            commentSubmit.style.display = "block";
-            commentSubmit.style.margin = "10px auto";
+            commentSubmit.classList.add("comment-submit");
 
             // Submit the comment
             commentSubmit.addEventListener("click", async () => {
@@ -194,8 +189,7 @@ async function displayComments(postId, commentSection) {
     // Add "See All Comments" button
     const seeAllButton = document.createElement("button");
     seeAllButton.textContent = "See All Comments";
-    seeAllButton.style.display = "block";
-    seeAllButton.style.margin = "10px auto";
+    seeAllButton.classList.add("see-all-comments");
 
     seeAllButton.addEventListener("click", async () => {
         const allCommentsSnapshot = await commentsRef.get();

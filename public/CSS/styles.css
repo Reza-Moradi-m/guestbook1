@@ -317,15 +317,6 @@ form label {
     border-radius: 5px;
 }
 
-.comment-section textarea {
-    width: 100%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 1rem;
-    resize: none;
-}
-
 .comment-section button {
     background-color: #81c784;
     color: white;
@@ -348,15 +339,3 @@ form label {
     font-size: 1rem;
 }
 
-.comment-section button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.comment-section button:hover {
-    background-color: #218838;
-}
