@@ -360,3 +360,42 @@ form label {
 .comment-submit:hover {
     background-color: #66bb6a;
 }
+
+/* Positioning for reply buttons */
+.reply-button,
+.submit-reply-button,
+.cancel-reply-button {
+    margin-top: 5px;
+    margin-left: 10px;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.reply-button {
+    background-color: #64b5f6; /* Blue */
+    color: white;
+}
+
+.reply-button:hover {
+    background-color: #42a5f5;
+}
+
+.submit-reply-button {
+    background-color: #81c784; /* Green */
+    color: white;
+}
+
+.submit-reply-button:hover {
+    background-color: #66bb6a;
+}
+
+.cancel-reply-button {
+    background-color: #f44336; /* Red */
+    color: white;
+}
+
+.cancel-reply-button:hover {
+    background-color: #d32f2f;
+}
