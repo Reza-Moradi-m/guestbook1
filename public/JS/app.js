@@ -155,7 +155,7 @@ async function displayLatestEntries() {
             });
 
             // Display comments initially
-            displayComments(postId, existingComments);
+            await displayComments(postId, existingComments);
 
             // Share button
             const shareButton = document.createElement("button");
@@ -206,7 +206,10 @@ async function displayComments(postId, existingComments, parentId = null, indent
 
     const querySnapshot = await commentsRef.get();
 
-    existingComments.innerHTML = ""; // Clear the relevant comments container
+    // Ensure to only clear once at the start of rendering comments
+    if (parentId === null) {
+        existingComments.innerHTML = ""; // Clear the relevant comments container
+    }
 
     querySnapshot.forEach((doc) => {
         const commentData = doc.data();
