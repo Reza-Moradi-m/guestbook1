@@ -83,18 +83,20 @@ async function displayLatestEntries() {
             commentSection.classList.add("comment-section");
             commentSection.style.display = "none";
 
-            const commentBox = document.createElement("textarea");
-            commentBox.placeholder = "Write a comment...";
-            commentBox.style.width = "100%";
-            commentBox.style.margin = "10px 0";
+            const commentInput = document.createElement("input");
+            commentInput.type = "text";
+            commentInput.placeholder = "Write a comment...";
+            commentInput.style.width = "100%";
+            commentInput.style.margin = "10px 0";
 
             const commentSubmit = document.createElement("button");
-            commentSubmit.textContent = "Post Comment";
+            commentSubmit.textContent = "Submit";
             commentSubmit.style.display = "block";
             commentSubmit.style.margin = "10px auto";
 
+            // Submit the comment
             commentSubmit.addEventListener("click", async () => {
-                const commentText = commentBox.value.trim();
+                const commentText = commentInput.value.trim();
                 if (commentText) {
                     await window.db
                         .collection("guestbook")
@@ -104,12 +106,12 @@ async function displayLatestEntries() {
                             text: commentText,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         });
-                    commentBox.value = "";
+                    commentInput.value = "";
                     displayComments(postId, commentSection);
                 }
             });
 
-            commentSection.appendChild(commentBox);
+            commentSection.appendChild(commentInput);
             commentSection.appendChild(commentSubmit);
 
             commentButton.addEventListener("click", () => {
@@ -171,13 +173,17 @@ async function displayComments(postId, commentSection) {
 
     const querySnapshot = await commentsRef.limit(3).get();
 
+    const existingComments = document.createElement("div");
+    existingComments.classList.add("existing-comments");
+
     commentSection.innerHTML = ""; // Clear existing comments
+    commentSection.appendChild(existingComments);
 
     querySnapshot.forEach((doc) => {
         const commentData = doc.data();
         const commentDiv = document.createElement("p");
         commentDiv.textContent = commentData.text;
-        commentSection.appendChild(commentDiv);
+        existingComments.appendChild(commentDiv);
     });
 
     // Add "See All Comments" button
@@ -188,12 +194,12 @@ async function displayComments(postId, commentSection) {
 
     seeAllButton.addEventListener("click", async () => {
         const allCommentsSnapshot = await commentsRef.get();
-        commentSection.innerHTML = ""; // Clear comments
+        existingComments.innerHTML = ""; // Clear existing comments
         allCommentsSnapshot.forEach((doc) => {
             const commentData = doc.data();
             const commentDiv = document.createElement("p");
             commentDiv.textContent = commentData.text;
-            commentSection.appendChild(commentDiv);
+            existingComments.appendChild(commentDiv);
         });
         seeAllButton.style.display = "none";
     });
