@@ -137,7 +137,7 @@ async function displayLatestEntries() {
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         });
                     commentInput.value = ""; // Clear input after submitting
-                    displayComments(postId, existingComments); // Refresh comments
+                    displayComments(postId, existingComments);
                 }
             });
 
@@ -154,8 +154,7 @@ async function displayLatestEntries() {
                 displayComments(postId, existingComments); // Ensure comments are displayed when toggled
             });
 
-            // Display comments initially
-            await displayComments(postId, existingComments);
+            displayComments(postId, existingComments); // Display comments
 
             // Share button
             const shareButton = document.createElement("button");
@@ -281,7 +280,7 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         parentElement.appendChild(commentDiv);
 
         // Fetch replies for this comment
-        displayComments(postId, parentElement, commentId, indentLevel + 1);
+        displayComments(postId, commentDiv, commentId, indentLevel + 1);
     });
 }
 
