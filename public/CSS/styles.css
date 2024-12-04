@@ -361,51 +361,61 @@ form label {
     background-color: #66bb6a;
 }
 
-.reply-button {
-    background-color: #42a5f5; /* Blue */
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    margin-left: 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.9rem;
+.main-comment-section {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
 }
 
-.reply-button:hover {
-    background-color: #2196f3;
+.main-comment-input {
+    width: 80%;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+}
+
+.main-comment-submit {
+    padding: 8px 12px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.main-comment-submit:hover {
+    background-color: #45a049;
 }
 
 .reply-section {
-    margin-left: 20px;
-    margin-top: 10px;
     display: flex;
     flex-direction: column;
+    margin-top: 5px;
     gap: 5px;
 }
 
-.reply-submit, .reply-cancel {
-    font-size: 0.9rem;
+.reply-button {
+    background-color: #2196f3;
+    color: white;
     padding: 5px 10px;
-    margin: 2px 0;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
+    margin-left: 10px;
+}
+
+.reply-button:hover {
+    background-color: #1e88e5;
 }
 
 .reply-submit {
-    background-color: #81c784; /* Green */
+    background-color: #4caf50;
     color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
 .reply-submit:hover {
-    background-color: #66bb6a;
-}
-
-.reply-cancel {
-    background-color: #e57373; /* Red */
-    color: white;
-}
-
-.reply-cancel:hover {
-    background-color: #ef5350;
+    background-color: #45a049;
 }
