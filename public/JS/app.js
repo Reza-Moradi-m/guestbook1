@@ -83,25 +83,20 @@ async function displayLatestEntries() {
             commentSection.classList.add("comment-section");
             commentSection.style.display = "none";
 
-            // Log the creation of comment section for debugging
-console.log("Comment Section created: ", commentSection);
+            // Existing comments container
+            const existingComments = document.createElement("div");
+            existingComments.classList.add("existing-comments");
 
-            // Create the input element for typing comments
+            // Input field for comments
             const commentInput = document.createElement("input");
             commentInput.type = "text";
             commentInput.placeholder = "Write a comment...";
             commentInput.classList.add("comment-input");
 
-            // Ensure input element is properly appended
-console.log("Comment Input created: ", commentInput);
-
-            // Create the submit button for comments
+            // Submit button for comments
             const commentSubmit = document.createElement("button");
             commentSubmit.textContent = "Submit";
             commentSubmit.classList.add("comment-submit");
-
-            // Ensure submit button is properly appended
-console.log("Comment Submit Button created: ", commentSubmit);
 
             // Submit the comment
             commentSubmit.addEventListener("click", async () => {
@@ -115,21 +110,24 @@ console.log("Comment Submit Button created: ", commentSubmit);
                             text: commentText,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         });
-                    commentInput.value = "";
-                    displayComments(postId, commentSection);
+                    commentInput.value = ""; // Clear input after submitting
+                    displayComments(postId, existingComments);
                 }
             });
 
+            // Add input and submit button to the comment section
+            commentSection.appendChild(existingComments);
             commentSection.appendChild(commentInput);
             commentSection.appendChild(commentSubmit);
 
+            // Toggle the comment section on button click
             commentButton.addEventListener("click", () => {
                 commentSection.style.display =
                     commentSection.style.display === "none" ? "block" : "none";
             });
 
             // Display comments
-            displayComments(postId, commentSection);
+            displayComments(postId, existingComments);
 
             // Share button
             const shareButton = document.createElement("button");
@@ -173,7 +171,7 @@ console.log("Comment Submit Button created: ", commentSubmit);
 }
 
 // Function to display comments
-async function displayComments(postId, commentSection) {
+async function displayComments(postId, existingComments) {
     const commentsRef = window.db
         .collection("guestbook")
         .doc(postId)
@@ -182,11 +180,7 @@ async function displayComments(postId, commentSection) {
 
     const querySnapshot = await commentsRef.limit(3).get();
 
-    const existingComments = document.createElement("div");
-    existingComments.classList.add("existing-comments");
-
-    commentSection.innerHTML = ""; // Clear existing comments
-    commentSection.appendChild(existingComments);
+    existingComments.innerHTML = ""; // Clear existing comments
 
     querySnapshot.forEach((doc) => {
         const commentData = doc.data();
@@ -195,25 +189,27 @@ async function displayComments(postId, commentSection) {
         existingComments.appendChild(commentDiv);
     });
 
-    // Add "See All Comments" button
-    const seeAllButton = document.createElement("button");
-    seeAllButton.textContent = "See All Comments";
-    seeAllButton.classList.add("see-all-comments");
-
-    seeAllButton.addEventListener("click", async () => {
-        const allCommentsSnapshot = await commentsRef.get();
-        existingComments.innerHTML = ""; // Clear existing comments
-        allCommentsSnapshot.forEach((doc) => {
-            const commentData = doc.data();
-            const commentDiv = document.createElement("p");
-            commentDiv.textContent = commentData.text;
-            existingComments.appendChild(commentDiv);
-        });
-        seeAllButton.style.display = "none"; // Hide button after showing all comments
-    });
-
+    // Add "See All Comments" button if necessary
     if (querySnapshot.size >= 3) {
-        commentSection.appendChild(seeAllButton);
+        let seeAllButton = existingComments.querySelector(".see-all-comments");
+        if (!seeAllButton) {
+            seeAllButton = document.createElement("button");
+            seeAllButton.textContent = "See All Comments";
+            seeAllButton.classList.add("see-all-comments");
+            existingComments.appendChild(seeAllButton);
+        }
+
+        seeAllButton.addEventListener("click", async () => {
+            const allCommentsSnapshot = await commentsRef.get();
+            existingComments.innerHTML = "";
+            allCommentsSnapshot.forEach((doc) => {
+                const commentData = doc.data();
+                const commentDiv = document.createElement("p");
+                commentDiv.textContent = commentData.text;
+                existingComments.appendChild(commentDiv);
+            });
+            seeAllButton.style.display = "none";
+        });
     }
 }
 
