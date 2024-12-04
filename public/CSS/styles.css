@@ -339,3 +339,24 @@ form label {
     font-size: 1rem;
 }
 
+.comment-input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+.comment-submit {
+    background-color: #81c784; /* Green */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.comment-submit:hover {
+    background-color: #66bb6a;
+}

@@ -83,16 +83,25 @@ async function displayLatestEntries() {
             commentSection.classList.add("comment-section");
             commentSection.style.display = "none";
 
+            // Log the creation of comment section for debugging
+console.log("Comment Section created: ", commentSection);
+
             // Create the input element for typing comments
             const commentInput = document.createElement("input");
             commentInput.type = "text";
             commentInput.placeholder = "Write a comment...";
             commentInput.classList.add("comment-input");
 
+            // Ensure input element is properly appended
+console.log("Comment Input created: ", commentInput);
+
             // Create the submit button for comments
             const commentSubmit = document.createElement("button");
             commentSubmit.textContent = "Submit";
             commentSubmit.classList.add("comment-submit");
+
+            // Ensure submit button is properly appended
+console.log("Comment Submit Button created: ", commentSubmit);
 
             // Submit the comment
             commentSubmit.addEventListener("click", async () => {
