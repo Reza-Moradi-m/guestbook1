@@ -9,7 +9,7 @@ async function displayLatestEntries() {
             .orderBy("timestamp", "desc")
             .get();
 
-        entryPreviewDiv.innerHTML = ""; // Clear previous content
+        entryPreviewDiv.innerHTML = ""; // Clear any existing content
 
         querySnapshot.forEach(async (doc) => {
             const data = doc.data();
@@ -18,62 +18,82 @@ async function displayLatestEntries() {
             const entryDiv = document.createElement("div");
             entryDiv.classList.add("entry");
 
-            const nameElement = `<h3>Name: ${data.firstName} ${data.lastName}</h3>`;
-            const messageElement = `<p>Message: ${data.message}</p>`;
-            const timestamp = new Date(data.timestamp.seconds * 1000);
-            const timestampElement = `<p>Posted on: ${timestamp.toLocaleString()}</p>`;
-            let mediaElement = data.fileURL.match(/image/)
-                ? `<img src="${data.fileURL}" alt="Uploaded Image" style="max-width: 100%; height: auto;" />`
-                : `<video controls style="max-width: 100%; height: auto;">
-                    <source src="${data.fileURL}" type="video/mp4">
-                  </video>`;
+            // Create elements for name, message, timestamp
+            const nameElement = document.createElement("h3");
+            nameElement.textContent = `Name: ${data.firstName} ${data.lastName}`;
 
-            // Interaction buttons
+            const messageElement = document.createElement("p");
+            messageElement.textContent = `Message: ${data.message}`;
+
+            const timestampElement = document.createElement("p");
+            const timestamp = new Date(data.timestamp.seconds * 1000);
+            timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
+
+            // Determine the media type
+            let mediaElement = "";
+            if (data.fileURL) {
+                try {
+                    const response = await fetch(data.fileURL, { method: "HEAD" });
+                    const contentType = response.headers.get("Content-Type");
+
+                    if (contentType.startsWith("image/")) {
+                        mediaElement = `<img src="${data.fileURL}" alt="Uploaded Image" style="display: block; margin: auto; max-width: 100%; height: auto;" />`;
+                    } else if (contentType.startsWith("video/")) {
+                        mediaElement = `
+                            <video controls style="display: block; margin: auto; max-width: 100%; height: auto;">
+                                <source src="${data.fileURL}" type="${contentType}">
+                                Your browser does not support the video tag.
+                            </video>`;
+                    } else {
+                        mediaElement = `<a href="${data.fileURL}" target="_blank" class="entry-link">Download Attachment</a>`;
+                    }
+                } catch (error) {
+                    console.error("Error fetching file metadata:", error);
+                }
+            }
+
+            // Create interaction buttons (like, comment, share)
             const interactionDiv = document.createElement("div");
             interactionDiv.classList.add("interaction-buttons");
 
+            // Like button
             const likeButton = document.createElement("button");
             likeButton.classList.add("like-button");
-            likeButton.textContent = "⭐ Like";
-            const likesRef = window.db.collection("guestbook").doc(postId).collection("likes");
-            const userLiked = await likesRef.doc("user_id").get();
-
-            if (userLiked.exists) {
-                likeButton.textContent = "⭐ Unlike";
-            }
+            const likesRef = window.db.collection("guestbook").doc(postId);
+            let currentLikes = data.likes || 0;
+            likeButton.innerHTML = `⭐ ${currentLikes}`;
+            let liked = false;
 
             likeButton.addEventListener("click", async () => {
-                if (userLiked.exists) {
-                    await likesRef.doc("user_id").delete();
-                    likeButton.textContent = "⭐ Like";
-                } else {
-                    await likesRef.doc("user_id").set({ liked: true });
-                    likeButton.textContent = "⭐ Unlike";
-                }
+                const updatedLikes = liked ? currentLikes - 1 : currentLikes + 1;
+                await likesRef.update({ likes: updatedLikes });
+                liked = !liked;
+                currentLikes = updatedLikes;
+                likeButton.innerHTML = `⭐ ${currentLikes}`;
             });
 
-            // Comment Button
-            const commentSection = document.createElement("div");
-            commentSection.classList.add("comment-section");
-            commentSection.style.display = "none";
-
+            // Comment button
             const commentButton = document.createElement("button");
             commentButton.classList.add("comment-button");
             commentButton.textContent = "💬 Comment";
+
+            // Comment section
+            const commentSection = document.createElement("div");
+            commentSection.classList.add("comment-section");
+            commentSection.style.display = "none";
 
             commentButton.addEventListener("click", () => {
                 commentSection.style.display =
                     commentSection.style.display === "none" ? "block" : "none";
             });
 
-            const commentInput = document.createElement("textarea");
-            commentInput.placeholder = "Write your comment here...";
-
+            const commentBox = document.createElement("textarea");
+            commentBox.placeholder = "Write a comment...";
             const commentSubmit = document.createElement("button");
             commentSubmit.textContent = "Post Comment";
 
             commentSubmit.addEventListener("click", async () => {
-                const commentText = commentInput.value.trim();
+                const commentText = commentBox.value.trim();
                 if (commentText) {
                     await window.db
                         .collection("guestbook")
@@ -83,15 +103,18 @@ async function displayLatestEntries() {
                             text: commentText,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         });
-                    commentInput.value = "";
+                    commentBox.value = "";
                     displayComments(postId, commentSection);
                 }
             });
 
-            commentSection.appendChild(commentInput);
+            commentSection.appendChild(commentBox);
             commentSection.appendChild(commentSubmit);
 
-            // Share Button
+            // Display comments
+            displayComments(postId, commentSection);
+
+            // Share button
             const shareButton = document.createElement("button");
             shareButton.classList.add("share-button");
             shareButton.textContent = "🔗 Share";
@@ -114,20 +137,21 @@ async function displayLatestEntries() {
             interactionDiv.appendChild(commentButton);
             interactionDiv.appendChild(shareButton);
 
-            displayComments(postId, commentSection);
-
+            // Append all elements to the entry div
             entryDiv.innerHTML = `
-                ${nameElement}
-                ${messageElement}
-                ${timestampElement}
-                ${mediaElement}
+                <div class="entry-content">
+                    ${nameElement.outerHTML}
+                    ${messageElement.outerHTML}
+                    ${timestampElement.outerHTML}
+                    ${mediaElement}
+                </div>
             `;
             entryDiv.appendChild(interactionDiv);
             entryDiv.appendChild(commentSection);
             entryPreviewDiv.appendChild(entryDiv);
         });
     } catch (error) {
-        console.error("Error displaying posts:", error);
+        console.error("Error fetching latest entries:", error);
     }
 }
 
@@ -140,33 +164,35 @@ async function displayComments(postId, commentSection) {
         .orderBy("timestamp", "asc");
 
     const querySnapshot = await commentsRef.limit(3).get();
+
     commentSection.innerHTML = ""; // Clear existing comments
 
     querySnapshot.forEach((doc) => {
-        const comment = doc.data();
-        const commentElement = document.createElement("p");
-        commentElement.textContent = comment.text;
-        commentSection.appendChild(commentElement);
+        const commentData = doc.data();
+        const commentDiv = document.createElement("p");
+        commentDiv.textContent = commentData.text;
+        commentSection.appendChild(commentDiv);
     });
 
-    const seeAllCommentsButton = document.createElement("button");
-    seeAllCommentsButton.textContent = "See All Comments";
-    seeAllCommentsButton.addEventListener("click", async () => {
-        const allComments = await commentsRef.get();
-        commentSection.innerHTML = "";
-        allComments.forEach((doc) => {
-            const comment = doc.data();
-            const commentElement = document.createElement("p");
-            commentElement.textContent = comment.text;
-            commentSection.appendChild(commentElement);
+    // Add "See All Comments" button
+    const seeAllButton = document.createElement("button");
+    seeAllButton.textContent = "See All Comments";
+    seeAllButton.addEventListener("click", async () => {
+        const allCommentsSnapshot = await commentsRef.get();
+        commentSection.innerHTML = ""; // Clear comments
+        allCommentsSnapshot.forEach((doc) => {
+            const commentData = doc.data();
+            const commentDiv = document.createElement("p");
+            commentDiv.textContent = commentData.text;
+            commentSection.appendChild(commentDiv);
         });
-        seeAllCommentsButton.style.display = "none";
+        seeAllButton.style.display = "none";
     });
 
     if (querySnapshot.size >= 3) {
-        commentSection.appendChild(seeAllCommentsButton);
+        commentSection.appendChild(seeAllButton);
     }
 }
 
-// Initial fetch of entries
+// Call the function to display entries when the page loads
 window.onload = displayLatestEntries;
