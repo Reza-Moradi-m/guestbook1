@@ -137,7 +137,7 @@ async function displayLatestEntries() {
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         });
                     commentInput.value = ""; // Clear input after submitting
-                    displayComments(postId, existingComments);
+                    displayComments(postId, existingComments); // Re-render only relevant comments
                 }
             });
 
@@ -204,6 +204,8 @@ async function displayComments(postId, existingComments, parentId = null, indent
 
     const querySnapshot = await commentsRef.get();
 
+    existingComments.innerHTML = ""; // Clear only the relevant comments section
+
     querySnapshot.forEach((doc) => {
         const commentData = doc.data();
         const commentId = doc.id;
@@ -237,8 +239,8 @@ async function displayComments(postId, existingComments, parentId = null, indent
         cancelReplyButton.classList.add("cancel-reply-button");
 
         cancelReplyButton.addEventListener("click", () => {
-            replySection.style.display = "none"; // Hide reply section
-            replyInput.value = ""; // Clear input
+            replySection.style.display = "none"; // Hide reply box without submitting
+            replyInput.value = ""; // Clear the input field
         });
 
         submitReplyButton.addEventListener("click", async () => {
@@ -249,9 +251,9 @@ async function displayComments(postId, existingComments, parentId = null, indent
                     .doc(postId)
                     .collection("comments")
                     .add({
-                        author: "Anonymous User", // Replace with actual user
+                        author: "Anonymous User", // Change to dynamic user when authentication is added
                         message: replyText,
-                        parentCommentId: commentId, // Reply to this comment
+                        parentCommentId: commentId, // Set as reply to the current comment
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     });
                 replyInput.value = ""; // Clear input
