@@ -31,22 +31,38 @@ async function displayLatestEntries() {
             timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
 
             // Determine the media type
-            let mediaElement = "";
+            let mediaElement = null;
             if (data.fileURL) {
                 try {
                     const response = await fetch(data.fileURL, { method: "HEAD" });
                     const contentType = response.headers.get("Content-Type");
 
                     if (contentType.startsWith("image/")) {
-                        mediaElement = `<img src="${data.fileURL}" alt="Uploaded Image" style="display: block; margin: auto; max-width: 100%; height: auto;" />`;
+                        mediaElement = document.createElement("img");
+                        mediaElement.src = data.fileURL;
+                        mediaElement.alt = "Uploaded Image";
+                        mediaElement.style.display = "block";
+                        mediaElement.style.margin = "auto";
+                        mediaElement.style.maxWidth = "100%";
+                        mediaElement.style.height = "auto";
                     } else if (contentType.startsWith("video/")) {
-                        mediaElement = `
-                            <video controls style="display: block; margin: auto; max-width: 100%; height: auto;">
-                                <source src="${data.fileURL}" type="${contentType}">
-                                Your browser does not support the video tag.
-                            </video>`;
+                        mediaElement = document.createElement("video");
+                        mediaElement.controls = true;
+                        mediaElement.style.display = "block";
+                        mediaElement.style.margin = "auto";
+                        mediaElement.style.maxWidth = "100%";
+                        mediaElement.style.height = "auto";
+
+                        const sourceElement = document.createElement("source");
+                        sourceElement.src = data.fileURL;
+                        sourceElement.type = contentType;
+                        mediaElement.appendChild(sourceElement);
                     } else {
-                        mediaElement = `<a href="${data.fileURL}" target="_blank" class="entry-link">Download Attachment</a>`;
+                        mediaElement = document.createElement("a");
+                        mediaElement.href = data.fileURL;
+                        mediaElement.target = "_blank";
+                        mediaElement.textContent = "Download Attachment";
+                        mediaElement.classList.add("entry-link");
                     }
                 } catch (error) {
                     console.error("Error fetching file metadata:", error);
@@ -165,7 +181,7 @@ async function displayLatestEntries() {
             entryDiv.appendChild(nameElement);
             entryDiv.appendChild(messageElement);
             entryDiv.appendChild(timestampElement);
-            entryDiv.appendChild(mediaElement);
+            if (mediaElement) entryDiv.appendChild(mediaElement);
 
             entryDiv.appendChild(interactionDiv);
             entryDiv.appendChild(commentSection);
@@ -239,8 +255,8 @@ async function displayComments(postId, existingComments, parentId = null, indent
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     });
                 replyInput.value = ""; // Clear input
-                replySection.style.display = "none"; // Hide reply section
-                displayComments(postId, existingComments, parentId, indentLevel + 1); // Refresh comments
+                replySection.style.display = "none"; // Hide reply box after submitting
+                displayComments(postId, existingComments, commentId, indentLevel + 1);
             }
         });
 
