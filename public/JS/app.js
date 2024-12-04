@@ -107,7 +107,9 @@ async function displayLatestEntries() {
                         .doc(postId)
                         .collection("comments")
                         .add({
-                            text: commentText,
+                            author: "Anonymous User", // Change to dynamic user when authentication is added
+                            message: commentText,
+                            parentCommentId: null, // Top-level comment
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         });
                     commentInput.value = ""; // Clear input after submitting
@@ -170,47 +172,64 @@ async function displayLatestEntries() {
     }
 }
 
-// Function to display comments
-async function displayComments(postId, existingComments) {
+// Function to display comments with nested replies
+async function displayComments(postId, existingComments, parentId = null, level = 0) {
     const commentsRef = window.db
         .collection("guestbook")
         .doc(postId)
         .collection("comments")
+        .where("parentCommentId", "==", parentId)
         .orderBy("timestamp", "asc");
 
-    const querySnapshot = await commentsRef.limit(3).get();
-
-    existingComments.innerHTML = ""; // Clear existing comments
+    const querySnapshot = await commentsRef.get();
 
     querySnapshot.forEach((doc) => {
         const commentData = doc.data();
-        const commentDiv = document.createElement("p");
-        commentDiv.textContent = commentData.text;
-        existingComments.appendChild(commentDiv);
-    });
+        const commentId = doc.id;
 
-    // Add "See All Comments" button if necessary
-    if (querySnapshot.size >= 3) {
-        let seeAllButton = existingComments.querySelector(".see-all-comments");
-        if (!seeAllButton) {
-            seeAllButton = document.createElement("button");
-            seeAllButton.textContent = "See All Comments";
-            seeAllButton.classList.add("see-all-comments");
-            existingComments.appendChild(seeAllButton);
-        }
+        const commentDiv = document.createElement("div");
+        commentDiv.classList.add("comment");
+        commentDiv.style.marginLeft = `${level * 20}px`; // Indent nested replies
+        commentDiv.innerHTML = `
+            <p><strong>${commentData.author}:</strong> ${commentData.message}</p>
+            <button class="reply-button">Reply</button>
+        `;
 
-        seeAllButton.addEventListener("click", async () => {
-            const allCommentsSnapshot = await commentsRef.get();
-            existingComments.innerHTML = "";
-            allCommentsSnapshot.forEach((doc) => {
-                const commentData = doc.data();
-                const commentDiv = document.createElement("p");
-                commentDiv.textContent = commentData.text;
-                existingComments.appendChild(commentDiv);
+        // Reply button functionality
+        const replyButton = commentDiv.querySelector(".reply-button");
+        replyButton.addEventListener("click", () => {
+            const replyInput = document.createElement("input");
+            replyInput.type = "text";
+            replyInput.placeholder = "Write a reply...";
+            const replySubmit = document.createElement("button");
+            replySubmit.textContent = "Submit Reply";
+
+            replySubmit.addEventListener("click", async () => {
+                const replyText = replyInput.value.trim();
+                if (replyText) {
+                    await window.db
+                        .collection("guestbook")
+                        .doc(postId)
+                        .collection("comments")
+                        .add({
+                            author: "Anonymous User", // Change to dynamic user when authentication is added
+                            message: replyText,
+                            parentCommentId: commentId,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        });
+                    displayComments(postId, existingComments, parentId, level); // Refresh comments
+                }
             });
-            seeAllButton.style.display = "none";
+
+            commentDiv.appendChild(replyInput);
+            commentDiv.appendChild(replySubmit);
         });
-    }
+
+        existingComments.appendChild(commentDiv);
+
+        // Recursively load replies
+        displayComments(postId, existingComments, commentId, level + 1);
+    });
 }
 
 // Call the function to display entries
