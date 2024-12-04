@@ -21,12 +21,18 @@ async function displayLatestEntries() {
             const entryDiv = document.createElement("div");
             entryDiv.classList.add("entry");
 
-            // Create elements for name, message, and timestamp
-            const nameElement = `<h3>Name: ${data.firstName} ${data.lastName}</h3>`;
-            const messageElement = `<p>Message: ${data.message}</p>`;
-            const timestampElement = `<p>Posted on: ${new Date(data.timestamp.seconds * 1000).toLocaleString()}</p>`;
+            // Create elements for name, message, timestamp
+            const nameElement = document.createElement("h3");
+            nameElement.textContent = `Name: ${data.firstName} ${data.lastName}`;
 
-            // Determine the media type using a HEAD request
+            const messageElement = document.createElement("p");
+            messageElement.textContent = `Message: ${data.message}`;
+
+            const timestampElement = document.createElement("p");
+            const timestamp = new Date(data.timestamp.seconds * 1000); // Convert Firestore timestamp to Date
+            timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
+
+            // Determine the media type
             let mediaElement = "";
             if (data.fileURL) {
                 try {
@@ -34,7 +40,7 @@ async function displayLatestEntries() {
                     const contentType = response.headers.get("Content-Type");
 
                     if (contentType.startsWith("image/")) {
-                        mediaElement = `<img src="${data.fileURL}" alt="Uploaded Image" style="display: block; margin: auto; max-width: 100%; height: auto; cursor: zoom-in;" />`;
+                        mediaElement = `<img src="${data.fileURL}" alt="Uploaded Image" style="display: block; margin: auto; max-width: 100%; height: auto;" />`;
                     } else if (contentType.startsWith("video/")) {
                         mediaElement = `
                             <video controls style="display: block; margin: auto; max-width: 100%; height: auto;">
@@ -49,131 +55,142 @@ async function displayLatestEntries() {
                 }
             }
 
-            // Add interaction buttons (like, comment)
-            const interactionButtons = `
-                <div class="interactions">
-                    <button onclick="toggleLike('${postId}')">Like</button>
-                    <button onclick="showCommentBox('${postId}')">Comment</button>
-                    <span id="likes-count-${postId}">0 Likes</span>
-                </div>
-                <div id="comments-section-${postId}" class="comments-section"></div>
-            `;
+            // Create like, comment, and share buttons
+            const interactionDiv = document.createElement("div");
+            interactionDiv.classList.add("interaction-buttons");
 
-            // Combine everything into entry div
+            // Like button
+            const likeButton = document.createElement("button");
+            likeButton.classList.add("like-button");
+            likeButton.innerHTML = `⭐ ${data.likes || 0}`;
+            likeButton.addEventListener("click", async () => {
+                const postRef = window.db.collection("guestbook").doc(postId);
+                await postRef.update({ likes: (data.likes || 0) + 1 });
+                likeButton.innerHTML = `⭐ ${(data.likes || 0) + 1}`;
+            });
+
+            // Comment button
+            const commentButton = document.createElement("button");
+            commentButton.classList.add("comment-button");
+            commentButton.textContent = "💬 Comment";
+            commentButton.addEventListener("click", () => {
+                const commentBox = entryDiv.querySelector(".comment-box");
+                commentBox.style.display =
+                    commentBox.style.display === "none" ? "block" : "none";
+            });
+
+            // Share button
+            const shareButton = document.createElement("button");
+            shareButton.classList.add("share-button");
+            shareButton.textContent = "🔗 Share";
+            shareButton.addEventListener("click", async () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: "Check out this post!",
+                        text: `${data.firstName} ${data.lastName} says: ${data.message}`,
+                        url: data.fileURL,
+                    });
+                } else {
+                    navigator.clipboard.writeText(data.fileURL);
+                    alert("Post link copied to clipboard!");
+                }
+            });
+
+            interactionDiv.appendChild(likeButton);
+            interactionDiv.appendChild(commentButton);
+            interactionDiv.appendChild(shareButton);
+
+            // Comment section
+            const commentSection = document.createElement("div");
+            commentSection.classList.add("comment-section");
+
+            // Comment input box
+            const commentBox = document.createElement("textarea");
+            commentBox.classList.add("comment-box");
+            commentBox.style.display = "none";
+            commentBox.placeholder = "Write a comment...";
+
+            const commentSubmit = document.createElement("button");
+            commentSubmit.textContent = "Post Comment";
+            commentSubmit.addEventListener("click", async () => {
+                const comment = commentBox.value.trim();
+                if (comment) {
+                    await window.db
+                        .collection("guestbook")
+                        .doc(postId)
+                        .collection("comments")
+                        .add({
+                            text: comment,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        });
+                    commentBox.value = "";
+                    displayComments(postId, commentSection);
+                }
+            });
+
+            commentSection.appendChild(commentBox);
+            commentSection.appendChild(commentSubmit);
+
+            // Display comments
+            displayComments(postId, commentSection);
+
+            // Append elements to the entry div
             entryDiv.innerHTML = `
                 <div class="entry-content">
-                    ${nameElement}
-                    ${messageElement}
-                    ${timestampElement}
+                    ${nameElement.outerHTML}
+                    ${messageElement.outerHTML}
+                    ${timestampElement.outerHTML}
                     ${mediaElement}
-                    ${interactionButtons}
                 </div>
             `;
 
-            // Append to entry preview
+            entryDiv.appendChild(interactionDiv);
+            entryDiv.appendChild(commentSection);
             entryPreviewDiv.appendChild(entryDiv);
-
-            // Fetch and render likes and comments
-            updateLikeCount(postId);
-            fetchComments(postId);
         });
     } catch (error) {
         console.error("Error fetching latest entries:", error);
-        alert("Failed to load latest entries. Please try again later.");
     }
 }
 
-// Like functionality
-async function toggleLike(postId) {
-    const userId = "user123"; // Replace with authenticated user ID
-    const likeRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
-
-    const likeDoc = await likeRef.get();
-    if (likeDoc.exists) {
-        await likeRef.delete(); // Remove like
-    } else {
-        await likeRef.set({
-            userId,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-    }
-
-    updateLikeCount(postId);
-}
-
-// Update like count dynamically
-async function updateLikeCount(postId) {
-    const likesRef = window.db.collection("guestbook").doc(postId).collection("likes");
-    const snapshot = await likesRef.get();
-    const likeCount = snapshot.size;
-
-    document.getElementById(`likes-count-${postId}`).textContent = `${likeCount} Likes`;
-}
-
-// Add a comment
-async function addComment(postId, message, parentCommentId = null) {
-    const commentsRef = window.db.collection("guestbook").doc(postId).collection("comments");
-
-    await commentsRef.add({
-        message,
-        parentCommentId,
-        author: "Anonymous", // Replace with authenticated username
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-    });
-
-    fetchComments(postId);
-}
-
-// Fetch and render comments
-async function fetchComments(postId) {
-    const commentsRef = window.db.collection("guestbook").doc(postId).collection("comments").orderBy("timestamp");
-    const snapshot = await commentsRef.get();
-
-    const commentsContainer = document.getElementById(`comments-section-${postId}`);
-    commentsContainer.innerHTML = ""; // Clear current comments
-
-    snapshot.forEach((doc) => {
-        const comment = doc.data();
-        const commentDiv = document.createElement("div");
-        commentDiv.classList.add("comment");
-
-        commentDiv.innerHTML = `
-            <p><strong>${comment.author}:</strong> ${comment.message}</p>
-            <button onclick="showReplyBox('${postId}', '${doc.id}')">Reply</button>
-            <div id="replies-${doc.id}" class="replies"></div>
-        `;
-
-        commentsContainer.appendChild(commentDiv);
-
-        // Render nested replies
-        renderReplies(postId, doc.id, commentDiv.querySelector(`#replies-${doc.id}`));
-    });
-}
-
-// Render replies recursively
-async function renderReplies(postId, parentCommentId, container) {
-    const repliesRef = window.db
+// Function to display comments
+async function displayComments(postId, commentSection) {
+    const commentsRef = window.db
         .collection("guestbook")
         .doc(postId)
         .collection("comments")
-        .where("parentCommentId", "==", parentCommentId)
-        .orderBy("timestamp");
+        .orderBy("timestamp", "asc");
 
-    const snapshot = await repliesRef.get();
+    const querySnapshot = await commentsRef.limit(3).get();
 
-    snapshot.forEach((doc) => {
-        const reply = doc.data();
-        const replyDiv = document.createElement("div");
-        replyDiv.classList.add("reply");
+    commentSection.innerHTML = ""; // Clear existing comments
 
-        replyDiv.innerHTML = `<p><strong>${reply.author}:</strong> ${reply.message}</p>`;
-
-        container.appendChild(replyDiv);
-
-        // Recursively fetch more replies
-        renderReplies(postId, doc.id, replyDiv);
+    querySnapshot.forEach((doc) => {
+        const commentData = doc.data();
+        const commentDiv = document.createElement("p");
+        commentDiv.textContent = commentData.text;
+        commentSection.appendChild(commentDiv);
     });
+
+    // Add "See All Comments" button
+    const seeAllButton = document.createElement("button");
+    seeAllButton.textContent = "See All Comments";
+    seeAllButton.addEventListener("click", async () => {
+        const allCommentsSnapshot = await commentsRef.get();
+        commentSection.innerHTML = ""; // Clear comments
+        allCommentsSnapshot.forEach((doc) => {
+            const commentData = doc.data();
+            const commentDiv = document.createElement("p");
+            commentDiv.textContent = commentData.text;
+            commentSection.appendChild(commentDiv);
+        });
+        seeAllButton.style.display = "none";
+    });
+
+    if (querySnapshot.size >= 3) {
+        commentSection.appendChild(seeAllButton);
+    }
 }
 
-// Call display entries on load
+// Call the function to display entries
 window.onload = displayLatestEntries;
