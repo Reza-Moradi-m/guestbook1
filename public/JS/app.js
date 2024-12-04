@@ -195,8 +195,12 @@ async function displayLatestEntries() {
     }
 }
 
-// Function to display comments
-async function displayComments(postId, existingComments, parentId = null, indentLevel = 0) {
+// Function to display comments with proper nesting
+async function displayComments(postId, parentElement, parentId = null, indentLevel = 0) {
+    if (parentId === null) {
+        parentElement.innerHTML = ""; // Clear comments container for top-level comments only
+    }
+
     const commentsRef = window.db
         .collection("guestbook")
         .doc(postId)
@@ -205,11 +209,6 @@ async function displayComments(postId, existingComments, parentId = null, indent
         .orderBy("timestamp", "asc");
 
     const querySnapshot = await commentsRef.get();
-
-    // Ensure to only clear once at the start of rendering comments
-    if (parentId === null) {
-        existingComments.innerHTML = ""; // Clear the relevant comments container
-    }
 
     querySnapshot.forEach((doc) => {
         const commentData = doc.data();
@@ -263,7 +262,7 @@ async function displayComments(postId, existingComments, parentId = null, indent
                     });
                 replyInput.value = ""; // Clear input
                 replySection.style.display = "none"; // Hide reply box after submitting
-                displayComments(postId, existingComments); // Refresh comments
+                displayComments(postId, parentElement, commentId, indentLevel + 1); // Refresh replies
             }
         });
 
@@ -279,10 +278,10 @@ async function displayComments(postId, existingComments, parentId = null, indent
         commentDiv.appendChild(replyButton);
         commentDiv.appendChild(replySection);
 
-        existingComments.appendChild(commentDiv);
+        parentElement.appendChild(commentDiv);
 
         // Fetch replies for this comment
-        displayComments(postId, existingComments, commentId, indentLevel + 1);
+        displayComments(postId, parentElement, commentId, indentLevel + 1);
     });
 }
 
