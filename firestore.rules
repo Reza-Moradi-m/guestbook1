@@ -3,16 +3,13 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /guestbook/{postId} {
-      allow read, write: if true;
+      allow read, write: if true; // Allow everyone to read and write posts for testing
 
-      // Likes subcollection
-      match /likes/{likeId} {
-        allow read, write: if true;
+      match /likes/{userId} {
+        allow read, write: if true; // Allow everyone to like/unlike posts
       }
-
-      // Comments subcollection
       match /comments/{commentId} {
-        allow read, write: if true;
+        allow read, write: if true; // Allow everyone to add comments
       }
     }
   }

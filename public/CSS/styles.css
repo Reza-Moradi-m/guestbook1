@@ -257,71 +257,84 @@ form label {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* Style for download links */
-.entry-link {
-    margin-top: 8px;
-    display: inline-block;
-    color: #007bff;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-.entry-link:hover {
-    text-decoration: underline;
-}
-
-/* Comment box */
-.comment-box {
-    margin-top: 10px;
-    padding: 10px;
-    background-color: #f9f9f9;
-    border-radius: 4px;
-}
-
-/* Replies */
-.comment-reply {
-    margin-left: 20px;
-    border-left: 2px solid #ddd;
-    padding-left: 10px;
-}
-
+/* Styling for the interaction buttons */
 .interaction-buttons {
     display: flex;
     gap: 10px;
+    justify-content: flex-start;
     margin-top: 10px;
 }
 
+.interaction-buttons button {
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Like button styles */
 .like-button {
-    background-color: gold;
-    border: none;
-    padding: 5px 10px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 4px;
+    background-color: #ffe066; /* Yellow */
+    color: #333;
 }
 
+.like-button:hover {
+    background-color: #ffcd3c; /* Darker yellow */
+}
+
+/* Comment button styles */
 .comment-button {
-    background-color: lightblue;
-    border: none;
-    padding: 5px 10px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 4px;
+    background-color: #81c784; /* Green */
+    color: white;
 }
 
+.comment-button:hover {
+    background-color: #66bb6a; /* Darker green */
+}
+
+/* Share button styles */
 .share-button {
-    background-color: lightgreen;
-    border: none;
-    padding: 5px 10px;
-    font-size: 14px;
-    cursor: pointer;
-    border-radius: 4px;
+    background-color: #64b5f6; /* Blue */
+    color: white;
 }
 
+.share-button:hover {
+    background-color: #42a5f5; /* Darker blue */
+}
+
+/* Styling for comment input and section */
 .comment-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     margin-top: 10px;
     padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
     background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.comment-section textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+    resize: none;
+}
+
+.comment-section button {
+    background-color: #81c784;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.comment-section button:hover {
+    background-color: #66bb6a;
 }
