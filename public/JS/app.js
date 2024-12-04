@@ -17,6 +17,7 @@ async function displayLatestEntries() {
 
             const entryDiv = document.createElement("div");
             entryDiv.classList.add("entry");
+            entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
             // Create elements for name, message, timestamp
             const nameElement = document.createElement("h3");
@@ -82,15 +83,15 @@ async function displayLatestEntries() {
             commentSection.classList.add("comment-section");
             commentSection.style.display = "none";
 
-            commentButton.addEventListener("click", () => {
-                commentSection.style.display =
-                    commentSection.style.display === "none" ? "block" : "none";
-            });
-
             const commentBox = document.createElement("textarea");
             commentBox.placeholder = "Write a comment...";
+            commentBox.style.width = "100%";
+            commentBox.style.margin = "10px 0";
+
             const commentSubmit = document.createElement("button");
             commentSubmit.textContent = "Post Comment";
+            commentSubmit.style.display = "block";
+            commentSubmit.style.margin = "10px auto";
 
             commentSubmit.addEventListener("click", async () => {
                 const commentText = commentBox.value.trim();
@@ -111,6 +112,11 @@ async function displayLatestEntries() {
             commentSection.appendChild(commentBox);
             commentSection.appendChild(commentSubmit);
 
+            commentButton.addEventListener("click", () => {
+                commentSection.style.display =
+                    commentSection.style.display === "none" ? "block" : "none";
+            });
+
             // Display comments
             displayComments(postId, commentSection);
 
@@ -120,7 +126,7 @@ async function displayLatestEntries() {
             shareButton.textContent = "🔗 Share";
 
             shareButton.addEventListener("click", async () => {
-                const postUrl = `${window.location.origin}?postId=${postId}`;
+                const postUrl = `${window.location.origin}#post-${postId}`;
                 if (navigator.share) {
                     navigator.share({
                         title: "Check out this post!",
@@ -177,6 +183,9 @@ async function displayComments(postId, commentSection) {
     // Add "See All Comments" button
     const seeAllButton = document.createElement("button");
     seeAllButton.textContent = "See All Comments";
+    seeAllButton.style.display = "block";
+    seeAllButton.style.margin = "10px auto";
+
     seeAllButton.addEventListener("click", async () => {
         const allCommentsSnapshot = await commentsRef.get();
         commentSection.innerHTML = ""; // Clear comments
@@ -194,5 +203,5 @@ async function displayComments(postId, commentSection) {
     }
 }
 
-// Call the function to display entries when the page loads
+// Call the function to display entries
 window.onload = displayLatestEntries;
