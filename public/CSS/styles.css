@@ -38,9 +38,7 @@ main {
 form {
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Modern browsers support this */
-    /* For older browsers, use margin instead of gap */
-    /* margin-bottom: 10px; */
+    gap: 10px;
 }
 
 input, textarea {
@@ -49,7 +47,7 @@ input, textarea {
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 1rem;
-    box-sizing: border-box; /* Prevents box size issues */
+    box-sizing: border-box;
 }
 
 button {
@@ -78,36 +76,11 @@ button:hover {
     font-size: 1rem;
 }
 
-.message-card img {
-    max-width: 100%;
-    height: auto;
-    margin-top: 10px;
-    border-radius: 4px;
-}
-
-.remove-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: #a43312;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.remove-button:hover {
-    background-color: #8f2b0d;
-}
-
 /* Navigation styles */
 nav {
     display: flex;
     justify-content: center;
-    gap: 10px; /* Modern browsers support this */
-    /* For older browsers, use margin instead of gap */
-    /* margin-right: 10px; */
+    gap: 10px;
     margin-top: 20px;
 }
 
@@ -124,14 +97,6 @@ nav a:hover {
     border-radius: 4px;
 }
 
-main a {
-    text-align: center;
-    margin-top: 20px;
-    font-stretch: semi-expanded; /* Use a valid value for font-stretch */
-    font-weight: 500;
-}
-
-
 #latest-entry {
     background-color: #f0f0f0;
     padding: 20px;
@@ -146,118 +111,8 @@ main a {
     margin-top: 10px;
     border-radius: 4px;
 }
-.message-card {
-    background-color: #f0f0f0;
-    padding: 10px;
-    margin-bottom: 10px;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    position: relative;
-    font-size: 1rem;
-}
 
-.remove-button {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background-color: #a43312;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-.remove-button:hover {
-    background-color: #8f2b0d;
-}
-
-/* Navigation styles */
-#main-nav {
-    background-color: #396e94;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 10px 0;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-}
-
-#main-nav ul {
-    list-style: none;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 0;
-    padding: 0;
-}
-
-#main-nav li {
-    margin: 0;
-}
-
-#main-nav a {
-    text-decoration: none;
-    color: #fff;
-    font-weight: bold;
-    padding: 10px 20px;
-    border-radius: 4px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-#main-nav a:hover {
-    background-color: #e7c24f;
-    color: #396e94;
-}
-
-/* styles.css */
-
-/* File input styles */
-input[type="file"] {
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
-    width: 100%;
-    margin-bottom: 10px;
-}
-
-/* Adjustments for form spacing */
-form label {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-/* Style for the entry container */
-.entry {
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 16px;
-    background-color: #f9f9f9;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Style for entry images */
-.entry-image {
-    max-width: 100%;
-    height: auto;
-    margin-top: 8px;
-    border-radius: 8px;
-    display: block;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Style for entry videos */
-.entry-video {
-    width: 100%;
-    max-width: 600px;
-    height: auto;
-    margin-top: 8px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Styling for the interaction buttons */
+/* Interaction buttons */
 .interaction-buttons {
     display: flex;
     gap: 10px;
@@ -275,37 +130,34 @@ form label {
     transition: all 0.3s ease-in-out;
 }
 
-/* Like button styles */
 .like-button {
     background-color: #ffe066; /* Yellow */
     color: #333;
 }
 
 .like-button:hover {
-    background-color: #ffcd3c; /* Darker yellow */
+    background-color: #ffcd3c;
 }
 
-/* Comment button styles */
 .comment-button {
     background-color: #81c784; /* Green */
     color: white;
 }
 
 .comment-button:hover {
-    background-color: #66bb6a; /* Darker green */
+    background-color: #66bb6a;
 }
 
-/* Share button styles */
 .share-button {
     background-color: #64b5f6; /* Blue */
     color: white;
 }
 
 .share-button:hover {
-    background-color: #42a5f5; /* Darker blue */
+    background-color: #42a5f5;
 }
 
-/* Styling for comment input and section */
+/* Comment section styles */
 .comment-section {
     display: flex;
     flex-direction: column;
@@ -317,7 +169,15 @@ form label {
     border-radius: 5px;
 }
 
-.comment-section button {
+.comment-section input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+
+.comment-section .comment-submit {
     background-color: #81c784;
     color: white;
     border: none;
@@ -326,16 +186,19 @@ form label {
     cursor: pointer;
 }
 
-.comment-section button:hover {
+.comment-section .comment-submit:hover {
     background-color: #66bb6a;
 }
 
-.comment-section input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 1rem;
+.comment-section .see-all-comments {
+    background-color: #64b5f6;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
 }
 
+.comment-section .see-all-comments:hover {
+    background-color: #42a5f5;
+}
