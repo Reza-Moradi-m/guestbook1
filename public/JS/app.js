@@ -151,9 +151,11 @@ async function displayLatestEntries() {
             commentButton.addEventListener("click", () => {
                 commentSection.style.display =
                     commentSection.style.display === "none" ? "block" : "none";
+                displayComments(postId, existingComments); // Ensure comments are displayed when toggled
             });
 
-            displayComments(postId, existingComments); // Display comments
+            // Display comments initially
+            displayComments(postId, existingComments);
 
             // Share button
             const shareButton = document.createElement("button");
@@ -195,8 +197,6 @@ async function displayLatestEntries() {
 
 // Function to display comments
 async function displayComments(postId, existingComments, parentId = null, indentLevel = 0) {
-    existingComments.innerHTML = ""; // Clear the relevant comments container
-
     const commentsRef = window.db
         .collection("guestbook")
         .doc(postId)
@@ -205,6 +205,8 @@ async function displayComments(postId, existingComments, parentId = null, indent
         .orderBy("timestamp", "asc");
 
     const querySnapshot = await commentsRef.get();
+
+    existingComments.innerHTML = ""; // Clear the relevant comments container
 
     querySnapshot.forEach((doc) => {
         const commentData = doc.data();
@@ -258,7 +260,7 @@ async function displayComments(postId, existingComments, parentId = null, indent
                     });
                 replyInput.value = ""; // Clear input
                 replySection.style.display = "none"; // Hide reply box after submitting
-                displayComments(postId, existingComments, commentId, indentLevel + 1);
+                displayComments(postId, existingComments); // Refresh comments
             }
         });
 
