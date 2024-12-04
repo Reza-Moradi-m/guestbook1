@@ -137,7 +137,7 @@ async function displayLatestEntries() {
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         });
                     commentInput.value = ""; // Clear input after submitting
-                    displayComments(postId, existingComments);
+                    displayComments(postId, existingComments); // Refresh comments
                 }
             });
 
@@ -195,6 +195,8 @@ async function displayLatestEntries() {
 
 // Function to display comments
 async function displayComments(postId, existingComments, parentId = null, indentLevel = 0) {
+    existingComments.innerHTML = ""; // Clear the relevant comments container
+
     const commentsRef = window.db
         .collection("guestbook")
         .doc(postId)
