@@ -83,20 +83,21 @@ async function displayLatestEntries() {
             commentSection.classList.add("comment-section");
             commentSection.style.display = "none";
 
-            // Existing comments container
-            const existingComments = document.createElement("div");
-            existingComments.classList.add("existing-comments");
-
-            // Input field for comments
+            // Create the input element for typing comments
             const commentInput = document.createElement("input");
             commentInput.type = "text";
             commentInput.placeholder = "Write a comment...";
             commentInput.classList.add("comment-input");
 
-            // Submit button for comments
+            // Create the submit button for comments
             const commentSubmit = document.createElement("button");
             commentSubmit.textContent = "Submit";
             commentSubmit.classList.add("comment-submit");
+
+            // Create the cancel button for comments
+            const commentCancel = document.createElement("button");
+            commentCancel.textContent = "Cancel";
+            commentCancel.classList.add("comment-cancel");
 
             // Submit the comment
             commentSubmit.addEventListener("click", async () => {
@@ -107,29 +108,34 @@ async function displayLatestEntries() {
                         .doc(postId)
                         .collection("comments")
                         .add({
-                            author: "Anonymous User", // Change to dynamic user when authentication is added
                             message: commentText,
-                            parentCommentId: null, // Top-level comment
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                            author: "Anonymous User", // Add proper author info here
+                            parentCommentId: null, // Default for top-level comments
                         });
-                    commentInput.value = ""; // Clear input after submitting
-                    displayComments(postId, existingComments);
+                    commentInput.value = "";
+                    displayComments(postId, commentSection);
+                    commentSection.style.display = "none"; // Hide after submitting
                 }
             });
 
-            // Add input and submit button to the comment section
-            commentSection.appendChild(existingComments);
+            // Cancel the comment
+            commentCancel.addEventListener("click", () => {
+                commentInput.value = "";
+                commentSection.style.display = "none"; // Hide on cancel
+            });
+
             commentSection.appendChild(commentInput);
             commentSection.appendChild(commentSubmit);
+            commentSection.appendChild(commentCancel);
 
-            // Toggle the comment section on button click
             commentButton.addEventListener("click", () => {
                 commentSection.style.display =
                     commentSection.style.display === "none" ? "block" : "none";
             });
 
             // Display comments
-            displayComments(postId, existingComments);
+            displayComments(postId, commentSection);
 
             // Share button
             const shareButton = document.createElement("button");
@@ -172,63 +178,90 @@ async function displayLatestEntries() {
     }
 }
 
-// Function to display comments with nested replies
-async function displayComments(postId, existingComments, parentId = null, level = 0) {
+// Function to display comments
+async function displayComments(postId, commentSection) {
     const commentsRef = window.db
         .collection("guestbook")
         .doc(postId)
         .collection("comments")
-        .where("parentCommentId", "==", parentId)
         .orderBy("timestamp", "asc");
 
     const querySnapshot = await commentsRef.get();
 
+    commentSection.innerHTML = ""; // Clear existing comments
+
     querySnapshot.forEach((doc) => {
         const commentData = doc.data();
-        const commentId = doc.id;
 
         const commentDiv = document.createElement("div");
         commentDiv.classList.add("comment");
-        commentDiv.style.marginLeft = `${level * 20}px`; // Indent nested replies
-        commentDiv.innerHTML = `
-            <p><strong>${commentData.author}:</strong> ${commentData.message}</p>
-            <button class="reply-button">Reply</button>
-        `;
 
-        // Reply button functionality
-        const replyButton = commentDiv.querySelector(".reply-button");
-        replyButton.addEventListener("click", () => {
-            const replyInput = document.createElement("input");
-            replyInput.type = "text";
-            replyInput.placeholder = "Write a reply...";
-            const replySubmit = document.createElement("button");
-            replySubmit.textContent = "Submit Reply";
+        const commentText = document.createElement("p");
+        commentText.textContent = `${commentData.author}: ${commentData.message}`;
 
-            replySubmit.addEventListener("click", async () => {
-                const replyText = replyInput.value.trim();
-                if (replyText) {
-                    await window.db
-                        .collection("guestbook")
-                        .doc(postId)
-                        .collection("comments")
-                        .add({
-                            author: "Anonymous User", // Change to dynamic user when authentication is added
-                            message: replyText,
-                            parentCommentId: commentId,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                        });
-                    displayComments(postId, existingComments, parentId, level); // Refresh comments
-                }
-            });
+        // Add a reply button
+        const replyButton = document.createElement("button");
+        replyButton.textContent = "☁ Reply";
+        replyButton.classList.add("reply-button");
 
-            commentDiv.appendChild(replyInput);
-            commentDiv.appendChild(replySubmit);
+        // Reply section
+        const replySection = document.createElement("div");
+        replySection.classList.add("reply-section");
+        replySection.style.display = "none";
+
+        const replyInput = document.createElement("input");
+        replyInput.type = "text";
+        replyInput.placeholder = "Write a reply...";
+        replyInput.classList.add("reply-input");
+
+        const replySubmit = document.createElement("button");
+        replySubmit.textContent = "Submit Reply";
+        replySubmit.classList.add("reply-submit");
+
+        const replyCancel = document.createElement("button");
+        replyCancel.textContent = "Cancel";
+        replyCancel.classList.add("reply-cancel");
+
+        // Submit reply
+        replySubmit.addEventListener("click", async () => {
+            const replyText = replyInput.value.trim();
+            if (replyText) {
+                await window.db
+                    .collection("guestbook")
+                    .doc(postId)
+                    .collection("comments")
+                    .add({
+                        message: replyText,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                        author: "Anonymous User", // Replace with dynamic author
+                        parentCommentId: doc.id, // Reference the parent comment
+                    });
+                replyInput.value = "";
+                displayComments(postId, commentSection);
+                replySection.style.display = "none"; // Hide reply section
+            }
         });
 
-        existingComments.appendChild(commentDiv);
+        // Cancel reply
+        replyCancel.addEventListener("click", () => {
+            replyInput.value = "";
+            replySection.style.display = "none";
+        });
 
-        // Recursively load replies
-        displayComments(postId, existingComments, commentId, level + 1);
+        replySection.appendChild(replyInput);
+        replySection.appendChild(replySubmit);
+        replySection.appendChild(replyCancel);
+
+        replyButton.addEventListener("click", () => {
+            replySection.style.display =
+                replySection.style.display === "none" ? "block" : "none";
+        });
+
+        commentDiv.appendChild(commentText);
+        commentDiv.appendChild(replyButton);
+        commentDiv.appendChild(replySection);
+
+        commentSection.appendChild(commentDiv);
     });
 }
 

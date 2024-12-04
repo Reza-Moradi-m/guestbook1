@@ -360,3 +360,52 @@ form label {
 .comment-submit:hover {
     background-color: #66bb6a;
 }
+
+.reply-button {
+    background-color: #42a5f5; /* Blue */
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    margin-left: 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.reply-button:hover {
+    background-color: #2196f3;
+}
+
+.reply-section {
+    margin-left: 20px;
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.reply-submit, .reply-cancel {
+    font-size: 0.9rem;
+    padding: 5px 10px;
+    margin: 2px 0;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.reply-submit {
+    background-color: #81c784; /* Green */
+    color: white;
+}
+
+.reply-submit:hover {
+    background-color: #66bb6a;
+}
+
+.reply-cancel {
+    background-color: #e57373; /* Red */
+    color: white;
+}
+
+.reply-cancel:hover {
+    background-color: #ef5350;
+}
