@@ -83,12 +83,17 @@ async function displayLatestEntries() {
             commentSection.classList.add("comment-section");
             commentSection.style.display = "none";
 
+            // Create the input element for typing comments
             const commentInput = document.createElement("input");
             commentInput.type = "text";
             commentInput.placeholder = "Write a comment...";
             commentInput.style.width = "100%";
             commentInput.style.margin = "10px 0";
+            commentInput.style.padding = "8px";
+            commentInput.style.border = "1px solid #ccc";
+            commentInput.style.borderRadius = "4px";
 
+            // Create the submit button for comments
             const commentSubmit = document.createElement("button");
             commentSubmit.textContent = "Submit";
             commentSubmit.style.display = "block";
@@ -201,7 +206,7 @@ async function displayComments(postId, commentSection) {
             commentDiv.textContent = commentData.text;
             existingComments.appendChild(commentDiv);
         });
-        seeAllButton.style.display = "none";
+        seeAllButton.style.display = "none"; // Hide button after showing all comments
     });
 
     if (querySnapshot.size >= 3) {
