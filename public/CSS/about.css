@@ -1,4 +1,4 @@
-/* Background image styling */
+/* Apply styles for the background image */
 .background-container {
   position: fixed;
   top: 0;
@@ -6,7 +6,7 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  z-index: -2; /* Behind everything */
+  z-index: -1; /* Push behind the content */
 }
 
 .background-image {
@@ -15,19 +15,9 @@
   object-fit: cover; /* Ensure the image scales properly */
 }
 
-/* Dynamic Starry Sky (Canvas) */
-#starry-sky {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1; /* Behind the main content but above the background image */
-}
-
 /* Navigation styles */
 #main-nav {
-  background-color: rgba(57, 110, 148, 0.9); /* Slightly transparent */
+  background-color: rgba(57, 110, 148, 0.9); /* Slightly transparent for better integration with the background */
   padding: 10px 0;
   position: sticky;
   top: 0;
@@ -66,11 +56,10 @@
   max-width: 90%;
   margin: 20px auto;
   padding: 20px;
+  
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.8); /* Semi-transparent dark background */
-  color: white;
+ 
   text-align: center;
-  z-index: 1; /* Above canvas */
 }
 
 .about-container h1 {
@@ -89,9 +78,9 @@
 /* Paragraph text */
 .about-container p {
   line-height: 1.8;
-  font-size: 1.2rem;
+  font-size: 2.1rem;
   margin: 10px 0;
-  color: white;
+  color: #1ee297;
 }
 
 /* Contact section */
@@ -107,4 +96,28 @@
     padding: 15px;
     font-size: 1rem;
   }
+}
+
+/* Ensure canvas covers the entire screen */
+#starry-sky {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1; /* Push the canvas to the background */
+}
+
+/* Style adjustments for content */
+body {
+  margin: 0;
+  overflow: hidden; /* Prevent scrollbars for full-screen canvas */
+  font-family: 'Helvetica Neue', Arial, sans-serif;
+  color: white; /* Text color to contrast with the dark background */
+}
+
+main {
+  z-index: 1; /* Ensure main content is above the stars */
+  position: relative;
+  text-align: center;
 }
