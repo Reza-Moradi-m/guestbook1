@@ -3,34 +3,33 @@ document.addEventListener("DOMContentLoaded", () => {
     const canvas = document.getElementById("starry-sky");
     const ctx = canvas.getContext("2d");
 
-    // Set canvas size to match the window
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    // Adjust canvas size on window resize
-    window.addEventListener("resize", () => {
+    // Set canvas size
+    function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        initializeStars(); // Reinitialize stars after resize
-    });
+    }
+    resizeCanvas();
 
-    // Create an array to hold star properties
-    let stars = [];
-    const starCount = 200; // Number of stars
+    // Adjust canvas size on window resize
+    window.addEventListener("resize", resizeCanvas);
+
+    const stars = [];
+    const starCount = 300; // Number of stars
 
     // Initialize stars
     function initializeStars() {
-        stars = [];
+        stars.length = 0;
         for (let i = 0; i < starCount; i++) {
             stars.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
                 radius: Math.random() * 2,
                 alpha: Math.random(),
-                speed: Math.random() * 0.02,
+                speed: Math.random() * 0.01,
             });
         }
     }
+    initializeStars();
 
     // Draw stars
     function drawStars() {
@@ -41,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             ctx.beginPath();
             ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`; // White star with transparency
+            ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
             ctx.fill();
         });
     }
@@ -51,8 +50,5 @@ document.addEventListener("DOMContentLoaded", () => {
         drawStars();
         requestAnimationFrame(animate);
     }
-
-    // Initialize and start animation
-    initializeStars();
     animate();
 });
