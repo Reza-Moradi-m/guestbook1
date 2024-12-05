@@ -1,18 +1,11 @@
-/* Apply styles for the background image */
-.background-container {
+/* Apply styles for the canvas background */
+#starry-sky {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  overflow: hidden;
-  z-index: -1; /* Push behind the content */
-}
-
-.background-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Ensure the image scales properly */
+  z-index: -1; /* Push the canvas behind the content */
 }
 
 /* Navigation styles */
@@ -53,13 +46,15 @@
 
 /* About container styling */
 .about-container {
-  max-width: 90%;
+  max-width: 90%; /* Increase the width for better readability */
   margin: 20px auto;
   padding: 20px;
-  
   border-radius: 12px;
- 
   text-align: center;
+  background: rgba(0, 0, 0, 0.6); /* Semi-transparent dark background for text readability */
+  color: white;
+  position: relative;
+  z-index: 1; /* Ensure content is above the canvas */
 }
 
 .about-container h1 {
@@ -78,9 +73,9 @@
 /* Paragraph text */
 .about-container p {
   line-height: 1.8;
-  font-size: 2.1rem;
+  font-size: 1.2rem;
   margin: 10px 0;
-  color: #1ee297;
+  color: white;
 }
 
 /* Contact section */
@@ -96,28 +91,4 @@
     padding: 15px;
     font-size: 1rem;
   }
-}
-
-/* Ensure canvas covers the entire screen */
-#starry-sky {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1; /* Push the canvas to the background */
-}
-
-/* Style adjustments for content */
-body {
-  margin: 0;
-  overflow: hidden; /* Prevent scrollbars for full-screen canvas */
-  font-family: 'Helvetica Neue', Arial, sans-serif;
-  color: white; /* Text color to contrast with the dark background */
-}
-
-main {
-  z-index: 1; /* Ensure main content is above the stars */
-  position: relative;
-  text-align: center;
 }

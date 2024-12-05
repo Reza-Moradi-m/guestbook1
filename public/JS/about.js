@@ -1,10 +1,6 @@
 // Dynamic Starry Sky Effect
 document.addEventListener("DOMContentLoaded", () => {
-    // Create and append the canvas
-    const canvas = document.createElement("canvas");
-    canvas.id = "starry-sky";
-    document.body.appendChild(canvas);
-
+    const canvas = document.getElementById("starry-sky");
     const ctx = canvas.getContext("2d");
 
     // Set canvas size to match the window
