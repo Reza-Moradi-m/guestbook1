@@ -1,42 +1,99 @@
+/* Apply styles for the background image */
+.background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: -1; /* Push behind the content */
+}
+
+.background-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Ensure the image scales properly */
+}
+
 /* Navigation styles */
 #main-nav {
-    background-color: #396e94;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    padding: 10px 0;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-  }
+  background-color: rgba(57, 110, 148, 0.9); /* Slightly transparent for better integration with the background */
+  padding: 10px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+#main-nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+}
+
+#main-nav li {
+  margin: 0;
+}
+
+#main-nav a {
+  text-decoration: none;
+  color: #fff;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#main-nav a:hover {
+  background-color: #e7c24f;
+  color: #396e94;
+}
+
+/* About container styling */
+.about-container {
+  max-width: 90%;
+  margin: 20px auto;
+  padding: 20px;
   
-  #main-nav ul {
-    list-style: none;
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin: 0;
-    padding: 0;
+  border-radius: 12px;
+ 
+  text-align: center;
+}
+
+.about-container h1 {
+  font-size: 2.9rem;
+  color: #f48f00;
+}
+
+/* Attention grabber styles */
+.attention-grabber {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #ffdd57;
+  margin-bottom: 20px;
+}
+
+/* Paragraph text */
+.about-container p {
+  line-height: 1.8;
+  font-size: 2.1rem;
+  margin: 10px 0;
+  color: #1ee297;
+}
+
+/* Contact section */
+.contact {
+  font-size: 1.3rem;
+  font-weight: bold;
+  margin-top: 20px;
+}
+
+/* Add responsive styles */
+@media screen and (max-width: 768px) {
+  .about-container {
+    padding: 15px;
+    font-size: 1rem;
   }
-  
-  #main-nav li {
-    margin: 0;
-  }
-  
-  #main-nav a {
-    text-decoration: none;
-    color: #fff;
-    font-weight: bold;
-    padding: 10px 20px;
-    border-radius: 4px;
-    transition: background-color 0.3s ease, color 0.3s ease;
-  }
-  
-  #main-nav a:hover {
-    background-color: #e7c24f;
-    color: #396e94;
-  }
-  
-  main {
-    padding: 20px;
-    text-align: center;
-  }
-  
+}
