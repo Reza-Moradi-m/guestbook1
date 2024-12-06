@@ -9,15 +9,18 @@
   measurementId: "G-LDFCYT5NGY"
 };
 
+// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
 // Firebase Auth
 const auth = firebase.auth();
+const db = firebase.firestore(); // Firestore for saving user data
 
-// Signup Form Submission
+// Sign-Up Functionality
 const signupForm = document.getElementById("signup-form");
 signupForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+
   const email = document.getElementById("signup-email").value;
   const password = document.getElementById("signup-password").value;
   const firstName = document.getElementById("signup-firstname").value;
@@ -28,30 +31,37 @@ signupForm.addEventListener("submit", async (e) => {
     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
     const user = userCredential.user;
 
+    // Update user profile
     await user.updateProfile({
       displayName: `${firstName} ${lastName}`,
     });
 
-    await firebase.firestore().collection("users").doc(user.uid).set({
+    // Save user details in Firestore
+    await db.collection("users").doc(user.uid).set({
       firstName,
       lastName,
       username,
       email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
 
+    // Send email verification
     await user.sendEmailVerification();
-    alert("Account created successfully! Please verify your email.");
+    alert("Account created successfully! Please verify your email before logging in.");
+
     signupForm.reset();
     updateUserStatus();
   } catch (error) {
+    console.error("Error during sign-up:", error.message);
     alert(error.message);
   }
 });
 
-// Login Form Submission
+// Login Functionality
 const loginForm = document.getElementById("login-form");
 loginForm.addEventListener("submit", async (e) => {
   e.preventDefault();
+
   const email = document.getElementById("login-email").value;
   const password = document.getElementById("login-password").value;
 
@@ -65,40 +75,61 @@ loginForm.addEventListener("submit", async (e) => {
       return;
     }
 
-    alert(`Welcome, ${user.displayName || user.email}`);
+    alert(`Welcome back, ${user.displayName || user.email}!`);
     loginForm.reset();
     updateUserStatus();
   } catch (error) {
+    console.error("Error during login:", error.message);
     alert(error.message);
   }
 });
 
-// Logout
+// Logout Functionality
 const logoutButton = document.getElementById("logout-button");
 logoutButton.addEventListener("click", async () => {
   try {
     await auth.signOut();
-    alert("Logged out.");
+    alert("Logged out successfully.");
     updateUserStatus();
   } catch (error) {
+    console.error("Error during logout:", error.message);
     alert(error.message);
   }
 });
 
-// Update user status across pages
+// Update User Status Across Pages
 function updateUserStatus() {
   const userStatus = document.getElementById("user-status");
+
   auth.onAuthStateChanged((user) => {
     if (user) {
-      userStatus.innerHTML = `<span>Signed in as <a href="profile.html">${user.displayName || user.email}</a></span>`;
-      logoutButton.style.display = "block";
+      userStatus.innerHTML = `
+        <span>Signed in as <a href="profile.html">${user.displayName || user.email}</a></span>
+        <button id="logout-button" style="margin-left: 10px;">Log Out</button>
+      `;
+
+      // Rebind the logout button event
+      document.getElementById("logout-button").addEventListener("click", async () => {
+        try {
+          await auth.signOut();
+          alert("Logged out successfully.");
+          updateUserStatus();
+        } catch (error) {
+          console.error("Error during logout:", error.message);
+        }
+      });
     } else {
       userStatus.innerHTML = `<a href="auth.html">Sign In</a>`;
-      logoutButton.style.display = "none";
     }
   });
 }
 
-auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
+// Automatically Sign Out on Tab Close
+window.addEventListener("beforeunload", async () => {
+  if (auth.currentUser) {
+    await auth.signOut();
+  }
+});
 
+// Initialize User Status
 updateUserStatus();
