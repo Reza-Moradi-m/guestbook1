@@ -20,34 +20,10 @@ signupForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const email = document.getElementById("signup-email").value;
   const password = document.getElementById("signup-password").value;
-  const firstName = document.getElementById("signup-firstname").value;
-  const lastName = document.getElementById("signup-lastname").value;
-  const username = document.getElementById("signup-username").value;
 
   try {
-    const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
-    const user = userCredential.user;
-
-    // Update user profile
-    await user.updateProfile({
-      displayName: `${firstName} ${lastName}`,
-    });
-
-    // Save additional user info in Firestore
-    await firebase.firestore().collection("users").doc(user.uid).set({
-      firstName,
-      lastName,
-      username,
-      email,
-    });
-
-    // Send email verification
-    await user.sendEmailVerification();
-    alert("Account created successfully! Please verify your email to log in.");
-
-    // Clear input fields
-    signupForm.reset();
-    updateUserStatus();
+    const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+    alert(`User created: ${userCredential.user.email}`);
   } catch (error) {
     console.error("Error signing up:", error.message);
     alert(error.message);
@@ -62,48 +38,35 @@ loginForm.addEventListener("submit", async (e) => {
   const password = document.getElementById("login-password").value;
 
   try {
-    const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
-    const user = userCredential.user;
-
-    if (!user.emailVerified) {
-      alert("Please verify your email before logging in.");
-      return;
-    }
-
-    alert(`Welcome back, ${user.displayName || user.email}!`);
-    loginForm.reset();
-    updateUserStatus();
+    const userCredential = await auth.signInWithEmailAndPassword(email, password);
+    alert(`Logged in as: ${userCredential.user.email}`);
+    document.getElementById("logout-button").style.display = "block";
   } catch (error) {
     console.error("Error logging in:", error.message);
     alert(error.message);
   }
 });
 
-// Logout
+// Logout Button
 const logoutButton = document.getElementById("logout-button");
 logoutButton.addEventListener("click", async () => {
   try {
-    await firebase.auth().signOut();
-    alert("Logged out successfully.");
-    updateUserStatus();
+    await auth.signOut();
+    alert("Logged out successfully");
+    document.getElementById("logout-button").style.display = "none";
   } catch (error) {
     console.error("Error logging out:", error.message);
     alert(error.message);
   }
 });
 
-// Update user status placeholder across pages
-function updateUserStatus() {
-  const userStatus = document.getElementById("user-status");
-
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-      userStatus.innerHTML = `<span>Signed in as <a href="profile.html">${user.displayName || user.email}</a></span> | <button id="logout-button">Log Out</button>`;
-    } else {
-      userStatus.innerHTML = `<a href="auth.html">Sign In</a>`;
-    }
-  });
-}
-
-// Initialize user status
-updateUserStatus();
+// Authentication State Listener
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    console.log("User is logged in:", user.email);
+    document.getElementById("logout-button").style.display = "block";
+  } else {
+    console.log("No user is logged in");
+    document.getElementById("logout-button").style.display = "none";
+  }
+});
