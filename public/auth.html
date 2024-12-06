@@ -5,11 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Authentication</title>
   <link rel="stylesheet" href="CSS/auth.css">
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="JS/firebase-config.js" defer></script>
-  <script src="JS/auth.js" defer></script>
 </head>
 <body>
   <header>
@@ -19,11 +14,11 @@
         <li><a href="guestbook.html">Upload</a></li>
         <li><a href="profile.html">Profile</a></li>
         <li><a href="explore.html">Explore Posts</a></li>
+        <li id="user-status"><a href="auth.html">Sign In</a></li>
         <li><a href="about.html">About</a></li>
         <li><a href="messenger.html">Messenger</a></li>
       </ul>
     </nav>
-    <div id="user-status"></div>
   </header>
 
   <main>
@@ -51,6 +46,13 @@
         <button type="submit">Log In</button>
       </form>
     </div>
+
+    <!-- Logout Button -->
+    <div class="auth-container">
+      <button id="logout-button" style="display: none;">Log Out</button>
+    </div>
   </main>
+
+  <script src="JS/auth.js"></script>
 </body>
 </html>
