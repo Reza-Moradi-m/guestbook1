@@ -1,5 +1,5 @@
 
-        // Attach Firestore and Storage to `window` for global access
+// Attach Firestore and Storage to `window` for global access
         window.db = firebase.firestore();
         window.storage = firebase.storage();
    
