@@ -10,50 +10,38 @@
 };
 
 
-
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
+
+// Firebase Auth
 const auth = firebase.auth();
-const db = firebase.firestore();
 
 // Signup Form Submission
 const signupForm = document.getElementById("signup-form");
 signupForm.addEventListener("submit", async (e) => {
-  e.preventDefault(); // Prevent form from reloading the page
-
-  const name = document.getElementById("signup-name").value.trim();
-  const username = document.getElementById("signup-username").value.trim();
-  const email = document.getElementById("signup-email").value.trim();
-  const password = document.getElementById("signup-password").value.trim();
+  e.preventDefault();
+  const email = document.getElementById("signup-email").value;
+  const password = document.getElementById("signup-password").value;
+  const name = document.getElementById("signup-name").value;
+  const username = document.getElementById("signup-username").value;
 
   try {
-    // Check if username is already taken
-    const usernameQuery = await db.collection("users").where("username", "==", username).get();
-    if (!usernameQuery.empty) {
-      alert("Username already taken. Please choose another.");
-      return;
-    }
-
-    // Create user
     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
     const user = userCredential.user;
 
-    // Send email verification
-    await user.sendEmailVerification();
-    alert("Account created successfully! Please verify your email before logging in.");
+    // Update user profile
+    await user.updateProfile({ displayName: name });
 
-    // Save user data to Firestore
-    await db.collection("users").doc(user.uid).set({
+    // Save user info in Firestore
+    await firebase.firestore().collection("users").doc(user.uid).set({
       name,
       username,
       email,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Clear input fields
+    await user.sendEmailVerification();
+    alert("Account created successfully! Please verify your email.");
     signupForm.reset();
   } catch (error) {
-    console.error("Error signing up:", error.message);
     alert(error.message);
   }
 });
@@ -61,67 +49,25 @@ signupForm.addEventListener("submit", async (e) => {
 // Login Form Submission
 const loginForm = document.getElementById("login-form");
 loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault(); // Prevent form from reloading the page
-
-  const email = document.getElementById("login-email").value.trim();
-  const password = document.getElementById("login-password").value.trim();
+  e.preventDefault();
+  const email = document.getElementById("login-email").value;
+  const password = document.getElementById("login-password").value;
 
   try {
     const userCredential = await auth.signInWithEmailAndPassword(email, password);
     const user = userCredential.user;
 
-    // Check email verification
     if (!user.emailVerified) {
       alert("Please verify your email before logging in.");
       await auth.signOut();
       return;
     }
 
-    alert(`Welcome, ${user.email}`);
+    alert(`Welcome, ${user.displayName || user.email}`);
     loginForm.reset();
-    updateUserStatus();
   } catch (error) {
-    console.error("Error logging in:", error.message);
     alert(error.message);
   }
 });
 
-
-
-// Update User Status Across Pages
-function updateUserStatus() {
-  const userStatus = document.getElementById("user-status");
-
-  auth.onAuthStateChanged(async (user) => {
-    if (user) {
-      const userDoc = await db.collection("users").doc(user.uid).get();
-      const userData = userDoc.data();
-
-      userStatus.innerHTML = `
-        <span>Signed in as <a href="profile.html">${userData?.username || user.email}</a></span>
-        <button id="logout-button" style="margin-left: 10px;">Log Out</button>
-      `;
-
-      // Add logout button functionality dynamically
-      const logoutButton = document.getElementById("logout-button");
-      logoutButton.addEventListener("click", async () => {
-        try {
-          await auth.signOut();
-          alert("Logged out successfully.");
-          updateUserStatus();
-        } catch (error) {
-          console.error("Error logging out:", error.message);
-          alert(error.message);
-        }
-      });
-    } else {
-      userStatus.innerHTML = `<a href="auth.html">Sign In</a>`;
-    }
-  });
-}
-
-// Ensure session persistence is set to "NONE" to log out on tab close
-auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
-
-// Initialize User Status
-updateUserStatus();
+// Logout Button (This is now handled in common.js)
