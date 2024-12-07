@@ -113,11 +113,17 @@ function updateUserStatus() {
         <button id="logout-button" style="margin-left: 10px;">Log Out</button>
       `;
 
-      // Dynamically add logout functionality
-      document.getElementById("logout-button").addEventListener("click", async () => {
-        await auth.signOut();
-        alert("Logged out successfully.");
-        updateUserStatus();
+      // Add logout button functionality dynamically
+      const logoutButton = document.getElementById("logout-button");
+      logoutButton.addEventListener("click", async () => {
+        try {
+          await auth.signOut();
+          alert("Logged out successfully.");
+          updateUserStatus();
+        } catch (error) {
+          console.error("Error logging out:", error.message);
+          alert(error.message);
+        }
       });
     } else {
       userStatus.innerHTML = `<a href="auth.html">Sign In</a>`;
