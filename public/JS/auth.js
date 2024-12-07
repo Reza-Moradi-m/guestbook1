@@ -120,7 +120,7 @@ function updateUserStatus() {
   });
 }
 
-// Ensure session persistence is set to "NONE" Ensures users stay logged in across page reloads and navigation between pages.
+// Ensure session persistence is set to "local" Ensures users stay logged in across page reloads and navigation between pages.
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
 
 // Initialize User Status
