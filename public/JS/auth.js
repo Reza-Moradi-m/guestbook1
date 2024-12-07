@@ -86,18 +86,7 @@ loginForm.addEventListener("submit", async (e) => {
   }
 });
 
-// Logout Button
-const logoutButton = document.getElementById("logout-button");
-logoutButton.addEventListener("click", async () => {
-  try {
-    await auth.signOut();
-    alert("Logged out successfully.");
-    updateUserStatus();
-  } catch (error) {
-    console.error("Error logging out:", error.message);
-    alert(error.message);
-  }
-});
+
 
 // Update User Status Across Pages
 function updateUserStatus() {
