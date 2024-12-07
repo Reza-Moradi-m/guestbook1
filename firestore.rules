@@ -2,15 +2,24 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    
+    // Public guestbook posts, likes, and comments (allow for testing)
     match /guestbook/{postId} {
-      allow read, write: if true; // Allow everyone to read and write posts for testing
+      allow read, write: if true; // Allow everyone to read/write posts
 
       match /likes/{userId} {
         allow read, write: if true; // Allow everyone to like/unlike posts
       }
+
       match /comments/{commentId} {
         allow read, write: if true; // Allow everyone to add comments
       }
+    }
+
+    // User profile collection
+    match /users/{userId} {
+      allow read, write: if true;
+      // Only authenticated users can read/write their own profile
     }
   }
 }
