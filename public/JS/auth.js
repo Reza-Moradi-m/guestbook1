@@ -9,22 +9,31 @@
   measurementId: "G-LDFCYT5NGY"
 };
 
-firebase.initializeApp(firebaseConfig);
 
-// Firebase Auth and Firestore
+
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
 const db = firebase.firestore();
 
 // Signup Form Submission
 const signupForm = document.getElementById("signup-form");
 signupForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("signup-email").value;
-  const password = document.getElementById("signup-password").value;
-  const name = document.getElementById("signup-name").value;
-  const username = document.getElementById("signup-username").value;
+  e.preventDefault(); // Prevent form from reloading the page
+
+  const name = document.getElementById("signup-name").value.trim();
+  const username = document.getElementById("signup-username").value.trim();
+  const email = document.getElementById("signup-email").value.trim();
+  const password = document.getElementById("signup-password").value.trim();
 
   try {
+    // Check if username is already taken
+    const usernameQuery = await db.collection("users").where("username", "==", username).get();
+    if (!usernameQuery.empty) {
+      alert("Username already taken. Please choose another.");
+      return;
+    }
+
     // Create user
     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
     const user = userCredential.user;
@@ -33,7 +42,7 @@ signupForm.addEventListener("submit", async (e) => {
     await user.sendEmailVerification();
     alert("Account created successfully! Please verify your email before logging in.");
 
-    // Store additional user data in Firestore
+    // Save user data to Firestore
     await db.collection("users").doc(user.uid).set({
       name,
       username,
@@ -41,7 +50,7 @@ signupForm.addEventListener("submit", async (e) => {
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
     });
 
-    // Reset the signup form
+    // Clear input fields
     signupForm.reset();
   } catch (error) {
     console.error("Error signing up:", error.message);
@@ -52,9 +61,10 @@ signupForm.addEventListener("submit", async (e) => {
 // Login Form Submission
 const loginForm = document.getElementById("login-form");
 loginForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const email = document.getElementById("login-email").value;
-  const password = document.getElementById("login-password").value;
+  e.preventDefault(); // Prevent form from reloading the page
+
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value.trim();
 
   try {
     const userCredential = await auth.signInWithEmailAndPassword(email, password);
@@ -67,16 +77,16 @@ loginForm.addEventListener("submit", async (e) => {
       return;
     }
 
-    alert(`Welcome back, ${user.displayName || user.email}!`);
+    alert(`Welcome, ${user.email}`);
     loginForm.reset();
-    updateUserStatus(); // Update user status
+    updateUserStatus();
   } catch (error) {
     console.error("Error logging in:", error.message);
     alert(error.message);
   }
 });
 
-// Logout
+// Logout Button
 const logoutButton = document.getElementById("logout-button");
 logoutButton.addEventListener("click", async () => {
   try {
@@ -89,23 +99,25 @@ logoutButton.addEventListener("click", async () => {
   }
 });
 
-// Update user status dynamically
+// Update User Status Across Pages
 function updateUserStatus() {
   const userStatus = document.getElementById("user-status");
+
   auth.onAuthStateChanged(async (user) => {
     if (user) {
-      // Fetch user details from Firestore
       const userDoc = await db.collection("users").doc(user.uid).get();
       const userData = userDoc.data();
 
       userStatus.innerHTML = `
-        Signed in as: <strong>${userData?.name || user.email}</strong>
-        <button id="logout-button">Log Out</button>
+        <span>Signed in as <a href="profile.html">${userData?.username || user.email}</a></span>
+        <button id="logout-button" style="margin-left: 10px;">Log Out</button>
       `;
 
-      // Bind logout button dynamically
+      // Dynamically add logout functionality
       document.getElementById("logout-button").addEventListener("click", async () => {
         await auth.signOut();
+        alert("Logged out successfully.");
+        updateUserStatus();
       });
     } else {
       userStatus.innerHTML = `<a href="auth.html">Sign In</a>`;
@@ -113,8 +125,8 @@ function updateUserStatus() {
   });
 }
 
-// Set persistence to sign out users when the tab is closed
+// Ensure session persistence is set to "NONE" to log out on tab close
 auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
 
-// Initialize user status
+// Initialize User Status
 updateUserStatus();
