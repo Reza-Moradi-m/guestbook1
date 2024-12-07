@@ -9,8 +9,14 @@
     measurementId: "G-LDFCYT5NGY"
   };
 
-  // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+  // Initialize Firebase only if it hasn't been initialized already
+if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+
+// Attach Firestore and Storage to `window` for global access
+window.db = firebase.firestore();
+window.storage = firebase.storage();
 
 // Firebase Auth
 const auth = firebase.auth();
@@ -19,6 +25,12 @@ const db = firebase.firestore();
 // Function to update user status in the navigation bar
 function updateUserStatus() {
   const userStatus = document.getElementById("user-status");
+
+  // Check if user-status element exists in the DOM
+  if (!userStatus) {
+    console.warn("User status element not found in the DOM.");
+    return;
+  }
 
   auth.onAuthStateChanged(async (user) => {
     if (user) {
@@ -34,7 +46,7 @@ function updateUserStatus() {
 
       // Add logout button functionality dynamically
       const logoutButton = document.getElementById("logout-button");
-      logoutButton.addEventListener("click", async () => {
+      logoutButton?.addEventListener("click", async () => {
         try {
           await auth.signOut();
           alert("Logged out successfully.");
