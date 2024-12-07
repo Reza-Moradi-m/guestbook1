@@ -1,3 +1,21 @@
+ // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDjQvmQKE77NmdCNMjwQ9D8dEtxdo0ZrUc",
+            authDomain: "astronomy-guestbook.firebaseapp.com",
+            projectId: "astronomy-guestbook",
+            storageBucket: "astronomy-guestbook.firebasestorage.app",
+            messagingSenderId: "680979689903",
+            appId: "1:680979689903:web:b31210872fff1d641b7f5a",
+            measurementId: "G-LDFCYT5NGY"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+
+        // Attach Firestore and Storage to `window` for global access
+        window.db = firebase.firestore();
+        window.storage = firebase.storage();
+   
 // Reference to the entry preview div
 const entryPreviewDiv = document.getElementById("entry-preview");
 
