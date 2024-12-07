@@ -9,43 +9,53 @@
     measurementId: "G-LDFCYT5NGY"
   };
 
-  
-  firebase.initializeApp(firebaseConfig);
-  
-  // Firebase Auth
-  const auth = firebase.auth();
-  
- // Update User Status Across Pages
-function updateUserStatus() {
-    const userStatus = document.getElementById("user-status");
-  
-    auth.onAuthStateChanged(async (user) => {
-      if (user) {
-        const userDoc = await db.collection("users").doc(user.uid).get();
-        const userData = userDoc.data();
-  
-        userStatus.innerHTML = `
-          <span>Signed in as <a href="profile.html">${userData?.username || user.email}</a></span>
-          <button id="logout-button" style="margin-left: 10px;">Log Out</button>
-        `;
-  
-        // Add logout button functionality dynamically
-        const logoutButton = document.getElementById("logout-button");
-        logoutButton.addEventListener("click", async () => {
-          try {
-            await auth.signOut();
-            alert("Logged out successfully.");
-            updateUserStatus();
-          } catch (error) {
-            console.error("Error logging out:", error.message);
-            alert(error.message);
-          }
-        });
-      } else {
-        userStatus.innerHTML = `<a href="auth.html">Sign In</a>`;
-      }
-    });
-  }
+  // Initialize Firebase
+firebase.initializeApp(firebaseConfig);
 
-  // Initialize User Status
+// Firebase Auth
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+// Function to update user status in the navigation bar
+function updateUserStatus() {
+  const userStatus = document.getElementById("user-status");
+
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      // Fetch user data from Firestore
+      const userDoc = await db.collection("users").doc(user.uid).get();
+      const userData = userDoc.data();
+
+      // Display username or email with a logout button
+      userStatus.innerHTML = `
+        <span>Signed in as <a href="profile.html">${userData?.username || user.email}</a></span>
+        <button id="logout-button" style="margin-left: 10px;">Log Out</button>
+      `;
+
+      // Add logout button functionality dynamically
+      const logoutButton = document.getElementById("logout-button");
+      logoutButton.addEventListener("click", async () => {
+        try {
+          await auth.signOut();
+          alert("Logged out successfully.");
+          updateUserStatus(); // Update the status after logging out
+        } catch (error) {
+          console.error("Error logging out:", error.message);
+          alert(error.message);
+        }
+      });
+    } else {
+      // Show "Sign In" link if no user is signed in
+      userStatus.innerHTML = `<a href="auth.html">Sign In</a>`;
+    }
+  });
+}
+
+// Ensure session persistence across pages
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+  .catch((error) => {
+    console.error("Error setting persistence:", error.message);
+  });
+
+// Initialize user status for every page
 updateUserStatus();
