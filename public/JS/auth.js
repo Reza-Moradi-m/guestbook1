@@ -11,8 +11,9 @@
 
 firebase.initializeApp(firebaseConfig);
 
-// Firebase Auth
+// Firebase Auth and Firestore
 const auth = firebase.auth();
+const db = firebase.firestore();
 
 // Signup Form Submission
 const signupForm = document.getElementById("signup-form");
@@ -20,10 +21,28 @@ signupForm.addEventListener("submit", async (e) => {
   e.preventDefault();
   const email = document.getElementById("signup-email").value;
   const password = document.getElementById("signup-password").value;
+  const name = document.getElementById("signup-name").value;
+  const username = document.getElementById("signup-username").value;
 
   try {
+    // Create user
     const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-    alert(`User created: ${userCredential.user.email}`);
+    const user = userCredential.user;
+
+    // Send email verification
+    await user.sendEmailVerification();
+    alert("Account created successfully! Please verify your email before logging in.");
+
+    // Store additional user data in Firestore
+    await db.collection("users").doc(user.uid).set({
+      name,
+      username,
+      email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+
+    // Reset the signup form
+    signupForm.reset();
   } catch (error) {
     console.error("Error signing up:", error.message);
     alert(error.message);
@@ -39,34 +58,63 @@ loginForm.addEventListener("submit", async (e) => {
 
   try {
     const userCredential = await auth.signInWithEmailAndPassword(email, password);
-    alert(`Logged in as: ${userCredential.user.email}`);
-    document.getElementById("logout-button").style.display = "block";
+    const user = userCredential.user;
+
+    // Check email verification
+    if (!user.emailVerified) {
+      alert("Please verify your email before logging in.");
+      await auth.signOut();
+      return;
+    }
+
+    alert(`Welcome back, ${user.displayName || user.email}!`);
+    loginForm.reset();
+    updateUserStatus(); // Update user status
   } catch (error) {
     console.error("Error logging in:", error.message);
     alert(error.message);
   }
 });
 
-// Logout Button
+// Logout
 const logoutButton = document.getElementById("logout-button");
 logoutButton.addEventListener("click", async () => {
   try {
     await auth.signOut();
-    alert("Logged out successfully");
-    document.getElementById("logout-button").style.display = "none";
+    alert("Logged out successfully.");
+    updateUserStatus();
   } catch (error) {
     console.error("Error logging out:", error.message);
     alert(error.message);
   }
 });
 
-// Authentication State Listener
-auth.onAuthStateChanged((user) => {
-  if (user) {
-    console.log("User is logged in:", user.email);
-    document.getElementById("logout-button").style.display = "block";
-  } else {
-    console.log("No user is logged in");
-    document.getElementById("logout-button").style.display = "none";
-  }
-});
+// Update user status dynamically
+function updateUserStatus() {
+  const userStatus = document.getElementById("user-status");
+  auth.onAuthStateChanged(async (user) => {
+    if (user) {
+      // Fetch user details from Firestore
+      const userDoc = await db.collection("users").doc(user.uid).get();
+      const userData = userDoc.data();
+
+      userStatus.innerHTML = `
+        Signed in as: <strong>${userData?.name || user.email}</strong>
+        <button id="logout-button">Log Out</button>
+      `;
+
+      // Bind logout button dynamically
+      document.getElementById("logout-button").addEventListener("click", async () => {
+        await auth.signOut();
+      });
+    } else {
+      userStatus.innerHTML = `<a href="auth.html">Sign In</a>`;
+    }
+  });
+}
+
+// Set persistence to sign out users when the tab is closed
+auth.setPersistence(firebase.auth.Auth.Persistence.NONE);
+
+// Initialize user status
+updateUserStatus();
