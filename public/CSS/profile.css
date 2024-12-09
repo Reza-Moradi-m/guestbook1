@@ -39,6 +39,7 @@
 main {
   text-align: center;
   padding: 20px;
+  background-color: #000000;
 }
 
 #profile-section {
@@ -81,5 +82,7 @@ main {
   width: 200px;
   text-align: left;
 }
-
+#profile-section p {
+  color: #fff;
+}
   
