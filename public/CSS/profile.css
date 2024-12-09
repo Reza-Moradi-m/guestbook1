@@ -67,6 +67,7 @@ main {
 
 #user-posts {
   margin-top: 30px;
+  
 }
 
 #posts-container {
@@ -86,3 +87,6 @@ main {
   color: #fff;
 }
   
+#user-posts h2 {
+  color: #fff;
+}
