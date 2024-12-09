@@ -1,12 +1,25 @@
 rules_version = '2';
 
-// Craft rules based on data in your Firestore database
-// allow write: if firestore.get(
-//    /databases/(default)/documents/users/$(request.auth.uid)).data.isAdmin;
 service firebase.storage {
   match /b/{bucket}/o {
+    
+    // Profile Pictures
+    match /profilePictures/{userId}/{file=**} {
+      allow read: if true; // Everyone can view profile pictures
+      allow write: if request.auth != null && request.auth.uid == userId; // Only the owner can upload/update their profile picture
+      allow delete: if request.auth != null && request.auth.uid == userId; // Only the owner can delete their profile picture
+    }
+
+    // Uploaded Files (e.g., images/videos in posts)
+    match /uploads/{file=**} {
+      allow read: if true; // Everyone can view uploaded files
+      allow write: if request.auth != null; // Only authenticated users can upload files
+      allow delete: if request.auth != null && request.auth.uid == resource.data.userId; // Only the uploader can delete their files
+    }
+
+    // Deny all other access by default
     match /{allPaths=**} {
-      allow read, write: if true;
+      allow read, write: if false; // Explicitly disable access to undefined paths
     }
   }
 }

@@ -3,23 +3,28 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // Public guestbook posts, likes, and comments (allow for testing)
+    // Guestbook posts, likes, and comments
     match /guestbook/{postId} {
-      allow read, write: if true; // Allow everyone to read/write posts
+      allow read: if true; // Everyone can view posts
+      allow create: if request.auth != null; // Only authenticated users can create posts
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid; // Only the owner can edit/delete
 
       match /likes/{userId} {
-        allow read, write: if true; // Allow everyone to like/unlike posts
+        allow read: if true; // Everyone can view likes
+        allow write: if request.auth != null; // Only authenticated users can like/unlike posts
       }
 
       match /comments/{commentId} {
-        allow read, write: if true; // Allow everyone to add comments
+        allow read: if true; // Everyone can view comments
+        allow create: if request.auth != null; // Only authenticated users can add comments
+        allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid; // Only the owner can edit/delete
       }
     }
 
-    // User profile collection
+    // User profiles
     match /users/{userId} {
-      allow read, write: if true;
-      // Only authenticated users can read/write their own profile
+      allow read: if true; // Everyone can view profile information
+      allow write: if request.auth != null && request.auth.uid == userId; // Only the user can update their profile
     }
   }
 }
