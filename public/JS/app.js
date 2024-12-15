@@ -78,21 +78,58 @@ async function displayLatestEntries() {
             const interactionDiv = document.createElement("div");
             interactionDiv.classList.add("interaction-buttons");
 
-            // Like button
-            const likeButton = document.createElement("button");
-            likeButton.classList.add("like-button");
-            const likesRef = window.db.collection("guestbook").doc(postId);
-            let currentLikes = data.likes || 0;
-            likeButton.innerHTML = `⭐ ${currentLikes}`;
-            let liked = false;
+            // Like button logic
+const likeButton = document.createElement("button");
+likeButton.classList.add("like-button");
 
-            likeButton.addEventListener("click", async () => {
-                const updatedLikes = liked ? currentLikes - 1 : currentLikes + 1;
-                await likesRef.update({ likes: updatedLikes });
-                liked = !liked;
-                currentLikes = updatedLikes;
-                likeButton.innerHTML = `⭐ ${currentLikes}`;
-            });
+const userId = firebase.auth().currentUser?.uid;
+const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
+let liked = false;
+
+// Check if user already liked the post
+if (userId) {
+  const userLikeDoc = await likesRef.get();
+  liked = userLikeDoc.exists;
+}
+
+async function updateLikes() {
+  if (!userId) {
+    alert("You need to log in to like this post!");
+    return;
+  }
+
+  try {
+    if (liked) {
+      // Remove the like
+      await likesRef.delete();
+      liked = false;
+    } else {
+      // Add a like
+      await likesRef.set({
+        likedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+      liked = true;
+    }
+    renderLikeButton();
+  } catch (error) {
+    console.error("Error updating like:", error);
+    alert("Failed to update like.");
+  }
+}
+
+async function getLikeCount() {
+  const snapshot = await window.db.collection("guestbook").doc(postId).collection("likes").get();
+  return snapshot.size; // Total number of likes
+}
+
+async function renderLikeButton() {
+  const likeCount = await getLikeCount();
+  likeButton.innerHTML = `⭐ ${likeCount}`;
+}
+
+likeButton.addEventListener("click", updateLikes);
+renderLikeButton();
+
 
             // Comment button
             const commentButton = document.createElement("button");
