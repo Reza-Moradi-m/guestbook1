@@ -1,76 +1,108 @@
-// Reference to form and input elements
 const messageForm = document.getElementById("messageForm");
 const fileInput = document.getElementById("fileInput");
 const messagesDiv = document.getElementById("messages");
 
-// Form submission handler
-messageForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+messageForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const firstName = document.getElementById("firstName").value.trim();
-    const lastName = document.getElementById("lastName").value.trim();
-    const message = document.getElementById("messageInput").value.trim();
-    const file = fileInput.files[0];
+  const user = auth.currentUser;
+  if (!user) {
+    alert("Please sign in to upload a post.");
+    return;
+  }
 
-    if (!file) {
-        alert("Please upload a file!");
-        return;
+  const message = document.getElementById("messageInput").value.trim();
+  const file = fileInput.files[0];
+
+    if (!message) {
+    alert("Please enter a message.");
+    return;
     }
 
-    try {
-        // Upload file to Firebase Storage
-        const storageRef = window.storage.ref(`uploads/${file.name}`);
-        const snapshot = await storageRef.put(file);
-        const fileURL = await snapshot.ref.getDownloadURL();
+  try {
+    // Get user data from Firestore
+    const userDoc = await db.collection("users").doc(user.uid).get();
+    const userData = userDoc.data();
 
-        // Save message and file URL to Firestore
-        await window.db.collection("guestbook").add({
-            firstName,
-            lastName,
-            message,
-            fileURL,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        });
+    // Determine file type
+    const fileType = file.type.includes("image")
+      ? "image"
+      : file.type.includes("video")
+      ? "video"
+      : "pdf";
 
-        alert("Message and file uploaded successfully!");
-        displayMessages();
-        messageForm.reset();
-    } catch (error) {
-        console.error("Error uploading file or saving message:", error);
-        alert("Failed to upload file and save message. Please try again.");
-    }
+    // Upload file to Storage
+    const storageRef = storage.ref(`uploads/${Date.now()}_${file.name}`);
+    const metadata = { customMetadata: { userId: user.uid } };
+    const snapshot = await storageRef.put(file, metadata);
+    const fileURL = await snapshot.ref.getDownloadURL();
+
+    // Add post to Firestore
+    await db.collection("guestbook").add({
+      userId: user.uid,
+      name: userData.name,
+      username: userData.username,
+      message,
+      fileURL,
+      fileType,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      likes: 0
+    });
+
+    alert("Post uploaded successfully!");
+    displayMessages();
+    messageForm.reset();
+  } catch (error) {
+    console.error("Error uploading post:", error.message);
+  }
 });
 
-// Fetch and display messages from Firestore
+// Display messages
 async function displayMessages() {
-    messagesDiv.innerHTML = ""; // Clear current messages
+  messagesDiv.innerHTML = "";
+  const snapshot = await db.collection("guestbook").orderBy("timestamp", "desc").get();
 
-    try {
-        const querySnapshot = await window.db
-            .collection("guestbook")
-            .orderBy("timestamp", "desc")
-            .get();
+  snapshot.forEach((doc) => {
+    const data = doc.data();
+    const postElement = document.createElement("div");
 
-        querySnapshot.forEach((doc) => {
-            const data = doc.data();
-            const messageElement = document.createElement("div");
-            messageElement.classList.add("message");
-
-            messageElement.innerHTML = `
-                <p><strong>${data.firstName} ${data.lastName}:</strong> ${data.message}</p>
-                ${
-                    data.fileURL
-                        ? `<a href="${data.fileURL}" target="_blank">View Attachment</a>`
-                        : ""
-                }
-            `;
-            messagesDiv.appendChild(messageElement);
-        });
-    } catch (error) {
-        console.error("Error fetching messages:", error);
-        alert("Failed to load messages. Please refresh the page.");
+    let fileLink = "";
+    if (data.fileType === "image") {
+      fileLink = `<img src="${data.fileURL}" alt="Image" style="max-width: 100%; height: auto;">`;
+    } else if (data.fileType === "video") {
+      fileLink = `<video src="${data.fileURL}" controls style="max-width: 100%; height: auto;"></video>`;
+    } else if (data.fileType === "pdf") {
+      fileLink = `<a href="${data.fileURL}" target="_blank">Download PDF</a>`;
     }
+
+    const deleteButton =
+      data.userId === auth.currentUser?.uid
+        ? `<button onclick="deletePost('${doc.id}')">Delete</button>`
+        : "";
+
+    postElement.innerHTML = `
+      <p>
+        <a href="userProfile.html?userId=${data.userId}">
+          <strong>${data.name} (${data.username})</strong>
+        </a>
+      </p>
+      <p>${data.message}</p>
+      ${fileLink}
+      ${deleteButton}
+    `;
+    messagesDiv.appendChild(postElement);
+  });
 }
 
-// Initial call to display messages
+// Delete Post
+async function deletePost(postId) {
+  try {
+    await db.collection("guestbook").doc(postId).delete();
+    alert("Post deleted successfully.");
+    displayMessages();
+  } catch (error) {
+    console.error("Error deleting post:", error.message);
+  }
+}
+
 displayMessages();

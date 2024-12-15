@@ -31,14 +31,12 @@
     </header>
     <main>
         <form id="messageForm">
-            <input type="text" id="firstName" placeholder="First Name" required>
-            <input type="text" id="lastName" placeholder="Last Name" required>
-            <textarea id="messageInput" placeholder="Write about the stars, planets, or any cosmic event" required></textarea>
-            <label for="fileInput">Upload an image or video:</label>
-            <input type="file" id="fileInput" accept="image/*,video/*" required>
+            <textarea id="messageInput" placeholder="Write about the stars..." required></textarea>
+            <label for="fileInput">Upload Image, Video, or PDF:</label>
+            <input type="file" id="fileInput" accept="image/*,video/*,application/pdf">
             <button type="submit">Submit</button>
-        </form>
-        <div id="messages"></div>
+          </form>
+          <div id="messages"></div>
     </main>
     
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>

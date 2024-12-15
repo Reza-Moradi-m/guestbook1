@@ -87,8 +87,50 @@ auth.onAuthStateChanged(async (user) => {
       postElement.innerHTML = `
         <p><strong>${data.message}</strong></p>
         <a href="${data.fileURL}" target="_blank">View Attachment</a>
-      `;
-      postsContainer.appendChild(postElement);
+        <button class="delete-button" data-id="${doc.id}">Delete</button>
+    `;
+
+    postsContainer.appendChild(postElement);
+  });
+
+  setupDeleteButtons();
+}
+
+// Setup delete buttons with confirmation popup
+function setupDeleteButtons() {
+  const deleteButtons = document.querySelectorAll(".delete-button");
+
+  deleteButtons.forEach((button) => {
+    button.addEventListener("click", () => {
+      const postId = button.getAttribute("data-id");
+      showDeletePopup(postId);
     });
-  }
+  });
+}
+
+// Delete confirmation popup logic
+function showDeletePopup(postId) {
+  const popup = document.getElementById("delete-popup");
+  const confirmButton = document.getElementById("confirm-delete");
+  const cancelButton = document.getElementById("cancel-delete");
+
+  popup.style.display = "flex";
+
+  confirmButton.onclick = async () => {
+    try {
+      await db.collection("guestbook").doc(postId).delete();
+      alert("Post deleted successfully.");
+      popup.style.display = "none";
+      loadUserPosts(auth.currentUser.uid);
+    } catch (error) {
+      console.error("Error deleting post:", error.message);
+      alert("Failed to delete post.");
+    }
+  };
+
+  cancelButton.onclick = () => {
+    popup.style.display = "none";
+  };
+}
+
   
