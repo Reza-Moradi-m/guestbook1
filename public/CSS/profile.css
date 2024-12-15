@@ -65,58 +65,182 @@ main {
   width: 80%;
 }
 
-#user-posts {
-  margin-top: 30px;
-  
-}
-
-#posts-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.post {
-  border: 1px solid #ccc;
-  margin: 10px;
+button {
+  background-color: #f9bc04;
+  color: #333;
+  border: none;
   padding: 10px;
-  width: 200px;
-  text-align: left;
-}
-#profile-section p {
-  color: #fff;
-}
-  
-#user-posts h2 {
-  color: #fff;
-}
-/* Popup Styles */
-.popup {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  font-size: 1rem;
 }
 
-.popup-content {
-  background-color: white;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-  text-align: center;
+button:hover {
+  background-color: #fbebbf;
 }
 
-.popup-content button {
-  margin: 10px;
-  padding: 10px 20px;
+/* Message styles */
+.message-card {
+  background-color: #fbeaea;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  font-size: 1rem;
+}
+
+.message-card img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+  border-radius: 4px;
+}
+
+.remove-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #a43312;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
   cursor: pointer;
 }
-/* Style for the entry container (Posts) */
+
+.remove-button:hover {
+  background-color: #8f2b0d;
+}
+
+/* Navigation styles */
+nav {
+  display: flex;
+  justify-content: center;
+  gap: 10px; /* Modern browsers support this */
+  /* For older browsers, use margin instead of gap */
+  /* margin-right: 10px; */
+  margin-top: 20px;
+}
+
+nav a {
+  text-decoration: none;
+  color: #396e94;
+  font-weight: bold;
+  padding: 10px;
+}
+
+nav a:hover {
+  color: #000000;
+  background-color: #396e94;
+  border-radius: 4px;
+}
+
+main a {
+  text-align: center;
+  margin-top: 20px;
+  font-stretch: semi-expanded; /* Use a valid value for font-stretch */
+  font-weight: 500;
+}
+
+
+#latest-entry {
+  background-color: #fee900;
+  padding: 20px;
+  margin-top: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+#latest-entry img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+  border-radius: 4px;
+}
+.message-card {
+  background-color: #f0f0f0;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  position: relative;
+  font-size: 1rem;
+}
+
+.remove-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #a43312;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.remove-button:hover {
+  background-color: #8f2b0d;
+}
+
+/* Navigation styles */
+#main-nav {
+  background-color: #000000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px 0;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+#main-nav ul {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 120px;
+  margin: 0;
+  padding: 0;
+}
+
+#main-nav li {
+  margin: 0;
+}
+
+#main-nav a {
+  text-decoration: none;
+  color: #fff;
+  font-weight: bold;
+  padding: 10px 20px;
+  border-radius: 4px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#main-nav a:hover {
+  background-color: #e7c24f;
+  color: #fff200;
+}
+
+/* styles.css */
+
+/* File input styles */
+input[type="file"] {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* Adjustments for form spacing */
+form label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+/* Style for the entry container */
 .entry {
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -250,15 +374,42 @@ main {
   background-color: #66bb6a;
 }
 
-/* Styling for clickable user links */
-.user-link {
-  text-decoration: none;
-  color: #396e94;
-  font-weight: bold;
-  transition: color 0.3s ease;
+/* Positioning for reply buttons */
+.reply-button,
+.submit-reply-button,
+.cancel-reply-button {
+  margin-top: 5px;
+  margin-left: 10px;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.user-link:hover {
-  color: #1a5c87;
-  text-decoration: underline;
+.reply-button {
+  background-color: #64b5f6; /* Blue */
+  color: white;
 }
+
+.reply-button:hover {
+  background-color: #42a5f5;
+}
+
+.submit-reply-button {
+  background-color: #81c784; /* Green */
+  color: white;
+}
+
+.submit-reply-button:hover {
+  background-color: #66bb6a;
+}
+
+.cancel-reply-button {
+  background-color: #f44336; /* Red */
+  color: white;
+}
+
+.cancel-reply-button:hover {
+  background-color: #d32f2f;
+}
+
