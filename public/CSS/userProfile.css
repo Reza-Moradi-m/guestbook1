@@ -1,0 +1,264 @@
+/* Navigation styles */
+#main-nav {
+    background-color: #000000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 10px 0;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  #main-nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+    gap: 120px;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #main-nav li {
+    margin: 0;
+  }
+  
+  #main-nav a {
+    text-decoration: none;
+    color: #fff;
+    font-weight: bold;
+    padding: 10px 20px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  
+  #main-nav a:hover {
+    background-color: #e7c24f;
+    color: #fff200;
+  }
+   
+    /* Profile Page Styling */
+  main {
+    text-align: center;
+    padding: 20px;
+    background-color: #000000;
+  }
+  
+  #profile-section {
+    margin: 20px 0;
+  }
+  
+  #profile-picture {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+  }
+  
+  #edit-profile-section {
+    margin-top: 20px;
+  }
+  
+  #edit-profile-form input {
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+    width: 80%;
+  }
+  
+  #user-posts {
+    margin-top: 30px;
+    
+  }
+  
+  #posts-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .post {
+    border: 1px solid #ccc;
+    margin: 10px;
+    padding: 10px;
+    width: 200px;
+    text-align: left;
+  }
+  #profile-section p {
+    color: #fff;
+  }
+    
+  #user-posts h2 {
+    color: #fff;
+  }
+  /* Popup Styles */
+  .popup {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .popup-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    text-align: center;
+  }
+  
+  .popup-content button {
+    margin: 10px;
+    padding: 10px 20px;
+    cursor: pointer;
+  }
+  /* Style for the entry container (Posts) */
+  .entry {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Style for entry images */
+  .entry-image {
+    max-width: 100%;
+    height: auto;
+    margin-top: 8px;
+    border-radius: 8px;
+    display: block;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Style for entry videos */
+  .entry-video {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    margin-top: 8px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Styling for the interaction buttons */
+  .interaction-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-start;
+    margin-top: 10px;
+  }
+  
+  .interaction-buttons button {
+    border: none;
+    border-radius: 5px;
+    padding: 8px 12px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  /* Like button styles */
+  .like-button {
+    background-color: #ffe066; /* Yellow */
+    color: #333;
+  }
+  
+  .like-button:hover {
+    background-color: #ffcd3c; /* Darker yellow */
+  }
+  
+  /* Comment button styles */
+  .comment-button {
+    background-color: #81c784; /* Green */
+    color: white;
+  }
+  
+  .comment-button:hover {
+    background-color: #66bb6a; /* Darker green */
+  }
+  
+  /* Share button styles */
+  .share-button {
+    background-color: #64b5f6; /* Blue */
+    color: white;
+  }
+  
+  .share-button:hover {
+    background-color: #42a5f5; /* Darker blue */
+  }
+  
+  /* Styling for comment input and section */
+  .comment-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+    padding: 10px;
+    background-color: #f9f9f9;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  .comment-section button {
+    background-color: #81c784;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .comment-section button:hover {
+    background-color: #66bb6a;
+  }
+  
+  .comment-section input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  .comment-input {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  .comment-submit {
+    background-color: #81c784; /* Green */
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .comment-submit:hover {
+    background-color: #66bb6a;
+  }
+  
+  /* Styling for clickable user links */
+  .user-link {
+    text-decoration: none;
+    color: #396e94;
+    font-weight: bold;
+    transition: color 0.3s ease;
+  }
+  
+  .user-link:hover {
+    color: #1a5c87;
+    text-decoration: underline;
+  }
