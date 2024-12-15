@@ -1,136 +1,163 @@
-// Check if the user is logged in
 auth.onAuthStateChanged(async (user) => {
-    if (!user) {
-      window.location.href = "auth.html"; // Redirect to login page if not authenticated
+  if (!user) {
+      window.location.href = "auth.html";
       return;
-    }
-  
-    const userDoc = await db.collection("users").doc(user.uid).get();
-    const userData = userDoc.data();
-  
-    // Populate profile details
-    document.getElementById("profile-name").textContent = userData.name || "No name set";
-    document.getElementById("profile-username").textContent = userData.username || "No username set";
-    document.getElementById("profile-email").textContent = userData.email || "No email set";
-    const profilePicture = userData.profilePicture || "images/default-avatar.png";
-    document.getElementById("profile-picture").src = profilePicture;
-  
-    // Load user posts
-    loadUserPosts(user.uid);
-  });
-  
-  // Edit Profile Button
-  document.getElementById("edit-profile-button").addEventListener("click", () => {
-    document.getElementById("profile-section").style.display = "none";
-    document.getElementById("edit-profile-section").style.display = "block";
-  });
-  
-  // Cancel Edit Button
-  document.getElementById("cancel-edit-button").addEventListener("click", () => {
-    document.getElementById("edit-profile-section").style.display = "none";
-    document.getElementById("profile-section").style.display = "block";
-  });
-  
-  // Save Profile Changes
-  document.getElementById("edit-profile-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-  
-    const name = document.getElementById("edit-name").value.trim();
-    const username = document.getElementById("edit-username").value.trim();
-    const email = document.getElementById("edit-email").value.trim();
-    const password = document.getElementById("edit-password").value.trim();
-    const file = document.getElementById("edit-profile-picture").files[0];
-  
-    try {
-      // Update Firestore user data
-      const user = auth.currentUser;
-      const updates = {};
-  
-      if (name) updates.name = name;
-      if (username) updates.username = username;
-      if (email) {
-        await user.updateEmail(email);
-        updates.email = email;
-      }
-      if (password) await user.updatePassword(password);
-  
-      if (file) {
-        const storageRef = firebase.storage().ref(`profilePictures/${user.uid}`);
-        const snapshot = await storageRef.put(file);
-        updates.profilePicture = await snapshot.ref.getDownloadURL();
-      }
-  
-      await db.collection("users").doc(user.uid).update(updates);
-      alert("Profile updated successfully!");
-      window.location.reload();
-    } catch (error) {
-      console.error("Error updating profile:", error.message);
-      alert("Failed to update profile.");
-    }
-  });
-  
-  // Load User Posts
-  async function loadUserPosts(userId) {
-    const postsContainer = document.getElementById("posts-container");
-    postsContainer.innerHTML = "";
-  
-    const querySnapshot = await db
-      .collection("guestbook")
+  }
+
+  const userDoc = await db.collection("users").doc(user.uid).get();
+  const userData = userDoc.data();
+
+  // Populate profile details
+  document.getElementById("profile-name").textContent = userData.name || "No name set";
+  document.getElementById("profile-username").textContent = userData.username || "No username set";
+  document.getElementById("profile-picture").src = userData.profilePicture || "images/default-avatar.png";
+
+  // Load user posts
+  loadUserPosts(user.uid);
+});
+
+async function loadUserPosts(userId) {
+  const postsContainer = document.getElementById("posts-container");
+  postsContainer.innerHTML = "";
+
+  const querySnapshot = await db.collection("guestbook")
       .where("userId", "==", userId)
       .orderBy("timestamp", "desc")
       .get();
-  
-    querySnapshot.forEach((doc) => {
+
+  querySnapshot.forEach((doc) => {
+      const postId = doc.id;
       const data = doc.data();
-      const postElement = document.createElement("div");
-      postElement.classList.add("post");
-      postElement.innerHTML = `
-        <p><strong>${data.message}</strong></p>
-        <a href="${data.fileURL}" target="_blank">View Attachment</a>
-        <button class="delete-button" data-id="${doc.id}">Delete</button>
-    `;
-
-    postsContainer.appendChild(postElement);
-  });
-
-  setupDeleteButtons();
-}
-
-// Setup delete buttons with confirmation popup
-function setupDeleteButtons() {
-  const deleteButtons = document.querySelectorAll(".delete-button");
-
-  deleteButtons.forEach((button) => {
-    button.addEventListener("click", () => {
-      const postId = button.getAttribute("data-id");
-      showDeletePopup(postId);
-    });
+      const postElement = createPostElement(data, postId, true); // Enable delete button
+      postsContainer.appendChild(postElement);
   });
 }
 
-// Delete confirmation popup logic
-function showDeletePopup(postId) {
-  const popup = document.getElementById("delete-popup");
-  const confirmButton = document.getElementById("confirm-delete");
-  const cancelButton = document.getElementById("cancel-delete");
+function createPostElement(data, postId, canDelete = false) {
+  const postDiv = document.createElement("div");
+  postDiv.classList.add("entry");
 
-  popup.style.display = "flex";
+  postDiv.innerHTML = `
+      <h3>
+          <a href="userProfile.html?userId=${data.userId}" class="user-link">
+              ${data.name} (${data.username})
+          </a>
+      </h3>
+      <p>${data.message}</p>
+      ${data.fileURL ? createMediaElement(data.fileURL) : ""}
+      <div class="interaction-buttons">
+          <button class="like-button" id="like-${postId}">⭐ 0</button>
+          <button class="comment-button" id="comment-${postId}">💬 Comment</button>
+      </div>
+      <div class="comment-section" id="comments-${postId}" style="display:none;"></div>
+  `;
 
-  confirmButton.onclick = async () => {
-    try {
-      await db.collection("guestbook").doc(postId).delete();
-      alert("Post deleted successfully.");
-      popup.style.display = "none";
-      loadUserPosts(auth.currentUser.uid);
-    } catch (error) {
-      console.error("Error deleting post:", error.message);
-      alert("Failed to delete post.");
-    }
-  };
+  if (canDelete) {
+      const deleteButton = document.createElement("button");
+      deleteButton.textContent = "Delete";
+      deleteButton.classList.add("remove-button");
+      deleteButton.addEventListener("click", async () => {
+          if (confirm("Are you sure you want to delete this post?")) {
+              await db.collection("guestbook").doc(postId).delete();
+              postDiv.remove();
+              alert("Post deleted successfully.");
+          }
+      });
+      postDiv.appendChild(deleteButton);
+  }
 
-  cancelButton.onclick = () => {
-    popup.style.display = "none";
-  };
+  setupLikeButton(postId, postDiv.querySelector(`#like-${postId}`));
+  setupCommentSection(postId, postDiv.querySelector(`#comment-${postId}`), postDiv.querySelector(`#comments-${postId}`));
+
+  return postDiv;
 }
 
-  
+function createMediaElement(fileURL) {
+  const type = fileURL.split(".").pop();
+  if (["jpg", "jpeg", "png", "gif"].includes(type)) {
+      return `<img src="${fileURL}" class="entry-image" alt="Uploaded Image">`;
+  } else if (["mp4", "webm"].includes(type)) {
+      return `<video controls class="entry-video"><source src="${fileURL}" type="video/${type}"></video>`;
+  } else if (["pdf"].includes(type)) {
+      return `<a href="${fileURL}" target="_blank" class="entry-link">View PDF</a>`;
+  }
+  return `<a href="${fileURL}" target="_blank">Download File</a>`;
+}
+
+async function setupLikeButton(postId, button) {
+  const userId = firebase.auth().currentUser.uid;
+  const likesRef = db.collection("guestbook").doc(postId).collection("likes");
+
+  const likeSnapshot = await likesRef.get();
+  button.innerHTML = `⭐ ${likeSnapshot.size}`;
+
+  const userLike = await likesRef.doc(userId).get();
+  let liked = userLike.exists;
+
+  button.addEventListener("click", async () => {
+      if (liked) {
+          await likesRef.doc(userId).delete();
+      } else {
+          await likesRef.doc(userId).set({ likedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      }
+      liked = !liked;
+
+      const updatedSnapshot = await likesRef.get();
+      button.innerHTML = `⭐ ${updatedSnapshot.size}`;
+  });
+}
+
+async function setupCommentSection(postId, button, commentSection) {
+  button.addEventListener("click", () => {
+      commentSection.style.display = commentSection.style.display === "none" ? "block" : "none";
+      displayComments(postId, commentSection);
+  });
+}
+
+async function displayComments(postId, parentElement) {
+  parentElement.innerHTML = "";
+  const querySnapshot = await db.collection("guestbook").doc(postId).collection("comments").orderBy("timestamp").get();
+
+  querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const commentDiv = document.createElement("div");
+      commentDiv.innerHTML = `
+          <p>
+              <strong>
+                  <a href="userProfile.html?userId=${data.userId}" class="user-link">
+                      ${data.author} (${data.username})
+                  </a>
+              </strong>: ${data.message}
+          </p>
+      `;
+      parentElement.appendChild(commentDiv);
+  });
+
+  // Add comment input
+  const inputDiv = document.createElement("div");
+  inputDiv.innerHTML = `
+      <input type="text" placeholder="Write a comment..." id="comment-input-${postId}">
+      <button id="submit-comment-${postId}">Submit</button>
+  `;
+  parentElement.appendChild(inputDiv);
+
+  const submitButton = inputDiv.querySelector(`#submit-comment-${postId}`);
+  submitButton.addEventListener("click", async () => {
+      const input = inputDiv.querySelector(`#comment-input-${postId}`).value;
+      const user = firebase.auth().currentUser;
+
+      if (input && user) {
+          const userDoc = await db.collection("users").doc(user.uid).get();
+          const userData = userDoc.data();
+
+          await db.collection("guestbook").doc(postId).collection("comments").add({
+              userId: user.uid,
+              author: userData.name,
+              username: userData.username,
+              message: input,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+          });
+          displayComments(postId, parentElement);
+      }
+  });
+}

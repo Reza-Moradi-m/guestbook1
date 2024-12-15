@@ -24,9 +24,13 @@ async function displayLatestEntries() {
             entryDiv.classList.add("entry");
             entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
-            // Display name and username from post data
-            const nameElement = document.createElement("h3");
-            nameElement.textContent = `${data.name} (${data.username})`;
+            // Display clickable username linking to userProfile.html
+const nameElement = document.createElement("h3");
+nameElement.innerHTML = `
+    <a href="userProfile.html?userId=${data.userId}" class="user-link">
+        ${data.name || "Unknown"} (${data.username || "NoUsername"})
+    </a>
+`;
 
             const messageElement = document.createElement("p");
             messageElement.textContent = `Message: ${data.message}`;
@@ -265,11 +269,17 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         const commentId = doc.id;
 
         const commentDiv = document.createElement("div");
-        commentDiv.classList.add("comment");
-        commentDiv.style.marginLeft = `${indentLevel * 20}px`; // Indent replies
-        commentDiv.innerHTML = `
-            <p><strong>${commentData.author}:</strong> ${commentData.message}</p>
-        `;
+commentDiv.classList.add("comment");
+commentDiv.style.marginLeft = `${indentLevel * 20}px`;
+commentDiv.innerHTML = `
+    <p>
+        <strong>
+            <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
+                ${commentData.author} (${commentData.username})
+            </a>
+        </strong>: ${commentData.message}
+    </p>
+`;
 
         const replyButton = document.createElement("button");
         replyButton.textContent = "Reply";
