@@ -1,108 +1,109 @@
+// Reference to form and input elements
 const messageForm = document.getElementById("messageForm");
 const fileInput = document.getElementById("fileInput");
 const messagesDiv = document.getElementById("messages");
 
-messageForm.addEventListener("submit", async (e) => {
-  e.preventDefault();
+// Form submission handler
+messageForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-  const user = auth.currentUser;
-  if (!user) {
-    alert("Please sign in to upload a post.");
-    return;
-  }
-
-  const message = document.getElementById("messageInput").value.trim();
-  const file = fileInput.files[0];
+    const message = document.getElementById("messageInput").value.trim();
+    const file = fileInput.files[0];
 
     if (!message) {
-    alert("Please enter a message.");
-    return;
+        alert("Message is required!");
+        return;
     }
 
-  try {
-    // Get user data from Firestore
-    const userDoc = await db.collection("users").doc(user.uid).get();
-    const userData = userDoc.data();
+    try {
+        const user = firebase.auth().currentUser;
 
-    // Determine file type
-    const fileType = file.type.includes("image")
-      ? "image"
-      : file.type.includes("video")
-      ? "video"
-      : "pdf";
+        if (!user) {
+            alert("You must be logged in to submit a post.");
+            return;
+        }
 
-    // Upload file to Storage
-    const storageRef = storage.ref(`uploads/${Date.now()}_${file.name}`);
-    const metadata = { customMetadata: { userId: user.uid } };
-    const snapshot = await storageRef.put(file, metadata);
-    const fileURL = await snapshot.ref.getDownloadURL();
+        // Fetch user profile data
+        const userDoc = await window.db.collection("users").doc(user.uid).get();
+        const userData = userDoc.data();
 
-    // Add post to Firestore
-    await db.collection("guestbook").add({
-      userId: user.uid,
-      name: userData.name,
-      username: userData.username,
-      message,
-      fileURL,
-      fileType,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      likes: 0
-    });
+        let fileURL = null;
 
-    alert("Post uploaded successfully!");
-    displayMessages();
-    messageForm.reset();
-  } catch (error) {
-    console.error("Error uploading post:", error.message);
-  }
+        // Upload file only if it exists
+        if (file) {
+            const storageRef = window.storage.ref(`uploads/${file.name}`);
+            const snapshot = await storageRef.put(file);
+            fileURL = await snapshot.ref.getDownloadURL();
+        }
+
+        // Save post data to Firestore
+        await window.db.collection("guestbook").add({
+            userId: user.uid,
+            username: userData.username,
+            name: userData.name,
+            message,
+            fileURL,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+        alert("Post uploaded successfully!");
+        messageForm.reset();
+        displayMessages();
+    } catch (error) {
+        console.error("Error uploading post:", error.message);
+        alert("Failed to upload post.");
+    }
 });
 
-// Display messages
+// Fetch and display messages from Firestore
 async function displayMessages() {
-  messagesDiv.innerHTML = "";
-  const snapshot = await db.collection("guestbook").orderBy("timestamp", "desc").get();
+    messagesDiv.innerHTML = "";
 
-  snapshot.forEach((doc) => {
-    const data = doc.data();
-    const postElement = document.createElement("div");
+    try {
+        const querySnapshot = await window.db
+            .collection("guestbook")
+            .orderBy("timestamp", "desc")
+            .get();
 
-    let fileLink = "";
-    if (data.fileType === "image") {
-      fileLink = `<img src="${data.fileURL}" alt="Image" style="max-width: 100%; height: auto;">`;
-    } else if (data.fileType === "video") {
-      fileLink = `<video src="${data.fileURL}" controls style="max-width: 100%; height: auto;"></video>`;
-    } else if (data.fileType === "pdf") {
-      fileLink = `<a href="${data.fileURL}" target="_blank">Download PDF</a>`;
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+
+            const messageElement = document.createElement("div");
+            messageElement.classList.add("message");
+
+            const fileLink = data.fileURL
+                ? `<a href="${data.fileURL}" target="_blank">View Attachment</a>`
+                : "";
+
+            const deleteButton =
+                data.userId === firebase.auth().currentUser?.uid
+                    ? `<button onclick="deletePost('${doc.id}')">Delete</button>`
+                    : "";
+
+            messageElement.innerHTML = `
+                <p><strong>${data.name} (${data.username}):</strong> ${data.message}</p>
+                ${fileLink}
+                ${deleteButton}
+            `;
+            messagesDiv.appendChild(messageElement);
+        });
+    } catch (error) {
+        console.error("Error fetching messages:", error.message);
+        alert("Failed to load messages.");
     }
-
-    const deleteButton =
-      data.userId === auth.currentUser?.uid
-        ? `<button onclick="deletePost('${doc.id}')">Delete</button>`
-        : "";
-
-    postElement.innerHTML = `
-      <p>
-        <a href="userProfile.html?userId=${data.userId}">
-          <strong>${data.name} (${data.username})</strong>
-        </a>
-      </p>
-      <p>${data.message}</p>
-      ${fileLink}
-      ${deleteButton}
-    `;
-    messagesDiv.appendChild(postElement);
-  });
 }
 
 // Delete Post
 async function deletePost(postId) {
-  try {
-    await db.collection("guestbook").doc(postId).delete();
-    alert("Post deleted successfully.");
-    displayMessages();
-  } catch (error) {
-    console.error("Error deleting post:", error.message);
-  }
+    try {
+        await window.db.collection("guestbook").doc(postId).delete();
+        alert("Post deleted successfully.");
+        displayMessages();
+    } catch (error) {
+        console.error("Error deleting post:", error.message);
+        alert("Failed to delete post.");
+    }
 }
 
+// Display messages on page load
 displayMessages();

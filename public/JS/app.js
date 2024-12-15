@@ -24,9 +24,9 @@ async function displayLatestEntries() {
             entryDiv.classList.add("entry");
             entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
-            // Create elements for name, message, timestamp
+            // Display name and username from post data
             const nameElement = document.createElement("h3");
-            nameElement.textContent = `Name: ${data.firstName} ${data.lastName}`;
+            nameElement.textContent = `${data.name} (${data.username})`;
 
             const messageElement = document.createElement("p");
             messageElement.textContent = `Message: ${data.message}`;
@@ -167,15 +167,24 @@ renderLikeButton();
 
             commentSubmit.addEventListener("click", async () => {
                 const commentText = commentInput.value.trim();
+                const user = firebase.auth().currentUser;
+                if (!user) {
+                    alert("You must be logged in to comment.");
+                    return;
+                }
                 if (commentText) {
+                    const userDoc = await window.db.collection("users").doc(user.uid).get();
+                    const userData = userDoc.data();
+            
                     await window.db
                         .collection("guestbook")
                         .doc(postId)
                         .collection("comments")
                         .add({
-                            author: "Anonymous User", // Change to dynamic user when authentication is added
+                            author: userData.name || "Unknown",
+                            username: userData.username || "NoUsername",
                             message: commentText,
-                            parentCommentId: null, // Top-level comment
+                            parentCommentId: null,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         });
                     commentInput.value = ""; // Clear input after submitting
