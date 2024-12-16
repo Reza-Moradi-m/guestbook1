@@ -7,6 +7,14 @@ if (!userId) {
 }
 
 async function loadUserProfile() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get("userId");
+
+    if (!userId) {
+        alert("No user specified!");
+        window.location.href = "index.html";
+        return;
+    }
     const profileContainer = document.getElementById("profile-container");
     const postsContainer = document.getElementById("user-posts");
 
@@ -49,11 +57,11 @@ async function loadUserProfile() {
       try {
         const querySnapshot = await window.db
             .collection("guestbook")
-            .orderBy("timestamp", "desc")
             .where("userId", "==", userId)
+            .orderBy("timestamp", "desc")
             .get();
       
-        entryPreviewDiv.innerHTML = ""; // Clear any existing content
+        postsContainer.innerHTML = "";// Clear any existing content
       
         querySnapshot.forEach(async (doc) => {
             const data = doc.data();

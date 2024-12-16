@@ -1,8 +1,7 @@
 
 
 
-const userDoc = await db.collection("users").doc(user.uid).get();
-  const userData = userDoc.data();
+
 
   // Attach Firestore and Storage to `window` for global access
   window.db = firebase.firestore();
@@ -14,6 +13,8 @@ const userDoc = await db.collection("users").doc(user.uid).get();
       window.location.href = "auth.html";
       return;
   }
+  const userDoc = await db.collection("users").doc(user.uid).get();
+  const userData = userDoc.data();
 
   
 
@@ -32,8 +33,8 @@ async function displayLatestEntries() {
 try {
   const querySnapshot = await window.db
       .collection("guestbook")
-      .orderBy("timestamp", "desc")
       .where("userId", "==", user.uid)
+      .orderBy("timestamp", "desc")
       .get();
 
   entryPreviewDiv.innerHTML = ""; // Clear any existing content
