@@ -1,20 +1,28 @@
-auth.onAuthStateChanged(async (user) => {
+
+
+
+const userDoc = await db.collection("users").doc(user.uid).get();
+  const userData = userDoc.data();
+
+  // Attach Firestore and Storage to `window` for global access
+  window.db = firebase.firestore();
+  window.storage = firebase.storage();
+  
+  
+  auth.onAuthStateChanged(async (user) => {
   if (!user) {
       window.location.href = "auth.html";
       return;
   }
 
-  const userDoc = await db.collection("users").doc(user.uid).get();
-  const userData = userDoc.data();
+  
 
   // Populate profile details
   document.getElementById("profile-name").textContent = userData.name || "No name set";
   document.getElementById("profile-username").textContent = userData.username || "No username set";
   document.getElementById("profile-picture").src = userData.profilePicture || "images/default-avatar.png";
 
-  // Attach Firestore and Storage to `window` for global access
-  window.db = firebase.firestore();
-  window.storage = firebase.storage();
+
 
 // Reference to the entry preview div
 const entryPreviewDiv = document.getElementById("entry-preview");
@@ -25,7 +33,7 @@ try {
   const querySnapshot = await window.db
       .collection("guestbook")
       .orderBy("timestamp", "desc")
-      where("userId", "==", user.uid)
+      .where("userId", "==", user.uid)
       .get();
 
   entryPreviewDiv.innerHTML = ""; // Clear any existing content

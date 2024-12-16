@@ -30,8 +30,7 @@ async function loadUserProfile() {
             return;
         }
       
-        const userDoc = await db.collection("users").doc(user.uid).get();
-        const userData = userDoc.data();
+        
       
         // Populate profile details
         document.getElementById("profile-name").textContent = userData.name || "No name set";
