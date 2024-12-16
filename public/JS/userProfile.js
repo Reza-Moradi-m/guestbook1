@@ -1,204 +1,261 @@
+window.db = firebase.firestore();
+window.storage = firebase.storage();
+
 const urlParams = new URLSearchParams(window.location.search);
 const userId = urlParams.get("userId");
+
+const entryPreviewDiv = document.getElementById("entry-preview");
 
 if (!userId) {
   alert("No user specified!");
   window.location.href = "index.html";
 }
 
-const entryPreviewDiv = document.getElementById("entry-preview");
-
-// Load User Profile Information
 async function loadUserProfile() {
   try {
-    const userDoc = await db.collection("users").doc(userId).get();
+    // Fetch user details
+    const userDoc = await window.db.collection("users").doc(userId).get();
     const userData = userDoc.data();
 
     if (!userData) {
-      alert("User profile not found.");
+      entryPreviewDiv.innerHTML = "<p>User not found.</p>";
       return;
     }
 
-    // Add user profile details
-    const profileContainer = document.createElement("div");
-    profileContainer.classList.add("profile-container");
-    profileContainer.innerHTML = `
-      <img src="${userData.profilePicture || 'images/default-avatar.png'}" 
-           alt="Profile Picture" id="profile-picture" class="profile-image">
-      <h2>${userData.name || "No Name"}</h2>
-      <p>Username: ${userData.username || "No Username"}</p>
+    // Display user details
+    const header = document.createElement("div");
+    header.classList.add("profile-header");
+    header.innerHTML = `
+      <img src="${userData.profilePicture || "images/default-avatar.png"}" alt="Profile Picture" class="profile-pic">
+      <h2>${userData.name || "Unknown"}</h2>
+      <p>Username: ${userData.username || "NoUsername"}</p>
     `;
-    document.body.prepend(profileContainer);
+    entryPreviewDiv.appendChild(header);
 
-    // Fetch and display user posts
-    displayUserPosts();
-  } catch (error) {
-    console.error("Error loading user profile:", error);
-  }
-}
+    // Fetch and display posts
+    const postsContainer = document.createElement("div");
+    postsContainer.classList.add("posts-container");
+    entryPreviewDiv.appendChild(postsContainer);
 
-// Fetch and Display User Posts with Full Interactions
-async function displayUserPosts() {
-  try {
-    const querySnapshot = await db
+    const querySnapshot = await window.db
       .collection("guestbook")
       .where("userId", "==", userId)
       .orderBy("timestamp", "desc")
       .get();
 
-    entryPreviewDiv.innerHTML = ""; // Clear existing posts
+    if (querySnapshot.empty) {
+      postsContainer.innerHTML = "<p>No posts found for this user.</p>";
+      return;
+    }
 
     querySnapshot.forEach(async (doc) => {
       const data = doc.data();
       const postId = doc.id;
 
-      // Create Post Container
-      const entryDiv = document.createElement("div");
-      entryDiv.classList.add("entry");
+      const postDiv = document.createElement("div");
+      postDiv.classList.add("entry");
+      postDiv.id = `post-${postId}`;
+
+      const nameElement = document.createElement("h3");
+      nameElement.innerHTML = `<a href="userProfile.html?userId=${data.userId}" class="user-link">
+                                ${data.name || "Unknown"} (${data.username || "NoUsername"})
+                              </a>`;
 
       const messageElement = document.createElement("p");
-      messageElement.textContent = data.message || "No message available.";
+      messageElement.textContent = `Message: ${data.message}`;
 
       const timestampElement = document.createElement("p");
       const timestamp = new Date(data.timestamp.seconds * 1000);
       timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
 
-      // Media Handling
       let mediaElement = null;
       if (data.fileURL) {
-        if (data.fileURL.endsWith(".jpg") || data.fileURL.endsWith(".png")) {
-          mediaElement = document.createElement("img");
-          mediaElement.src = data.fileURL;
-          mediaElement.classList.add("entry-media");
-        } else if (data.fileURL.endsWith(".mp4")) {
-          mediaElement = document.createElement("video");
-          mediaElement.controls = true;
-          mediaElement.classList.add("entry-media");
-
-          const sourceElement = document.createElement("source");
-          sourceElement.src = data.fileURL;
-          sourceElement.type = "video/mp4";
-          mediaElement.appendChild(sourceElement);
-        }
+        mediaElement = determineMediaElement(data.fileURL);
       }
 
-      // Interaction Buttons (Like, Comment, Share)
       const interactionDiv = document.createElement("div");
       interactionDiv.classList.add("interaction-buttons");
 
-      // Like Button
-      const likeButton = document.createElement("button");
-      likeButton.classList.add("like-button");
-      const likesRef = db.collection("guestbook").doc(postId).collection("likes");
-      let liked = false;
-
-      async function renderLikeButton() {
-        const snapshot = await likesRef.get();
-        likeButton.textContent = `⭐ ${snapshot.size} Likes`;
-      }
-
-      likeButton.addEventListener("click", async () => {
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          alert("Please sign in to like posts!");
-          return;
-        }
-        const userLikeRef = likesRef.doc(currentUser.uid);
-        const userLikeSnapshot = await userLikeRef.get();
-        if (userLikeSnapshot.exists) {
-          await userLikeRef.delete();
-          liked = false;
-        } else {
-          await userLikeRef.set({
-            likedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          });
-          liked = true;
-        }
-        renderLikeButton();
-      });
-      renderLikeButton();
-
-      // Comment Section
-      const commentButton = document.createElement("button");
-      commentButton.textContent = "💬 Comment";
-      const commentSection = document.createElement("div");
-      commentSection.classList.add("comment-section");
-      commentSection.style.display = "none";
-
-      commentButton.addEventListener("click", () => {
-        commentSection.style.display = commentSection.style.display === "none" ? "block" : "none";
-        displayComments();
-      });
-
-      const commentInput = document.createElement("input");
-      commentInput.placeholder = "Write a comment...";
-      const commentSubmit = document.createElement("button");
-      commentSubmit.textContent = "Submit";
-
-      commentSubmit.addEventListener("click", async () => {
-        const currentUser = auth.currentUser;
-        if (!currentUser) {
-          alert("Please sign in to comment.");
-          return;
-        }
-
-        if (commentInput.value.trim()) {
-          await db.collection("guestbook").doc(postId).collection("comments").add({
-            message: commentInput.value.trim(),
-            userId: currentUser.uid,
-            author: currentUser.email,
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-          });
-          commentInput.value = "";
-          displayComments();
-        }
-      });
-
-      commentSection.appendChild(commentInput);
-      commentSection.appendChild(commentSubmit);
-
-      async function displayComments() {
-        commentSection.innerHTML = "";
-        const commentsSnapshot = await db
-          .collection("guestbook")
-          .doc(postId)
-          .collection("comments")
-          .orderBy("timestamp", "asc")
-          .get();
-
-        commentsSnapshot.forEach((commentDoc) => {
-          const commentData = commentDoc.data();
-          const commentDiv = document.createElement("div");
-          commentDiv.classList.add("comment");
-          commentDiv.textContent = `${commentData.author}: ${commentData.message}`;
-          commentSection.appendChild(commentDiv);
-        });
-      }
-
-      // Share Button
-      const shareButton = document.createElement("button");
-      shareButton.textContent = "🔗 Share";
-      shareButton.addEventListener("click", async () => {
-        await navigator.clipboard.writeText(`${window.location.origin}#post-${postId}`);
-        alert("Post link copied to clipboard!");
-      });
+      // Add interaction buttons
+      const likeButton = createLikeButton(postId);
+      const commentSection = createCommentSection(postId);
+      const shareButton = createShareButton(postId, data);
 
       interactionDiv.appendChild(likeButton);
-      interactionDiv.appendChild(commentButton);
+      interactionDiv.appendChild(commentSection.button);
       interactionDiv.appendChild(shareButton);
 
-      entryDiv.appendChild(messageElement);
-      entryDiv.appendChild(timestampElement);
-      if (mediaElement) entryDiv.appendChild(mediaElement);
-      entryDiv.appendChild(interactionDiv);
-      entryDiv.appendChild(commentSection);
+      postDiv.appendChild(nameElement);
+      postDiv.appendChild(messageElement);
+      postDiv.appendChild(timestampElement);
+      if (mediaElement) postDiv.appendChild(mediaElement);
+      postDiv.appendChild(interactionDiv);
+      postDiv.appendChild(commentSection.section);
 
-      entryPreviewDiv.appendChild(entryDiv);
+      postsContainer.appendChild(postDiv);
     });
   } catch (error) {
-    console.error("Error displaying user posts:", error);
+    console.error("Error loading user profile:", error);
+    entryPreviewDiv.innerHTML = "<p>Failed to load profile and posts.</p>";
   }
 }
 
-// Call functions to load profile and posts
-loadUserProfile();
+function determineMediaElement(fileURL) {
+  const fileExtension = fileURL.split(".").pop();
+  if (["png", "jpg", "jpeg", "gif"].includes(fileExtension)) {
+    const img = document.createElement("img");
+    img.src = fileURL;
+    img.classList.add("post-media");
+    return img;
+  } else if (["mp4", "webm"].includes(fileExtension)) {
+    const video = document.createElement("video");
+    video.controls = true;
+    video.src = fileURL;
+    video.classList.add("post-media");
+    return video;
+  } else {
+    const link = document.createElement("a");
+    link.href = fileURL;
+    link.target = "_blank";
+    link.textContent = "View Attachment";
+    return link;
+  }
+}
+
+// Like Button
+function createLikeButton(postId) {
+  const likeButton = document.createElement("button");
+  likeButton.classList.add("like-button");
+
+  async function renderLikeButton() {
+    const likesSnapshot = await window.db
+      .collection("guestbook")
+      .doc(postId)
+      .collection("likes")
+      .get();
+    likeButton.textContent = `⭐ ${likesSnapshot.size}`;
+  }
+
+  likeButton.addEventListener("click", async () => {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+      alert("Sign in to like posts.");
+      return;
+    }
+
+    const likeDoc = window.db
+      .collection("guestbook")
+      .doc(postId)
+      .collection("likes")
+      .doc(user.uid);
+
+    const docSnapshot = await likeDoc.get();
+    if (docSnapshot.exists) {
+      await likeDoc.delete();
+    } else {
+      await likeDoc.set({
+        likedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+    renderLikeButton();
+  });
+
+  renderLikeButton();
+  return likeButton;
+}
+
+// Comment Section
+function createCommentSection(postId) {
+  const commentButton = document.createElement("button");
+  commentButton.textContent = "💬 Comment";
+
+  const commentSection = document.createElement("div");
+  commentSection.classList.add("comment-section");
+  commentSection.style.display = "none";
+
+  const commentInput = document.createElement("input");
+  commentInput.placeholder = "Add a comment...";
+  const commentSubmit = document.createElement("button");
+  commentSubmit.textContent = "Submit";
+
+  const commentsContainer = document.createElement("div");
+  commentsContainer.classList.add("comments-container");
+
+  commentSubmit.addEventListener("click", async () => {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+      alert("Sign in to comment.");
+      return;
+    }
+
+    const commentText = commentInput.value.trim();
+    if (commentText) {
+      await window.db
+        .collection("guestbook")
+        .doc(postId)
+        .collection("comments")
+        .add({
+          userId: user.uid,
+          message: commentText,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+
+      commentInput.value = "";
+      loadComments(postId, commentsContainer);
+    }
+  });
+
+  commentSection.appendChild(commentInput);
+  commentSection.appendChild(commentSubmit);
+  commentSection.appendChild(commentsContainer);
+
+  commentButton.addEventListener("click", () => {
+    commentSection.style.display =
+      commentSection.style.display === "none" ? "block" : "none";
+    loadComments(postId, commentsContainer);
+  });
+
+  return { button: commentButton, section: commentSection };
+}
+
+async function loadComments(postId, container) {
+  container.innerHTML = "";
+  const commentsSnapshot = await window.db
+    .collection("guestbook")
+    .doc(postId)
+    .collection("comments")
+    .orderBy("timestamp", "asc")
+    .get();
+
+  commentsSnapshot.forEach((doc) => {
+    const comment = doc.data();
+    const commentDiv = document.createElement("div");
+    commentDiv.classList.add("comment");
+    commentDiv.innerHTML = `
+      <strong>${comment.userId}</strong>: ${comment.message} <br>
+      <small>${new Date(comment.timestamp.seconds * 1000).toLocaleString()}</small>
+    `;
+    container.appendChild(commentDiv);
+  });
+}
+
+// Share Button
+function createShareButton(postId, data) {
+  const shareButton = document.createElement("button");
+  shareButton.textContent = "🔗 Share";
+
+  shareButton.addEventListener("click", async () => {
+    const postUrl = `${window.location.origin}/index.html#post-${postId}`;
+    try {
+      await navigator.clipboard.writeText(postUrl);
+      alert("Post link copied to clipboard!");
+    } catch (err) {
+      console.error("Error sharing post:", err);
+    }
+  });
+
+  return shareButton;
+}
+
+// On page load
+window.onload = loadUserProfile;
