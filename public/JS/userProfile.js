@@ -24,8 +24,8 @@ if (!userId) {
     try {
         
       // Fetch user details
-      const userDoc = await window.db.collection("users").doc(userId).get();
-      const userData = userDoc.data();
+      const userDoc = await window.db.collection("users").doc(user.uid).get();
+      const userData = userDoc.exists ? userDoc.data() : { name: "Anonymous User", username: "NoUsername" };
   
       if (!userData) {
         entryPreviewDiv.innerHTML = "<p>User not found.</p>";
@@ -450,7 +450,7 @@ newReplyDiv.innerHTML = `
 `;
 
 // Append the new reply
-replySection.appendChild(newReplyDiv);
+parentElement.appendChild(newReplyDiv);
     } catch (error) {
         console.error("Error submitting reply:", error);
         alert("Failed to submit reply. Please try again.");
