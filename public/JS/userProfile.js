@@ -341,7 +341,9 @@ console.error("Error fetching latest entries:", error);
 // Function to display comments with proper nesting
 async function displayComments(postId, parentElement, parentId = null, indentLevel = 0) {
 
-parentElement.innerHTML = ""; // Clear comments container for top-level comments only
+    if (parentId === null) {
+        parentElement.innerHTML = ""; // Clear top-level comments only
+    }
 
 
 const commentsRef = window.db
@@ -433,7 +435,7 @@ submitReplyButton.addEventListener("click", async () => {
         replySection.style.display = "none";
 
         // Refresh comments to show the new reply
-        displayComments(postId, parentElement, commentId, indentLevel + 1);
+        displayComments(postId, replySection, commentId, indentLevel + 1);
     } catch (error) {
         console.error("Error submitting reply:", error);
         alert("Failed to submit reply. Please try again.");
