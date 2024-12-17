@@ -31,6 +31,10 @@ if (!userId) {
         entryPreviewDiv.innerHTML = "<p>User not found.</p>";
         return;
       }
+
+      entryPreviewDiv.innerHTML = ""; // Start with a clean slate
+
+
   
       // Display user details
       const header = document.createElement("div");
@@ -42,6 +46,20 @@ if (!userId) {
       `;
       entryPreviewDiv.appendChild(header);
 
+      // Step 3: Create a separate container for posts
+      const postsContainer = document.createElement("div");
+      postsContainer.id = "posts-container"; // Unique ID for posts
+      entryPreviewDiv.appendChild(postsContainer); // Add it to the page
+
+      // Step 4: Fetch and display posts
+      displayLatestEntries();
+  } catch (error) {
+      console.error("Error loading user profile:", error);
+      entryPreviewDiv.innerHTML = "<p>Error loading user profile.</p>";
+  }
+}
+const authUser = firebase.auth().currentUser;
+const currentUserId = authUser ? authUser.uid : null;
 // Function to fetch and display the latest entries
 async function displayLatestEntries() {
 try {
@@ -51,10 +69,17 @@ const querySnapshot = await window.db
     .orderBy("timestamp", "desc")
     .get();
 
+    // Get the posts container
+    const postsContainer = document.getElementById("posts-container");
+
+
     if (querySnapshot.empty) {
         entryPreviewDiv.innerHTML += "<p>No posts found for this user.</p>";
         return;
     }
+
+    // Step 2: Clear only the posts container (do not touch the profile header)
+    postsContainer.innerHTML = ""; // Clear previous posts if any
 
     
 
@@ -128,8 +153,7 @@ ${data.name || "Unknown"} (${data.username || "NoUsername"})
 const likeButton = document.createElement("button");
 likeButton.classList.add("like-button");
 
-const authUser = firebase.auth().currentUser;
-const currentUserId = authUser ? authUser.uid : null;
+
 
 if (currentUserId) {
     const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(currentUserId);
@@ -287,12 +311,18 @@ renderLikeButton();
     entryDiv.appendChild(nameElement);
     entryDiv.appendChild(messageElement);
     entryDiv.appendChild(timestampElement);
+
+    // Append the post container to postsContainer
+            postsContainer.appendChild(entryDiv);
+
     if (mediaElement) entryDiv.appendChild(mediaElement);
 
     entryDiv.appendChild(interactionDiv);
     entryDiv.appendChild(commentSection);
 
-    entryPreviewDiv.appendChild(entryDiv);
+    
+
+    
 });
 } catch (error) {
 console.error("Error fetching latest entries:", error);
@@ -421,7 +451,5 @@ displayComments(postId, commentDiv, commentId, indentLevel + 1);
 
 // Call the function to display entries
 window.onload = displayLatestEntries;
-    } catch (error) {
-        console.error("Error loading user profile:", error);
-        entryPreviewDiv.innerHTML = "<p>Error loading user profile.</p>";
-    }}
+   
+
