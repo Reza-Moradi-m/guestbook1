@@ -24,8 +24,8 @@ if (!userId) {
     try {
         
       // Fetch user details
-      const userDoc = await window.db.collection("users").doc(user.uid).get();
-      const userData = userDoc.exists ? userDoc.data() : { name: "Anonymous User", username: "NoUsername" };
+      const userDoc = await window.db.collection("users").doc(userId).get();
+const userData = userDoc.exists ? userDoc.data() : { name: "Anonymous User", username: "NoUsername" };
   
       if (!userData) {
         entryPreviewDiv.innerHTML = "<p>User not found.</p>";
