@@ -472,7 +472,7 @@ commentDiv.appendChild(replySection);
 parentElement.appendChild(commentDiv);
 
 // Fetch replies for this comment
-displayComments(postId, commentDiv, commentId, indentLevel + 1);
+displayComments(postId, parentElement, commentId, indentLevel + 1);
 });
 }
 
