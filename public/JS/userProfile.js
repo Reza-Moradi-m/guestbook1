@@ -9,9 +9,20 @@ if (!userId) {
     alert("No user specified!");
     window.location.href = "index.html";
   }
+
+  firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        console.log("User authenticated:", user.uid);
+        loadUserProfile();
+    } else {
+        console.warn("No user authenticated. Posts may still load without user-specific actions.");
+        loadUserProfile(); // Allow posts to load without authentication
+    }
+});
   
   async function loadUserProfile() {
     try {
+        
       // Fetch user details
       const userDoc = await window.db.collection("users").doc(userId).get();
       const userData = userDoc.data();
@@ -40,7 +51,16 @@ const querySnapshot = await window.db
     .orderBy("timestamp", "desc")
     .get();
 
-entryPreviewDiv.innerHTML = ""; // Clear any existing content
+    if (querySnapshot.empty) {
+        entryPreviewDiv.innerHTML += "<p>No posts found for this user.</p>";
+        return;
+    }
+
+    function clearPostsSection() {
+        const postElements = document.querySelectorAll(".entry");
+        postElements.forEach((el) => el.remove()); // Remove only post elements
+    }
+    clearPostsSection(); // Clear only posts, not the profile header
 
 querySnapshot.forEach(async (doc) => {
     const data = doc.data();
@@ -112,9 +132,13 @@ ${data.name || "Unknown"} (${data.username || "NoUsername"})
 const likeButton = document.createElement("button");
 likeButton.classList.add("like-button");
 
-const userId = firebase.auth().currentUser?.uid;
-const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
-let liked = false;
+const authUser = firebase.auth().currentUser;
+const userId = authUser ? authUser.uid : null;
+
+if (userId) {
+    const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
+    // Continue like button logic...
+    let liked = false;
 
 // Check if user already liked the post
 if (userId) {
@@ -159,6 +183,10 @@ likeButton.innerHTML = `⭐ ${likeCount}`;
 
 likeButton.addEventListener("click", updateLikes);
 renderLikeButton();
+}
+
+
+
 
 
     // Comment button
@@ -334,21 +362,45 @@ cancelReplyButton.addEventListener("click", () => {
 });
 
 submitReplyButton.addEventListener("click", async () => {
+    // Check if the user is authenticated
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        alert("You must be logged in to submit a reply.");
+        return;
+    }
+
     const replyText = replyInput.value.trim();
-    if (replyText) {
+    if (!replyText) {
+        alert("Reply cannot be empty.");
+        return;
+    }
+
+    try {
+        // Fetch user data for author details
+        const userDoc = await window.db.collection("users").doc(user.uid).get();
+        const userData = userDoc.data();
+
         await window.db
             .collection("guestbook")
             .doc(postId)
             .collection("comments")
             .add({
-                author: "Anonymous User", // Replace with actual user
+                author: userData?.name || "Anonymous User", // Get name from user data
+                userId: user.uid, // Add userId for reference
                 message: replyText,
                 parentCommentId: commentId, // Reply to this comment
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             });
-        replyInput.value = ""; // Clear input
-        replySection.style.display = "none"; // Hide reply box after submitting
-        displayComments(postId, parentElement, commentId, indentLevel + 1); // Refresh replies
+
+        // Clear input and hide reply box
+        replyInput.value = "";
+        replySection.style.display = "none";
+
+        // Refresh comments to show the new reply
+        displayComments(postId, parentElement, commentId, indentLevel + 1);
+    } catch (error) {
+        console.error("Error submitting reply:", error);
+        alert("Failed to submit reply. Please try again.");
     }
 });
 
