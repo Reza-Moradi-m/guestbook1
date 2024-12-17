@@ -434,8 +434,23 @@ submitReplyButton.addEventListener("click", async () => {
         replyInput.value = "";
         replySection.style.display = "none";
 
-        // Refresh comments to show the new reply
-        displayComments(postId, replySection, commentId, indentLevel + 1);
+       // Dynamically append the new reply to the DOM
+const newReplyDiv = document.createElement("div");
+newReplyDiv.classList.add("comment");
+newReplyDiv.style.marginLeft = `${(indentLevel + 1) * 20}px`; // Indent reply properly
+newReplyDiv.style.textAlign = "left";
+newReplyDiv.innerHTML = `
+<p>
+<strong>
+    <a href="userProfile.html?userId=${user.uid}" class="user-link">
+        ${userData?.name || "Anonymous User"} (${userData?.username || "NoUsername"})
+    </a>
+</strong>: ${replyText}
+</p>
+`;
+
+// Append the new reply
+replySection.appendChild(newReplyDiv);
     } catch (error) {
         console.error("Error submitting reply:", error);
         alert("Failed to submit reply. Please try again.");
