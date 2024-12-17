@@ -150,63 +150,71 @@ ${data.name || "Unknown"} (${data.username || "NoUsername"})
     const interactionDiv = document.createElement("div");
     interactionDiv.classList.add("interaction-buttons");
 
-    // Like button logic
+
+
+// Like button logic
 const likeButton = document.createElement("button");
 likeButton.classList.add("like-button");
+likeButton.textContent = "⭐ Loading..."; // Placeholder text while loading likes
 
+const likesRef = window.db.collection("guestbook").doc(postId).collection("likes");
+let liked = false; // Default value for liked state
 
+// Fetch like count and determine if current user liked the post
+async function initializeLikes() {
+    try {
+        const likeCount = await likesRef.get(); // Fetch all likes for this post
+        const currentUser = firebase.auth().currentUser;
 
-if (currentUserId) {
-    const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(currentUserId);
-    // Continue like button logic...
-    let liked = false;
+        if (currentUser) {
+            const userLikeDoc = await likesRef.doc(currentUser.uid).get();
+            liked = userLikeDoc.exists; // Check if the user already liked the post
+        }
 
-// Check if user already liked the post
-if (userId) {
-const userLikeDoc = await likesRef.get();
-liked = userLikeDoc.exists;
+        renderLikeButton(likeCount.size); // Update button with total likes
+    } catch (error) {
+        console.error("Error fetching like count:", error);
+        likeButton.textContent = "⭐ Error";
+    }
 }
 
+// Function to update like count and button state
 async function updateLikes() {
-if (!userId) {
-alert("You need to log in to like this post!");
-return;
+    const currentUser = firebase.auth().currentUser;
+
+    if (!currentUser) {
+        alert("You need to log in to like this post!");
+        return;
+    }
+
+    try {
+        const userLikeRef = likesRef.doc(currentUser.uid);
+
+        if (liked) {
+            await userLikeRef.delete(); // Remove the like
+            liked = false;
+        } else {
+            await userLikeRef.set({
+                likedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+            liked = true;
+        }
+
+        const likeCount = (await likesRef.get()).size; // Refresh like count
+        renderLikeButton(likeCount);
+    } catch (error) {
+        console.error("Error updating like:", error);
+        alert("Failed to update like.");
+    }
 }
 
-try {
-if (liked) {
-// Remove the like
-await likesRef.delete();
-liked = false;
-} else {
-// Add a like
-await likesRef.set({
-likedAt: firebase.firestore.FieldValue.serverTimestamp(),
-});
-liked = true;
-}
-renderLikeButton();
-} catch (error) {
-console.error("Error updating like:", error);
-alert("Failed to update like.");
-}
-}
-
-async function getLikeCount() {
-const snapshot = await window.db.collection("guestbook").doc(postId).collection("likes").get();
-return snapshot.size; // Total number of likes
-}
-
-async function renderLikeButton() {
-const likeCount = await getLikeCount();
-likeButton.innerHTML = `⭐ ${likeCount}`;
+// Render the like button with updated count
+function renderLikeButton(likeCount) {
+    likeButton.innerHTML = liked ? `⭐ ${likeCount}` : `☆ ${likeCount}`;
 }
 
 likeButton.addEventListener("click", updateLikes);
-renderLikeButton();
-}
-
-
+initializeLikes(); // Initialize the like button on load
 
 
 
