@@ -90,16 +90,15 @@ querySnapshot.forEach(async (doc) => {
     const entryDiv = document.createElement("div");
     entryDiv.classList.add("entry");
     entryDiv.id = `post-${postId}`; // Add unique ID for each post
-    entryDiv.innerHTML = `
-    <h3>
-        <a href="userProfile.html?userId=${data.userId}" class="user-link">
-            ${data.name || "Unknown"} (${data.username || "NoUsername"})
-        </a>
-    </h3>
-    <p>Message: ${data.message}</p>
-    <p>Posted on: ${new Date(data.timestamp.seconds * 1000).toLocaleString()}</p>
-`;
+    
 
+    // Display clickable username linking to userProfile.html
+const nameElement = document.createElement("h3");
+nameElement.innerHTML = `
+<a href="userProfile.html?userId=${data.userId}" class="user-link">
+${data.name || "Unknown"} (${data.username || "NoUsername"})
+</a>
+`;
 
     const messageElement = document.createElement("p");
     messageElement.textContent = `Message: ${data.message}`;
