@@ -129,10 +129,10 @@ const likeButton = document.createElement("button");
 likeButton.classList.add("like-button");
 
 const authUser = firebase.auth().currentUser;
-const userId = authUser ? authUser.uid : null;
+const currentUserId = authUser ? authUser.uid : null;
 
-if (userId) {
-    const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
+if (currentUserId) {
+    const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(currentUserId);
     // Continue like button logic...
     let liked = false;
 
