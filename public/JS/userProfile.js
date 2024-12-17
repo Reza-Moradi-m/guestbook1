@@ -166,7 +166,7 @@ async function initializeLikes() {
         const likeCount = await likesRef.get(); // Fetch all likes for this post
         const currentUser = firebase.auth().currentUser;
 
-        if (currentUser) {
+        if (currentUser && currentUser.uid) {
             const userLikeDoc = await likesRef.doc(currentUser.uid).get();
             liked = userLikeDoc.exists; // Check if the user already liked the post
         }
@@ -340,9 +340,9 @@ console.error("Error fetching latest entries:", error);
 
 // Function to display comments with proper nesting
 async function displayComments(postId, parentElement, parentId = null, indentLevel = 0) {
-if (parentId === null) {
+
 parentElement.innerHTML = ""; // Clear comments container for top-level comments only
-}
+
 
 const commentsRef = window.db
 .collection("guestbook")
@@ -360,6 +360,7 @@ const commentId = doc.id;
 const commentDiv = document.createElement("div");
 commentDiv.classList.add("comment");
 commentDiv.style.marginLeft = `${indentLevel * 20}px`;
+commentDiv.style.textAlign = "left"; // Align text to the left
 commentDiv.innerHTML = `
 <p>
 <strong>
