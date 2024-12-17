@@ -56,11 +56,7 @@ const querySnapshot = await window.db
         return;
     }
 
-    function clearPostsSection() {
-        const postElements = document.querySelectorAll(".entry");
-        postElements.forEach((el) => el.remove()); // Remove only post elements
-    }
-    clearPostsSection(); // Clear only posts, not the profile header
+    
 
 querySnapshot.forEach(async (doc) => {
     const data = doc.data();
