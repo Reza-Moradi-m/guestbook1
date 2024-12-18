@@ -4,23 +4,27 @@ window.storage = firebase.storage();
 
 const entryPreviewDiv = document.getElementById("entry-preview");
 
-// DOM elements for editing personal profile
+// DOM elements for editing profile
 const profileNameInput = document.getElementById("edit-profile-name");
 const profileUsernameInput = document.getElementById("edit-profile-username");
 const profileEmailInput = document.getElementById("edit-profile-email");
 const profilePictureInput = document.getElementById("edit-profile-picture");
 const saveProfileButton = document.getElementById("save-profile");
 
-// Function to load user's personal profile
-firebase.auth().onAuthStateChanged(async (user) => {
+// Load user's personal profile
+firebase.auth().onAuthStateChanged((user) => {
   if (!user) {
     window.location.href = "auth.html";
     return;
   }
+  loadUserProfile(user.uid);
+  loadUserPosts(user.uid);
+});
 
+// Function to load profile details
+async function loadUserProfile(userId) {
   try {
-    // Fetch user data
-    const userDoc = await window.db.collection("users").doc(user.uid).get();
+    const userDoc = await window.db.collection("users").doc(userId).get();
     const userData = userDoc.data();
 
     if (!userData) {
@@ -28,31 +32,24 @@ firebase.auth().onAuthStateChanged(async (user) => {
       return;
     }
 
-    // Display user details
+    // Display profile data
     document.getElementById("profile-name").textContent = userData.name || "No name set";
     document.getElementById("profile-username").textContent = userData.username || "No username set";
     document.getElementById("profile-picture").src = userData.profilePicture || "images/default-avatar.png";
 
-    // Set values for editable inputs
+    // Set editable values
     profileNameInput.value = userData.name || "";
     profileUsernameInput.value = userData.username || "";
-    profileEmailInput.value = user.email || "";
-
-    // Load user's posts
-    loadUserPosts(user.uid);
+    profileEmailInput.value = firebase.auth().currentUser.email;
   } catch (error) {
-    console.error("Error fetching user profile:", error);
+    console.error("Error loading profile:", error);
   }
-});
+}
 
-// Save updated profile information
+// Save updated profile details
 saveProfileButton.addEventListener("click", async () => {
   const user = firebase.auth().currentUser;
-
-  if (!user) {
-    alert("No user logged in!");
-    return;
-  }
+  if (!user) return;
 
   try {
     const updatedData = {
@@ -60,10 +57,10 @@ saveProfileButton.addEventListener("click", async () => {
       username: profileUsernameInput.value.trim(),
     };
 
-    // Update Firestore user document
+    // Update Firestore
     await window.db.collection("users").doc(user.uid).update(updatedData);
 
-    // Update email if changed
+    // Update email
     if (profileEmailInput.value !== user.email) {
       await user.updateEmail(profileEmailInput.value);
     }
@@ -74,34 +71,30 @@ saveProfileButton.addEventListener("click", async () => {
       const storageRef = window.storage.ref(`profile-pictures/${user.uid}`);
       await storageRef.put(file);
       const fileURL = await storageRef.getDownloadURL();
-
-      // Update profile picture URL in Firestore
-      await window.db.collection("users").doc(user.uid).update({
-        profilePicture: fileURL,
-      });
+      await window.db.collection("users").doc(user.uid).update({ profilePicture: fileURL });
     }
 
     alert("Profile updated successfully!");
     window.location.reload();
   } catch (error) {
     console.error("Error updating profile:", error);
-    alert("Failed to update profile. Please try again.");
   }
 });
 
-// Function to load user's posts with comments, likes, and replies
+// Load user's posts
 async function loadUserPosts(userId) {
   try {
+    const postsContainer = document.getElementById("posts-container");
+    postsContainer.innerHTML = ""; // Clear previous posts
+
     const querySnapshot = await window.db
       .collection("guestbook")
       .where("userId", "==", userId)
       .orderBy("timestamp", "desc")
       .get();
 
-    entryPreviewDiv.innerHTML = ""; // Clear existing content
-
     if (querySnapshot.empty) {
-      entryPreviewDiv.innerHTML = "<p>No posts found.</p>";
+      postsContainer.innerHTML = "<p>No posts yet.</p>";
       return;
     }
 
@@ -111,19 +104,19 @@ async function loadUserPosts(userId) {
 
       const postDiv = document.createElement("div");
       postDiv.classList.add("entry");
-      postDiv.id = `post-${postId}`;
 
-      // Display user details with profile picture
+      // Fetch user details for post
+      const userDoc = await window.db.collection("users").doc(userId).get();
+      const userData = userDoc.data();
+
+      // Post Header
       const nameElement = document.createElement("div");
-      nameElement.classList.add("post-user-info");
       nameElement.innerHTML = `
         <div style="display: flex; align-items: center;">
-          <img src="${data.profilePicture || "images/default-avatar.png"}"
-               alt="Profile Picture"
+          <img src="${userData.profilePicture || "images/default-avatar.png"}" 
+               alt="Profile Picture" 
                style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
-          <a href="userProfile.html?userId=${data.userId}" class="user-link">
-              ${data.name || "Unknown"} (${data.username || "NoUsername"})
-          </a>
+          <span>${userData.name || "Unknown"} (${userData.username || "NoUsername"})</span>
         </div>
       `;
 
@@ -134,127 +127,82 @@ async function loadUserPosts(userId) {
       const timestamp = new Date(data.timestamp.seconds * 1000);
       timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
 
-      // Create interaction buttons (like, comment, share)
       const interactionDiv = document.createElement("div");
-      interactionDiv.classList.add("interaction-buttons");
-
-      const likeButton = createLikeButton(postId);
-      const commentSection = createCommentSection(postId);
-
-      interactionDiv.appendChild(likeButton);
-      interactionDiv.appendChild(commentSection.button);
+      interactionDiv.appendChild(createLikeButton(postId));
+      interactionDiv.appendChild(createCommentSection(postId).button);
 
       postDiv.appendChild(nameElement);
       postDiv.appendChild(messageElement);
       postDiv.appendChild(timestampElement);
       postDiv.appendChild(interactionDiv);
-      postDiv.appendChild(commentSection.section);
 
-      entryPreviewDiv.appendChild(postDiv);
+      postsContainer.appendChild(postDiv);
     });
   } catch (error) {
-    console.error("Error fetching posts:", error);
+    console.error("Error loading posts:", error);
   }
 }
 
-// Like Button
+// Like button
 function createLikeButton(postId) {
   const likeButton = document.createElement("button");
   likeButton.textContent = "⭐ Loading...";
 
-  async function renderLikeButton() {
+  async function renderLike() {
     const likesSnapshot = await window.db.collection("guestbook").doc(postId).collection("likes").get();
     likeButton.textContent = `⭐ ${likesSnapshot.size}`;
   }
 
   likeButton.addEventListener("click", async () => {
     const user = firebase.auth().currentUser;
-    if (!user) {
-      alert("Sign in to like posts.");
-      return;
-    }
+    if (!user) return;
 
-    const likeDoc = window.db.collection("guestbook").doc(postId).collection("likes").doc(user.uid);
+    const likeRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(user.uid);
+    const likeSnapshot = await likeRef.get();
 
-    const docSnapshot = await likeDoc.get();
-    if (docSnapshot.exists) {
-      await likeDoc.delete();
+    if (likeSnapshot.exists) {
+      await likeRef.delete();
     } else {
-      await likeDoc.set({ likedAt: firebase.firestore.FieldValue.serverTimestamp() });
+      await likeRef.set({ likedAt: firebase.firestore.FieldValue.serverTimestamp() });
     }
-    renderLikeButton();
+    renderLike();
   });
 
-  renderLikeButton();
+  renderLike();
   return likeButton;
 }
 
-// Comment Section
+// Comment section
 function createCommentSection(postId) {
-  const commentButton = document.createElement("button");
-  commentButton.textContent = "💬 Comment";
+  const button = document.createElement("button");
+  button.textContent = "💬 Comment";
 
-  const commentSection = document.createElement("div");
-  commentSection.classList.add("comment-section");
-  commentSection.style.display = "none";
+  const section = document.createElement("div");
+  section.style.display = "none";
 
-  const commentInput = document.createElement("input");
-  commentInput.placeholder = "Add a comment...";
-  const commentSubmit = document.createElement("button");
-  commentSubmit.textContent = "Submit";
+  const input = document.createElement("input");
+  input.placeholder = "Write a comment...";
+  const submit = document.createElement("button");
+  submit.textContent = "Submit";
 
-  const commentsContainer = document.createElement("div");
-  commentsContainer.classList.add("comments-container");
-
-  commentSubmit.addEventListener("click", async () => {
+  submit.addEventListener("click", async () => {
     const user = firebase.auth().currentUser;
-    if (!user) {
-      alert("Sign in to comment.");
-      return;
-    }
+    if (!user) return;
 
-    const commentText = commentInput.value.trim();
-    if (commentText) {
-      await window.db.collection("guestbook").doc(postId).collection("comments").add({
-        userId: user.uid,
-        message: commentText,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-
-      commentInput.value = "";
-      loadComments(postId, commentsContainer);
-    }
+    await window.db.collection("guestbook").doc(postId).collection("comments").add({
+      userId: user.uid,
+      message: input.value.trim(),
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    input.value = "";
   });
 
-  commentSection.appendChild(commentInput);
-  commentSection.appendChild(commentSubmit);
-  commentSection.appendChild(commentsContainer);
-
-  commentButton.addEventListener("click", () => {
-    commentSection.style.display = commentSection.style.display === "none" ? "block" : "none";
-    loadComments(postId, commentsContainer);
+  button.addEventListener("click", () => {
+    section.style.display = section.style.display === "none" ? "block" : "none";
   });
 
-  return { button: commentButton, section: commentSection };
-}
+  section.appendChild(input);
+  section.appendChild(submit);
 
-async function loadComments(postId, container) {
-  container.innerHTML = "";
-  const commentsSnapshot = await window.db
-    .collection("guestbook")
-    .doc(postId)
-    .collection("comments")
-    .orderBy("timestamp", "asc")
-    .get();
-
-  commentsSnapshot.forEach((doc) => {
-    const comment = doc.data();
-    const commentDiv = document.createElement("div");
-    commentDiv.classList.add("comment");
-    commentDiv.innerHTML = `
-      <strong>${comment.userId}</strong>: ${comment.message} <br>
-      <small>${new Date(comment.timestamp.seconds * 1000).toLocaleString()}</small>
-    `;
-    container.appendChild(commentDiv);
-  });
+  return { button, section };
 }
