@@ -93,11 +93,21 @@ querySnapshot.forEach(async (doc) => {
     
 
     // Display clickable username linking to userProfile.html
-const nameElement = document.createElement("h3");
+// Fetch user profile picture for each post
+const userDoc = await window.db.collection("users").doc(data.userId).get();
+const postUserData = userDoc.data();
+
+const nameElement = document.createElement("div");
+nameElement.classList.add("post-user-info");
 nameElement.innerHTML = `
-<a href="userProfile.html?userId=${data.userId}" class="user-link">
-${data.name || "Unknown"} (${data.username || "NoUsername"})
-</a>
+  <div style="display: flex; align-items: center;">
+    <img src="${postUserData?.profilePicture || 'images/default-avatar.png'}" 
+         alt="Profile Picture" 
+         style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+    <a href="userProfile.html?userId=${data.userId}" class="user-link">
+        ${postUserData?.name || "Unknown"} (${postUserData?.username || "NoUsername"})
+    </a>
+  </div>
 `;
 
     const messageElement = document.createElement("p");
@@ -361,11 +371,11 @@ const commentId = doc.id;
 
 const commentDiv = document.createElement("div");
 commentDiv.classList.add("comment");
-commentDiv.style.marginLeft = `${indentLevel * 20}px`;
+commentDiv.style.marginLeft = parentId === null ? "20px" : "0"; // Only indent top-level replies
 commentDiv.style.textAlign = "left"; // Align text to the left
 commentDiv.innerHTML = `
-<p>
-<strong>
+<p class="comment-text">
+<strong class="comment-author">
     <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
         ${commentData.author} (${commentData.username})
     </a>
@@ -418,17 +428,14 @@ submitReplyButton.addEventListener("click", async () => {
         const userDoc = await window.db.collection("users").doc(user.uid).get();
         const userData = userDoc.data();
 
-        await window.db
-            .collection("guestbook")
-            .doc(postId)
-            .collection("comments")
-            .add({
-                author: userData?.name || "Anonymous User", // Get name from user data
-                userId: user.uid, // Add userId for reference
-                message: replyText,
-                parentCommentId: commentId, // Reply to this comment
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            });
+        const repliedTo = commentData.author; // Capture the author of the comment being replied to
+await window.db.collection("guestbook").doc(postId).collection("comments").add({
+    author: userData?.name || "Anonymous User",
+    userId: user.uid,
+    message: `@${repliedTo} ${replyText}`, // Include replied username
+    parentCommentId: commentId,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+});
 
         // Clear input and hide reply box
         replyInput.value = "";
