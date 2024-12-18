@@ -429,15 +429,14 @@ submitReplyButton.addEventListener("click", async () => {
         const userData = userDoc.data();
 
        
-        const repliedTo = commentData.author; // Capture the author of the comment being replied to
-        await window.db.collection("guestbook").doc(postId).collection("comments").add({
-            author: userData?.name || "Anonymous User", // Current reply author
-            userId: user.uid, // ID of the current reply author
-            message: `@${repliedTo} ${replyText}`, // Prefix reply text with the username
-            parentCommentId: commentId, // Parent comment ID for nesting
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-
+        const repliedTo = commentData.username || "NoUsername"; // Use the username of the person being replied to
+await window.db.collection("guestbook").doc(postId).collection("comments").add({
+    author: userData?.name || "Anonymous User", // Current reply author
+    userId: user.uid, // ID of the current reply author
+    message: `@${repliedTo} ${replyText}`, // Prefix reply text with the username
+    parentCommentId: commentId, // Parent comment ID for nesting
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+});
         // Clear input and hide reply box
         replyInput.value = "";
         replySection.style.display = "none";
