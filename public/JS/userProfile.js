@@ -424,16 +424,28 @@ submitReplyButton.addEventListener("click", async () => {
     }
 
     try {
-        // Fetch user data for author details
-        const userDoc = await window.db.collection("users").doc(user.uid).get();
-        const userData = userDoc.data();
+       
 
        
-        const repliedTo = commentData.username || "NoUsername"; // Use the username of the person being replied to
+        // Fetch the user data for the current user
+const userDoc = await window.db.collection("users").doc(user.uid).get();
+const userData = userDoc.exists ? userDoc.data() : null;
+
+if (!userData || !userData.username) {
+    console.error("Error: Username for current user not found.");
+    alert("Your profile is missing a username. Please update it before replying.");
+    return;
+}
+
+// Ensure 'commentData.username' exists for the person being replied to
+const repliedTo = commentData.username || "UnknownUser"; // Fallback if username is missing
+
+// Add the reply to Firestore
 await window.db.collection("guestbook").doc(postId).collection("comments").add({
-    author: userData?.name || "Anonymous User", // Current reply author
+    author: userData.name || "Anonymous User", // Current reply author
+    username: userData.username || "NoUsername", // Current reply author's username
     userId: user.uid, // ID of the current reply author
-    message: `@${repliedTo} ${replyText}`, // Prefix reply text with the username
+    message: `@${repliedTo} ${replyText}`, // Prefix reply text with the replied-to username
     parentCommentId: commentId, // Parent comment ID for nesting
     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
 });
