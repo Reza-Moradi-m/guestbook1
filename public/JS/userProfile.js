@@ -46,13 +46,17 @@ const userData = userDoc.exists ? userDoc.data() : { name: "Anonymous User", use
       `;
       entryPreviewDiv.appendChild(header);
 
-      // Step 3: Create a separate container for posts
-      const postsContainer = document.createElement("div");
-      postsContainer.id = "posts-container"; // Unique ID for posts
-      entryPreviewDiv.appendChild(postsContainer); // Add it to the page
+      // Step 3: Check if postsContainer already exists; if not, create it
+let postsContainer = document.getElementById("posts-container");
 
-      // Step 4: Fetch and display posts
-      displayLatestEntries();
+if (!postsContainer) {
+    postsContainer = document.createElement("div");
+    postsContainer.id = "posts-container"; // Unique ID for posts
+    entryPreviewDiv.appendChild(postsContainer); // Add it to the page
+}
+
+// Step 4: Fetch and display posts
+displayLatestEntries();
   } catch (error) {
       console.error("Error loading user profile:", error);
       entryPreviewDiv.innerHTML = "<p>Error loading user profile.</p>";
