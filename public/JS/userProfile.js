@@ -371,7 +371,7 @@ const commentId = doc.id;
 
 const commentDiv = document.createElement("div");
 commentDiv.classList.add("comment");
-commentDiv.style.marginLeft = parentId === null ? "20px" : "0"; // Only indent top-level replies
+commentDiv.style.marginLeft = parentId === null ? "20px" : "40px";
 commentDiv.style.textAlign = "left"; // Align text to the left
 commentDiv.innerHTML = `
 <p class="comment-text">
@@ -428,14 +428,15 @@ submitReplyButton.addEventListener("click", async () => {
         const userDoc = await window.db.collection("users").doc(user.uid).get();
         const userData = userDoc.data();
 
+       
         const repliedTo = commentData.author; // Capture the author of the comment being replied to
-await window.db.collection("guestbook").doc(postId).collection("comments").add({
-    author: userData?.name || "Anonymous User",
-    userId: user.uid,
-    message: `@${repliedTo} ${replyText}`, // Include replied username
-    parentCommentId: commentId,
-    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-});
+        await window.db.collection("guestbook").doc(postId).collection("comments").add({
+            author: userData?.name || "Anonymous User", // Current reply author
+            userId: user.uid, // ID of the current reply author
+            message: `@${repliedTo} ${replyText}`, // Prefix reply text with the username
+            parentCommentId: commentId, // Parent comment ID for nesting
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        });
 
         // Clear input and hide reply box
         replyInput.value = "";
