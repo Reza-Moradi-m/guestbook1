@@ -10,9 +10,13 @@ firebase.auth().onAuthStateChanged(async (user) => {
         console.log("User authenticated:", user.uid);
         userId = user.uid; // Assign the user ID
 
-        // Call both functions after userId is defined
-        await loadUserProfile();
-        await displayLatestEntries();
+        // Wait until `userId` is set, then call the functions
+        try {
+            await loadUserProfile();
+            await displayLatestEntries();
+        } catch (error) {
+            console.error("Error loading user profile or entries:", error);
+        }
     } else {
         console.warn("No user authenticated. Redirecting to login.");
         window.location.href = "auth.html"; // Redirect unauthenticated users to login
