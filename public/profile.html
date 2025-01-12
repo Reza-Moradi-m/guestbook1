@@ -25,19 +25,22 @@
     </nav>
   </header>
   
-
   <main>
     <h1>Your Profile</h1>
     <p>Manage your account and activity on this page.</p>
-    <!-- Add profile management features here -->
+
+    <!-- Profile Section -->
     <section id="profile">
-      <img id="profile-picture" src="images/default-avatar.png" alt="Profile Picture">
-      <p><strong>Name:</strong> <span id="profile-name"></span></p>
-      <p><strong>Username:</strong> <span id="profile-username"></span></p>
-      <p><strong>Email:</strong> <span id="profile-email"></span></p>
-      <button id="edit-profile-button">Edit Profile</button>
+      <div class="profile-header">
+        <img id="profile-picture" src="images/default-avatar.png" alt="Profile Picture" class="profile-pic">
+        <h2 id="profile-name">Name Placeholder</h2>
+        <p><strong>Username:</strong> <span id="profile-username">Username Placeholder</span></p>
+        <p><strong>Email:</strong> <span id="profile-email">Email Placeholder</span></p>
+        <button id="edit-profile-button">Edit Profile</button>
+      </div>
     </section>
 
+    <!-- Edit Profile Section -->
     <section id="edit-profile-section" style="display: none;">
       <form id="edit-profile-form">
         <input type="text" id="edit-name" placeholder="Name">
@@ -50,25 +53,25 @@
       <button id="cancel-edit-button">Cancel</button>
     </section>
 
+    <!-- User Posts Section -->
     <section id="latest-entry">
-      <h2>your posts</h2>
-      
+      <h2>Your Posts</h2>
       <div id="entry-preview">
-          <!-- Content will be dynamically inserted here -->
+        <!-- Posts will be dynamically inserted here -->
       </div>
-  </section>
+    </section>
 
-  <!-- Popup Modal for Delete Confirmation -->
-  <div id="delete-popup" class="popup" style="display: none;">
-    <div class="popup-content">
-      <p>Are you sure you want to delete your post?</p>
-      <button id="confirm-delete">Yes</button>
-      <button id="cancel-delete">No</button>
+    <!-- Popup Modal for Delete Confirmation -->
+    <div id="delete-popup" class="popup" style="display: none;">
+      <div class="popup-content">
+        <p>Are you sure you want to delete your post?</p>
+        <button id="confirm-delete">Yes</button>
+        <button id="cancel-delete">No</button>
+      </div>
     </div>
-  </div>
   </main>
+
   <script src="JS/common.js"></script>
-<script src="JS/profile.js"></script>
-  
+  <script src="JS/profile.js"></script>
 </body>
 </html>
