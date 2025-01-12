@@ -10,10 +10,9 @@ firebase.auth().onAuthStateChanged(async (user) => {
         console.log("User authenticated:", user.uid);
         userId = user.uid; // Ensure `userId` is set
 
+        // Wait until userId is fully assigned, then load data
         try {
-            // Load user profile and entries only after `userId` is set
-            await loadUserProfile();
-            await displayLatestEntries();
+            await Promise.all([loadUserProfile(), displayLatestEntries()]);
         } catch (error) {
             console.error("Error loading user profile or entries:", error);
         }
@@ -113,7 +112,7 @@ document.getElementById("edit-profile-form").addEventListener("submit", async (e
 async function displayLatestEntries() {
 try {
     if (!userId) {
-        console.error("User ID is undefined. Cannot fetch entries.", error);
+        console.error("User ID is undefined. Cannot fetch entries.");
         return;
     }
 
