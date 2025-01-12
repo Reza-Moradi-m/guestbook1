@@ -1,14 +1,20 @@
 // Attach Firestore and Storage to `window` for global access
 window.db = firebase.firestore();
 window.storage = firebase.storage();
-const urlParams = new URLSearchParams(window.location.search);
-const userId = urlParams.get("userId");
 // Reference to the entry preview div
 const entryPreviewDiv = document.getElementById("entry-preview");
-if (!userId) {
-    alert("No user specified!");
-    window.location.href = "index.html";
-  }
+let userId;
+
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        console.log("User authenticated:", user.uid);
+        userId = user.uid; // Use the logged-in user's ID
+        loadUserProfile();
+    } else {
+        console.warn("No user authenticated. Redirecting to login.");
+        window.location.href = "auth.html"; // Redirect unauthenticated users to the login page
+    }
+});
 
   firebase.auth().onAuthStateChanged((user) => {
     if (user) {
