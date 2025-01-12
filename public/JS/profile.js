@@ -110,7 +110,6 @@ async function displayLatestEntries() {
 try {
     if (!userId) {
         console.error("User ID is undefined. Cannot fetch entries.");
-        document.getElementById("posts-container").innerHTML = "<p>Cannot load posts. Please log in.</p>";
         return;
     }
 const querySnapshot = await window.db
