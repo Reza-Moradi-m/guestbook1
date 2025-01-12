@@ -427,3 +427,6 @@ form label {
 .reply-section {
   margin-top: 5px;
 }
+main h1, main p {
+  color: #faef1d;
+}
