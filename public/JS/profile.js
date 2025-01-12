@@ -142,22 +142,18 @@ const querySnapshot = await window.db
 
     
 
-    querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        const entryDiv = document.createElement("div");
-        entryDiv.classList.add("entry");
-        entryDiv.innerHTML = `
-            <p><strong>Message:</strong> ${data.message}</p>
-            <p><strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}</p>
-        `;
-        postsContainer.appendChild(entryDiv);
-    });
+querySnapshot.forEach(async (doc) => {
+    const data = doc.data();
     const postId = doc.id;
 
     const entryDiv = document.createElement("div");
     entryDiv.classList.add("entry");
     entryDiv.id = `post-${postId}`; // Add unique ID for each post
-    
+    entryDiv.innerHTML = `
+                <p><strong>Message:</strong> ${data.message}</p>
+                <p><strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}</p>
+            `;
+            postsContainer.appendChild(entryDiv);
 
     // Display clickable username linking to userProfile.html
 // Fetch user profile picture for each post
