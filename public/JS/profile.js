@@ -5,59 +5,58 @@ window.storage = firebase.storage();
 const entryPreviewDiv = document.getElementById("entry-preview");
 let userId;
 
-firebase.auth().onAuthStateChanged((user) => {
+firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
         console.log("User authenticated:", user.uid);
-        userId = user.uid; // Use the logged-in user's ID
-        loadUserProfile();
+        userId = user.uid; // Assign the user ID
+
+        // Call both functions after userId is defined
+        await loadUserProfile();
+        await displayLatestEntries();
     } else {
         console.warn("No user authenticated. Redirecting to login.");
-        window.location.href = "auth.html"; // Redirect unauthenticated users to the login page
-    }
-});
-
-  firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        console.log("User authenticated:", user.uid);
-        loadUserProfile();
-    } else {
-        console.warn("No user authenticated. Posts may still load without user-specific actions.");
-        loadUserProfile(); // Allow posts to load without authentication
+        window.location.href = "auth.html"; // Redirect unauthenticated users to login
     }
 });
   
 // AFTER Code in `profile.js`
 async function loadUserProfile() {
     try {
-        // Fetch user details from Firestore
-        const userDoc = await window.db.collection("users").doc(userId).get();
-        const userData = userDoc.exists ? userDoc.data() : null;
-
-        if (!userData) {
-            console.error("User not found or data is missing.");
-            document.getElementById("profile-name").innerText = "Anonymous User";
-            document.getElementById("profile-username").innerText = "NoUsername";
-            document.getElementById("profile-email").innerText = "No Email";
-            document.getElementById("profile-picture").src = "images/default-avatar.png";
+        if (!userId) {
+            console.error("User ID is undefined. Cannot load user profile.");
             return;
         }
 
-        // Display user details in the profile section
+        // Fetch user details from Firestore
+        const userDoc = await window.db.collection("users").doc(userId).get();
+
+        if (!userDoc.exists) {
+            console.warn("User document not found in Firestore.");
+            setDefaultProfile(); // Set default values for missing user
+            return;
+        }
+
+        const userData = userDoc.data();
+
+        // Safely assign profile data with fallbacks for missing fields
         document.getElementById("profile-name").innerText = userData.name || "Anonymous User";
         document.getElementById("profile-username").innerText = userData.username || "NoUsername";
         document.getElementById("profile-email").innerText = userData.email || "No Email";
         document.getElementById("profile-picture").src = userData.profilePicture || "images/default-avatar.png";
 
-        console.log("User details successfully loaded:", userData);
+        console.log("User profile loaded successfully:", userData);
     } catch (error) {
         console.error("Error loading user profile:", error);
-
-        // Fallback to default values in case of an error
-        document.getElementById("profile-name").innerText = "Anonymous User";
-        document.getElementById("profile-username").innerText = "NoUsername";
-        document.getElementById("profile-email").innerText = "No Email";
-        document.getElementById("profile-picture").src = "images/default-avatar.png";
+        setDefaultProfile(); // Set default values in case of an error
     }
+}
+
+// Helper function to set default profile values
+function setDefaultProfile() {
+    document.getElementById("profile-name").innerText = "Anonymous User";
+    document.getElementById("profile-username").innerText = "NoUsername";
+    document.getElementById("profile-email").innerText = "No Email";
+    document.getElementById("profile-picture").src = "images/default-avatar.png";
 }
 const authUser = firebase.auth().currentUser;
 const currentUserId = authUser ? authUser.uid : null;
@@ -109,6 +108,11 @@ document.getElementById("edit-profile-form").addEventListener("submit", async (e
 // Function to fetch and display the latest entries
 async function displayLatestEntries() {
 try {
+    if (!userId) {
+        console.error("User ID is undefined. Cannot fetch entries.");
+        document.getElementById("posts-container").innerHTML = "<p>Cannot load posts. Please log in.</p>";
+        return;
+    }
 const querySnapshot = await window.db
     .collection("guestbook")
     .where("userId", "==", userId)
