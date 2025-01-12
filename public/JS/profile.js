@@ -26,43 +26,37 @@ firebase.auth().onAuthStateChanged((user) => {
     }
 });
   
+// AFTER Code in `profile.js`
 async function loadUserProfile() {
     try {
         // Fetch user details from Firestore
         const userDoc = await window.db.collection("users").doc(userId).get();
+        const userData = userDoc.exists ? userDoc.data() : null;
 
-        if (!userDoc.exists) {
-            console.error("User not found in Firestore.");
-            entryPreviewDiv.innerHTML = "<p>User not found.</p>";
+        if (!userData) {
+            console.error("User not found or data is missing.");
+            document.getElementById("profile-name").innerText = "Anonymous User";
+            document.getElementById("profile-username").innerText = "NoUsername";
+            document.getElementById("profile-email").innerText = "No Email";
+            document.getElementById("profile-picture").src = "images/default-avatar.png";
             return;
         }
 
-        const userData = userDoc.data();
-
-        // Populate profile section fields with fetched user data
+        // Display user details in the profile section
+        document.getElementById("profile-name").innerText = userData.name || "Anonymous User";
+        document.getElementById("profile-username").innerText = userData.username || "NoUsername";
+        document.getElementById("profile-email").innerText = userData.email || "No Email";
         document.getElementById("profile-picture").src = userData.profilePicture || "images/default-avatar.png";
-        document.getElementById("profile-name").textContent = userData.name || "No name provided";
-        document.getElementById("profile-username").textContent = userData.username || "No username provided";
 
-        // Use Firebase Authentication to get the email (not stored in Firestore)
-        const authUser = firebase.auth().currentUser;
-        document.getElementById("profile-email").textContent = authUser ? authUser.email : "No email provided";
-
-        console.log("Profile data loaded successfully.");
-
-        // Check if postsContainer exists; if not, create it
-        let postsContainer = document.getElementById("posts-container");
-        if (!postsContainer) {
-            postsContainer = document.createElement("div");
-            postsContainer.id = "posts-container"; // Unique ID for posts
-            entryPreviewDiv.appendChild(postsContainer); // Add it to the page
-        }
-
-        // Step 4: Fetch and display posts
-        displayLatestEntries();
+        console.log("User details successfully loaded:", userData);
     } catch (error) {
         console.error("Error loading user profile:", error);
-        entryPreviewDiv.innerHTML = "<p>Error loading user profile.</p>";
+
+        // Fallback to default values in case of an error
+        document.getElementById("profile-name").innerText = "Anonymous User";
+        document.getElementById("profile-username").innerText = "NoUsername";
+        document.getElementById("profile-email").innerText = "No Email";
+        document.getElementById("profile-picture").src = "images/default-avatar.png";
     }
 }
 const authUser = firebase.auth().currentUser;
