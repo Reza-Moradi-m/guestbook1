@@ -8,18 +8,17 @@ let userId;
 firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
         console.log("User authenticated:", user.uid);
-        userId = user.uid; // Assign the user ID
+        userId = user.uid;
 
-        // Wait until `userId` is set, then call the functions
         try {
             await loadUserProfile();
-            await displayLatestEntries();
+            await displayLatestEntries(); // Ensure this runs only after `userId` is set
         } catch (error) {
-            console.error("Error loading user profile or entries:", error);
+            console.error("Error loading profile or entries:", error);
         }
     } else {
         console.warn("No user authenticated. Redirecting to login.");
-        window.location.href = "auth.html"; // Redirect unauthenticated users to login
+        window.location.href = "auth.html"; // Redirect unauthenticated users
     }
 });
   
@@ -116,14 +115,21 @@ try {
         console.error("User ID is undefined. Cannot fetch entries.");
         return;
     }
+
+     // Get the posts container
+     const postsContainer = document.getElementById("posts-container");
+     if (!postsContainer) {
+         console.error("Posts container not found in the DOM.");
+         return;
+     }
+
 const querySnapshot = await window.db
     .collection("guestbook")
     .where("userId", "==", userId)
     .orderBy("timestamp", "desc")
     .get();
 
-    // Get the posts container
-    const postsContainer = document.getElementById("posts-container");
+    
 
 
     if (querySnapshot.empty) {
@@ -136,8 +142,16 @@ const querySnapshot = await window.db
 
     
 
-querySnapshot.forEach(async (doc) => {
-    const data = doc.data();
+    querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        const entryDiv = document.createElement("div");
+        entryDiv.classList.add("entry");
+        entryDiv.innerHTML = `
+            <p><strong>Message:</strong> ${data.message}</p>
+            <p><strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}</p>
+        `;
+        postsContainer.appendChild(entryDiv);
+    });
     const postId = doc.id;
 
     const entryDiv = document.createElement("div");
