@@ -8,17 +8,18 @@ let userId;
 firebase.auth().onAuthStateChanged(async (user) => {
     if (user) {
         console.log("User authenticated:", user.uid);
-        userId = user.uid;
+        userId = user.uid; // Ensure `userId` is set
 
         try {
+            // Load user profile and entries only after `userId` is set
             await loadUserProfile();
-            await displayLatestEntries(); // Ensure this runs only after `userId` is set
+            await displayLatestEntries();
         } catch (error) {
-            console.error("Error loading profile or entries:", error);
+            console.error("Error loading user profile or entries:", error);
         }
     } else {
         console.warn("No user authenticated. Redirecting to login.");
-        window.location.href = "auth.html"; // Redirect unauthenticated users
+        window.location.href = "auth.html"; // Redirect to login
     }
 });
   
@@ -112,7 +113,7 @@ document.getElementById("edit-profile-form").addEventListener("submit", async (e
 async function displayLatestEntries() {
 try {
     if (!userId) {
-        console.error("User ID is undefined. Cannot fetch entries.");
+        console.error("User ID is undefined. Cannot fetch entries.", error);
         return;
     }
 
