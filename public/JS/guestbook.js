@@ -45,6 +45,8 @@ messageForm.addEventListener("submit", async (event) => {
             fileURL,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
+        // Update the document with the postId
+        await docRef.update({ postId: docRef.id });
 
         alert("Post uploaded successfully!");
         messageForm.reset();
@@ -80,11 +82,13 @@ async function displayMessages() {
                     ? `<button onclick="deletePost('${doc.id}')">Delete</button>`
                     : "";
 
-            messageElement.innerHTML = `
-                <p><strong>${data.name} (${data.username}):</strong> ${data.message}</p>
-                ${fileLink}
-                ${deleteButton}
-            `;
+                    messageElement.innerHTML = `
+                      <p><strong>${data.name} (${data.username}):</strong>
+                        <a href="post.html?postId=${doc.id}" class="post-link">${data.message}</a>
+                      </p>
+                      ${fileLink}
+                      ${deleteButton}
+                    `;
             messagesDiv.appendChild(messageElement);
         });
     } catch (error) {

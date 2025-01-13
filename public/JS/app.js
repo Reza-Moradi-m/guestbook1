@@ -33,7 +33,9 @@ nameElement.innerHTML = `
 `;
 
             const messageElement = document.createElement("p");
-            messageElement.textContent = `Message: ${data.message}`;
+            messageElement.innerHTML = `
+              Message: <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
+            `;
 
             const timestampElement = document.createElement("p");
             const timestamp = new Date(data.timestamp.seconds * 1000);
