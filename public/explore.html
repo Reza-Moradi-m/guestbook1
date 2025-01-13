@@ -26,26 +26,23 @@
   </header>
   <main>
     <h1>Explore</h1>
-    <p>Discover amazing posts and accounts in the community!</p>
+    <p>Discover amazing posts from users in the community!</p>
 
-    <!-- Search Bar and Filters -->
-    <section id="search-section">
-      <input id="search-input" type="text" placeholder="Search by name, username, or post text..." />
+    <!-- Search Bar -->
+    <div id="search-bar">
+      <input type="text" id="search-input" placeholder="Search for posts or users..." />
       <select id="search-type">
         <option value="name">Name</option>
         <option value="username">Username</option>
         <option value="postText">Post Text</option>
       </select>
       <button id="search-button">Search</button>
-    </section>
+    </div>
 
-    <!-- Search Results -->
-    <section id="results-section">
-      <h2>Search Results</h2>
-      <ul id="results-list">
-        <!-- Results will be dynamically added here -->
-      </ul>
-    </section>
+    <!-- Results List -->
+    <ul id="results-list">
+      <!-- Search results will appear here -->
+    </ul>
   </main>
   <script src="JS/explore.js"></script>
   <script src="JS/common.js"></script>
