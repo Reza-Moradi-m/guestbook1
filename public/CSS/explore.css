@@ -40,3 +40,42 @@
     text-align: center;
   }
   
+
+
+
+
+  
+  #search-section {
+    margin-bottom: 20px;
+  }
+  
+  #search-section input,
+  #search-section select,
+  #search-section button {
+    margin: 5px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  
+  #results-list {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .result-item {
+    background: #fff;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+  }
+  
+  .result-item a {
+    color: #007BFF;
+    text-decoration: none;
+  }
+  
+  .result-item a:hover {
+    text-decoration: underline;
+  }
