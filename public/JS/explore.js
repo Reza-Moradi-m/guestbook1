@@ -1,5 +1,4 @@
 // Attach Firestore and Storage to `window` for global access
-// These variables are already set in common.js
 window.db = firebase.firestore();
 window.storage = firebase.storage();
 
@@ -44,8 +43,8 @@ searchButton.addEventListener("click", async () => {
 async function searchByName(query) {
   const querySnapshot = await db
     .collection("users")
-    .where("name", ">=", query)
-    .where("name", "<=", query + "\uf8ff")
+    .where("nameLower", ">=", query.toLowerCase())
+    .where("nameLower", "<=", query.toLowerCase() + "\uf8ff")
     .get();
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), type: "user" }));
 }
@@ -54,8 +53,8 @@ async function searchByName(query) {
 async function searchByUsername(query) {
   const querySnapshot = await db
     .collection("users")
-    .where("username", ">=", query)
-    .where("username", "<=", query + "\uf8ff")
+    .where("username", ">=", query.toLowerCase())
+    .where("username", "<=", query.toLowerCase() + "\uf8ff")
     .get();
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), type: "user" }));
 }
@@ -64,8 +63,8 @@ async function searchByUsername(query) {
 async function searchByPostText(query) {
   const querySnapshot = await db
     .collection("guestbook")
-    .where("message", ">=", query)
-    .where("message", "<=", query + "\uf8ff")
+    .where("message", ">=", query.toLowerCase())
+    .where("message", "<=", query.toLowerCase() + "\uf8ff")
     .get();
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), type: "post" }));
 }
@@ -83,7 +82,7 @@ function displayResults(results, type) {
 
     if (type === "name" || type === "username") {
       listItem.innerHTML = `
-        <strong>${result.name || result.username || "Unknown User"}</strong>
+        <strong>${result.name}</strong>
         <a href="userProfile.html?userId=${result.id}">View Profile</a>
       `;
     } else if (type === "postText") {
