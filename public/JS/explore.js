@@ -7,6 +7,7 @@ const searchInput = document.getElementById("search-input");
 const searchType = document.getElementById("search-type");
 const searchButton = document.getElementById("search-button");
 const resultsList = document.getElementById("results-list");
+const randomPostsContainer = document.getElementById("random-posts-container");
 
 // Event listener for the search button
 searchButton.addEventListener("click", async () => {
@@ -95,3 +96,32 @@ function displayResults(results, type) {
     resultsList.appendChild(listItem);
   });
 }
+
+// Fetch and display random posts
+async function displayRandomPosts() {
+  try {
+    const querySnapshot = await db.collection("guestbook").limit(10).get();
+    randomPostsContainer.innerHTML = "";
+
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const postId = doc.id;
+
+      const postDiv = document.createElement("div");
+      postDiv.classList.add("post");
+      postDiv.innerHTML = `
+        <p><strong>${data.name || "Unknown"} (${data.username || "NoUsername"})</strong></p>
+        <p>${data.message}</p>
+        <a href="post.html?postId=${postId}" class="post-link">View Post</a>
+      `;
+
+      randomPostsContainer.appendChild(postDiv);
+    });
+  } catch (error) {
+    console.error("Error fetching random posts:", error);
+    randomPostsContainer.innerHTML = "<p>Failed to load random posts.</p>";
+  }
+}
+
+// Load random posts on page load
+window.onload = displayRandomPosts;
