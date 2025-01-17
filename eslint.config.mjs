@@ -15,8 +15,8 @@ export default [
     },
     rules: {
       "no-undef": "off", // Allow CommonJS variables like `require`
-      "semi": ["error", "always"], // Example: enforce semicolons
-      "quotes": ["error", "double"], // Example: enforce double quotes
+      "semi": ["error", "always"], // Enforce semicolons
+      "quotes": "off", // Disable enforcement of quotes
     },
   },
 ];

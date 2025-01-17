@@ -115,7 +115,7 @@ function updateUserStatus() {
         }
       });
     } else {
-      userStatus.innerHTML = `<a href="auth.html">Sign In</a>`;
+      userStatus.innerHTML = ""`<a href="auth.html">Sign In</a>`;
     }
   });
 }
