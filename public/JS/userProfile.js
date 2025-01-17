@@ -45,6 +45,108 @@ const userData = userDoc.exists ? userDoc.data() : { name: "Anonymous User", use
         <p>Username: ${userData.username || "NoUsername"}</p>
       `;
       entryPreviewDiv.appendChild(header);
+      // Add Follow/Unfollow button
+const followButton = document.createElement("button");
+followButton.id = "follow-button";
+entryPreviewDiv.appendChild(followButton);
+
+// Check if the current user is following the profile user
+async function updateFollowButton() {
+  const authUser = firebase.auth().currentUser;
+  if (!authUser) return;
+
+  const followRef = window.db
+    .collection("users")
+    .doc(authUser.uid)
+    .collection("following")
+    .doc(userId);
+
+  const followDoc = await followRef.get();
+  if (followDoc.exists) {
+    followButton.textContent = "Unfollow";
+    followButton.onclick = unfollowUser;
+  } else {
+    followButton.textContent = "Follow";
+    followButton.onclick = followUser;
+  }
+}
+
+// Follow a user
+async function followUser() {
+  const authUser = firebase.auth().currentUser;
+  if (!authUser) {
+    alert("You need to log in to follow users!");
+    return;
+  }
+
+  const batch = window.db.batch();
+
+  const followingRef = window.db
+    .collection("users")
+    .doc(authUser.uid)
+    .collection("following")
+    .doc(userId);
+  batch.set(followingRef, { followedAt: firebase.firestore.FieldValue.serverTimestamp() });
+
+  const followersRef = window.db
+    .collection("users")
+    .doc(userId)
+    .collection("followers")
+    .doc(authUser.uid);
+  batch.set(followersRef, { followedAt: firebase.firestore.FieldValue.serverTimestamp() });
+
+  try {
+    await batch.commit();
+    updateFollowButton();
+    alert("You are now following this user.");
+  } catch (error) {
+    console.error("Error following user:", error);
+    alert("Failed to follow user. Try again.");
+  }
+}
+
+// Unfollow a user
+async function unfollowUser() {
+  const authUser = firebase.auth().currentUser;
+  if (!authUser) {
+    alert("You need to log in to unfollow users!");
+    return;
+  }
+
+  const batch = window.db.batch();
+
+  const followingRef = window.db
+    .collection("users")
+    .doc(authUser.uid)
+    .collection("following")
+    .doc(userId);
+  batch.delete(followingRef);
+
+  const followersRef = window.db
+    .collection("users")
+    .doc(userId)
+    .collection("followers")
+    .doc(authUser.uid);
+  batch.delete(followersRef);
+
+  try {
+    await batch.commit();
+    updateFollowButton();
+    alert("You have unfollowed this user.");
+  } catch (error) {
+    console.error("Error unfollowing user:", error);
+    alert("Failed to unfollow user. Try again.");
+  }
+}
+
+// Initialize follow button
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    updateFollowButton();
+  } else {
+    followButton.style.display = "none";
+  }
+});
 
       // Step 3: Check if postsContainer already exists; if not, create it
 let postsContainer = document.getElementById("posts-container");

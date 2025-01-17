@@ -6,15 +6,42 @@
 // Reference to the entry preview div
 const entryPreviewDiv = document.getElementById("entry-preview");
 
-// Function to fetch and display the latest entries
+// Function to fetch and display the latest entries for followed accounts
 async function displayLatestEntries() {
     try {
-        const querySnapshot = await window.db
-            .collection("guestbook")
-            .orderBy("timestamp", "desc")
-            .get();
+        const authUser = firebase.auth().currentUser;
+if (!authUser) {
+    alert("You must be logged in to see posts!");
+    return;
+}
 
-        entryPreviewDiv.innerHTML = ""; // Clear any existing content
+// Fetch followed users
+const followingSnapshot = await window.db
+    .collection("users")
+    .doc(authUser.uid)
+    .collection("following")
+    .get();
+
+if (followingSnapshot.empty) {
+    entryPreviewDiv.innerHTML = "<p>You are not following anyone. Follow users to see their posts here!</p>";
+    return;
+}
+
+const followedUserIds = followingSnapshot.docs.map((doc) => doc.id);
+
+// Fetch posts from followed users
+const querySnapshot = await window.db
+    .collection("guestbook")
+    .where("userId", "in", followedUserIds)
+    .orderBy("timestamp", "desc")
+    .get();
+
+    entryPreviewDiv.innerHTML = ""; // Clear any existing content
+
+    if (querySnapshot.empty) {
+        entryPreviewDiv.innerHTML = "<p>No posts found from followed users. Start following users to see their posts!</p>";
+        return;
+    }
 
         querySnapshot.forEach(async (doc) => {
             const data = doc.data();
@@ -348,4 +375,10 @@ commentDiv.innerHTML = `
 }
 
 // Call the function to display entries
-window.onload = displayLatestEntries;
+firebase.auth().onAuthStateChanged((user) => {
+    if (user) {
+        displayLatestEntries();
+    } else {
+        entryPreviewDiv.innerHTML = "<p>You must log in to see posts from followed users.</p>";
+    }
+});
