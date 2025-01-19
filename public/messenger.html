@@ -27,9 +27,19 @@
 
   </header>
   <main>
-    <h1>Messenger</h1>
-    <p>Chat with other users and groups in the community!</p>
-    <!-- Add your messenger UI here -->
+    <div id="messenger-container">
+      <div id="chat-list-container">
+        <h2>Your Chats</h2>
+        <div id="chat-list"></div>
+        <button id="new-chat-button">New Chat</button>
+      </div>
+      <div id="chat-room-container">
+        <h2 id="chat-room-header"></h2>
+        <div id="chat-room-messages"></div>
+        <input id="chat-input" type="text" placeholder="Type a message..." />
+        <button id="send-button">Send</button>
+      </div>
+    </div>
   </main>
   <script src="JS/messenger.js"></script>
   <script src="JS/common.js"></script>

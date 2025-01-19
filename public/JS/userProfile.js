@@ -148,6 +148,54 @@ firebase.auth().onAuthStateChanged((user) => {
   }
 });
 
+// After creating the followButton, add the messaging button
+const messageButton = document.createElement("button");
+messageButton.id = "message-button";
+messageButton.textContent = "Message";
+entryPreviewDiv.appendChild(messageButton);
+
+// Navigate to the messenger page with the selected user
+messageButton.addEventListener("click", async () => {
+  const authUser = firebase.auth().currentUser;
+  if (!authUser) {
+    alert("You need to log in to message users!");
+    return;
+  }
+
+  try {
+    const chatId = await createOrGetChatRoom(authUser.uid, userId);
+    window.location.href = `messenger.html?chatId=${chatId}`;
+  } catch (error) {
+    console.error("Error navigating to chat:", error);
+    alert("Unable to start chat. Please try again.");
+  }
+});
+
+// Function to create or retrieve an existing chat room
+async function createOrGetChatRoom(currentUserId, targetUserId) {
+  const chatRef = window.db.collection("messages");
+
+  // Search for an existing chat
+  const existingChat = await chatRef
+    .where("participants", "array-contains", currentUserId)
+    .get();
+
+  for (const doc of existingChat.docs) {
+    const data = doc.data();
+    if (data.participants.includes(targetUserId)) {
+      return doc.id; // Return the existing chat ID
+    }
+  }
+
+  // If no existing chat, create a new one
+  const newChat = await chatRef.add({
+    participants: [currentUserId, targetUserId],
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return newChat.id;
+}
+
       // Step 3: Check if postsContainer already exists; if not, create it
 let postsContainer = document.getElementById("posts-container");
 
