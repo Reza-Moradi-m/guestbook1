@@ -91,3 +91,12 @@ function setupNewChatCreation(userId) {
       }
     });
   }
+  firebase.auth().onAuthStateChanged((user) => {
+    if (!user) {
+      console.error("No user is signed in.");
+      alert("You need to sign in to perform this action.");
+      window.location.href = "auth.html"; // Redirect to login
+    } else {
+      console.log("Current user ID:", user.uid);
+    }
+  });
