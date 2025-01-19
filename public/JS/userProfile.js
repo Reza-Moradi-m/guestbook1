@@ -164,7 +164,7 @@ messageButton.addEventListener("click", async () => {
 
   try {
     const chatId = await createOrGetChatRoom(authUser.uid, userId);
-    window.location.href = `messenger.html?chatId=${chatId}`;
+    window.location.href = `chatroom.html?chatId=${chatId}`;
   } catch (error) {
     console.error("Error navigating to chat:", error);
     alert("Unable to start chat. Please try again.");
