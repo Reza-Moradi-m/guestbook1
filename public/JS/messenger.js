@@ -39,23 +39,27 @@ async function createOrGetChatRoom(currentUserId, targetUserId) {
   
     // Check if a chat already exists
     const existingChat = await chatRef
-      .where("participants", "array-contains", currentUserId)
-      .get();
-  
-    for (const doc of existingChat.docs) {
-      const data = doc.data();
-      if (data.participants.includes(targetUserId)) {
-        return doc.id; // Return the existing chat ID
-      }
-    }
+  .where("participants", "array-contains", currentUserId)
+  .get();
+
+for (const doc of existingChat.docs) {
+  const data = doc.data();
+  if (data.participants.includes(targetUserId)) {
+    return doc.id; // Return the existing chat ID
+  }
+}
   
     // Create a new chat room if none exists
-    const newChat = await chatRef.add({
-      participants: [currentUserId, targetUserId],
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    });
-  
-    return newChat.id;
+    try {
+        const newChat = await chatRef.add({
+          participants: [currentUserId, targetUserId],
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        return newChat.id;
+      } catch (error) {
+        console.error("Error creating chat:", error);
+        alert("Error creating a chat. Please check your permissions.");
+      }
   }
 
 // Set up functionality to create a new individual or group chat
