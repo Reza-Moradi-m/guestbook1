@@ -187,6 +187,11 @@ async function createOrGetChatRoom(currentUserId, targetUserId) {
     }
   }
 
+  // Create a new chat for self or with another user
+  const participants = currentUserId === targetUserId
+    ? [currentUserId, currentUserId]
+    : [currentUserId, targetUserId];
+
   // If no existing chat, create a new one
   const newChat = await chatRef.add({
     participants: [currentUserId, targetUserId],

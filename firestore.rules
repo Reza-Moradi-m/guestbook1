@@ -63,8 +63,8 @@ service cloud.firestore {
                    request.auth.uid in resource.data.participants;
 
       allow create: if request.auth != null &&
-                    request.auth.uid in request.resource.data.participants &&
-                    request.resource.data.participants.size() > 0; // Adjusted for single-user chat
+              request.auth.uid in request.resource.data.participants &&
+              request.resource.data.participants.size() > 0; // Allow self-chat
 
       allow update, delete: if false; // Prevent updates/deletes directly
     }
