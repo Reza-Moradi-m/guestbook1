@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <link rel="stylesheet" href="CSS/chatroom.css">
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+</head>
+<body>
+  <header>
+    <nav id="main-nav">
+      <ul>
+        <li><a href="index.html">Home</a></li>
+        <li><a href="guestbook.html">Upload</a></li>
+        <li><a href="profile.html">Profile</a></li>
+        <li><a href="explore.html">Explore</a></li>
+        <li id="user-status"><a href="auth.html">Sign In</a></li>
+        <li><a href="about.html">About</a></li>
+        <li><a href="messenger.html">Messenger</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main>
+    <div id="chatroom-container">
+      <h2 id="chatroom-header">Chatroom</h2>
+      <div id="chatroom-messages"></div>
+      <div id="message-input">
+        <input type="text" id="message-field" placeholder="Type a message...">
+        <button id="send-message">Send</button>
+      </div>
+    </div>
+  </main>
+  <script src="JS/common.js"></script>
+  <script src="JS/chatroom.js"></script>
+</body>
+</html>
