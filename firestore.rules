@@ -56,11 +56,13 @@ service cloud.firestore {
         allow read: if request.auth != null; // Authenticated users can read}
     }
 
-   match /messages/{chatId} {
-  allow read: if request.auth != null && request.auth.uid in resource.data.participants;
-  allow create: if request.auth != null && request.auth.uid in request.resource.data.participants;
-  allow update, delete: if false; // No direct updates/deletes allowed for messages
-}
+   // Messages collection
+    match /messages/{chatId} {
+      allow read: if request.auth != null && request.auth.uid in resource.data.participants;
+      allow create: if request.auth != null && request.auth.uid in request.resource.data.participants;
+      allow update: if false; // Prevent direct updates.
+      allow delete: if false; // Prevent direct deletions.
+    }
 
   
   }
