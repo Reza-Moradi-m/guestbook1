@@ -67,3 +67,5 @@ function setupMessageSending(userId) {
     }
   });
 }
+
+console.log("Participants Array:", participants);
