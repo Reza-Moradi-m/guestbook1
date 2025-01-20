@@ -22,50 +22,72 @@ firebase.auth().onAuthStateChanged((user) => {
 });
 
 async function loadChatMessages(userId) {
-  const chatRef = window.db.collection("messages").doc(chatId);
-  const chatDoc = await chatRef.get();
-
-  if (!chatDoc.exists) {
-    alert("Chat not found.");
-    window.location.href = "messenger.html";
-    return;
+    const chatRef = window.db.collection("messages").doc(chatId);
+  
+    try {
+      const chatDoc = await chatRef.get();
+      if (!chatDoc.exists) {
+        alert("Chat not found.");
+        window.location.href = "messenger.html";
+        return;
+      }
+  
+      const participants = chatDoc.data().participants || [];
+      if (!participants.includes(userId)) {
+        alert("You are not a participant in this chat.");
+        window.location.href = "messenger.html";
+        return;
+      }
+  
+      chatMessagesContainer.innerHTML = "";
+  
+      // Load messages from the nested collection
+      chatRef.collection("messages").orderBy("timestamp").onSnapshot((snapshot) => {
+        chatMessagesContainer.innerHTML = "";
+        snapshot.forEach((doc) => {
+          const messageData = doc.data();
+          const messageDiv = document.createElement("div");
+          messageDiv.className = `message ${
+            messageData.sender === userId ? "user" : "other"
+          }`;
+          messageDiv.textContent = messageData.text;
+          chatMessagesContainer.appendChild(messageDiv);
+        });
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+      });
+    } catch (error) {
+      console.error("Error loading chat messages:", error);
+      alert("Failed to load chat messages. Please try again.");
+    }
   }
 
-  chatMessagesContainer.innerHTML = "";
-
-  chatRef.collection("messages").orderBy("timestamp").onSnapshot((snapshot) => {
-    chatMessagesContainer.innerHTML = "";
-    snapshot.forEach((doc) => {
-      const messageData = doc.data();
-      const messageDiv = document.createElement("div");
-      messageDiv.className = `message ${
-        messageData.sender === userId ? "user" : "other"
-      }`;
-      messageDiv.textContent = messageData.text;
-      chatMessagesContainer.appendChild(messageDiv);
+  function setupMessageSending(userId) {
+    sendButton.addEventListener("click", async () => {
+      const text = messageField.value.trim();
+      if (!text) return;
+  
+      try {
+        const chatRef = window.db.collection("messages").doc(chatId);
+  
+        // Verify the user is in the participants list before sending a message
+        const chatDoc = await chatRef.get();
+        const participants = chatDoc.data().participants || [];
+        if (!participants.includes(userId)) {
+          alert("You are not authorized to send messages in this chat.");
+          return;
+        }
+  
+        await chatRef.collection("messages").add({
+          text,
+          sender: userId,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        messageField.value = "";
+      } catch (error) {
+        console.error("Error sending message:", error);
+        alert("Failed to send message. Please try again.");
+      }
     });
-    chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
-  });
-}
-
-function setupMessageSending(userId) {
-  sendButton.addEventListener("click", async () => {
-    const text = messageField.value.trim();
-    if (!text) return;
-
-    try {
-      const chatRef = window.db.collection("messages").doc(chatId);
-      await chatRef.collection("messages").add({
-        text,
-        sender: userId,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-      messageField.value = "";
-    } catch (error) {
-      console.error("Error sending message:", error);
-      alert("Failed to send message. Please try again.");
-    }
-  });
-}
+  }
 
 console.log("Participants Array:", participants);
