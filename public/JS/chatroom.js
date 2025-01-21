@@ -43,7 +43,7 @@ if (!participants.includes(userId)) {
       chatMessagesContainer.innerHTML = "";
   
       // Load messages from the nested collection
-      chatRef.collection("messages").orderBy("timestamp").onSnapshot((snapshot) => {
+      chatRef.collection("chatMessages").orderBy("timestamp").onSnapshot((snapshot) => {
         chatMessagesContainer.innerHTML = "";
         snapshot.forEach((doc) => {
           const messageData = doc.data();
@@ -79,11 +79,11 @@ if (!participants.includes(userId)) {
   return;
 }
   
-        await chatRef.collection("messages").add({
-          text,
-          sender: userId,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        });
+await chatRef.collection("chatMessages").add({
+    text,
+    sender: userId,
+    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+  });
         messageField.value = "";
       } catch (error) {
         console.error("Error sending message:", error);
