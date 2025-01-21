@@ -33,11 +33,12 @@ async function loadChatMessages(userId) {
       }
   
       const participants = chatDoc.data().participants || [];
-      if (!participants.includes(userId)) {
-        alert("You are not a participant in this chat.");
-        window.location.href = "messenger.html";
-        return;
-      }
+console.log("Participants Array (from loadChatMessages):", participants);
+if (!participants.includes(userId)) {
+  alert("You are not a participant in this chat.");
+  window.location.href = "messenger.html";
+  return;
+}
   
       chatMessagesContainer.innerHTML = "";
   
@@ -72,10 +73,11 @@ async function loadChatMessages(userId) {
         // Verify the user is in the participants list before sending a message
         const chatDoc = await chatRef.get();
         const participants = chatDoc.data().participants || [];
-        if (!participants.includes(userId)) {
-          alert("You are not authorized to send messages in this chat.");
-          return;
-        }
+console.log("Participants Array (from setupMessageSending):", participants);
+if (!participants.includes(userId)) {
+  alert("You are not authorized to send messages in this chat.");
+  return;
+}
   
         await chatRef.collection("messages").add({
           text,
@@ -90,4 +92,3 @@ async function loadChatMessages(userId) {
     });
   }
 
-console.log("Participants Array:", participants);
