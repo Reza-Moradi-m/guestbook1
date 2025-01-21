@@ -32,8 +32,16 @@ async function loadChatMessages(userId) {
         return;
       }
   
-      const participants = chatDoc.data().participants || [];
-console.log("Participants Array (from loadChatMessages):", participants);
+      const participants = chatDoc.data()?.participants || [];
+console.log("Participants Array (from Firestore):", participants);
+
+if (!Array.isArray(participants)) {
+  console.error("Participants is not an array:", participants);
+  alert("Invalid chat participants data.");
+  window.location.href = "messenger.html";
+  return;
+}
+
 if (!participants.includes(userId)) {
   alert("You are not a participant in this chat.");
   window.location.href = "messenger.html";
