@@ -42,9 +42,14 @@ if (!Array.isArray(participants)) {
   return;
 }
 
+if (!Array.isArray(participants)) {
+  console.error("Invalid participants field:", participants);
+  alert("Chat participants data is invalid.");
+  return;
+}
+
 if (!participants.includes(userId)) {
-  alert("You are not a participant in this chat.");
-  window.location.href = "messenger.html";
+  alert("You are not authorized to send messages in this chat.");
   return;
 }
   
