@@ -22,12 +22,17 @@ async function displayChatList(userId) {
   chatSnapshot.forEach((doc) => {
     const data = doc.data();
     const otherParticipant = data.participants.find((id) => id !== userId);
-
-    const chatDiv = document.createElement("div");
-    chatDiv.classList.add("chat-entry");
-    chatDiv.textContent = `Chat with User: ${otherParticipant}`;
+const userRef = window.db.collection("users").doc(otherParticipant);
+userRef.get().then((userDoc) => {
+  if (userDoc.exists) {
+    const username = userDoc.data().username || "Unknown User";
+    chatDiv.textContent = `Chat with: ${username}`;
+  } else {
+    chatDiv.textContent = `Chat with: Unknown User`;
+  }
+});
     chatDiv.addEventListener("click", () => {
-      window.location.href = `messenger.html?chatId=${doc.id}`;
+      window.location.href = `chatroom.html?chatId=${doc.id}`;
     });
 
     chatListDiv.appendChild(chatDiv);
