@@ -39,8 +39,8 @@ async function loadChatHeader(userId) {
 
   if (userDoc.exists) {
     const { username, profilePicture } = userDoc.data();
-    const chatHeader = document.getElementById("chatroom-header");
-    chatHeader.innerHTML = `
+    const chatHeaderContent = document.getElementById("chatroom-header-content");
+    chatHeaderContent.innerHTML = `
       <img src="${profilePicture || 'default-avatar.png'}" alt="Profile Picture" class="profile-picture">
       <span>${username || 'Unknown User'}</span>
     `;
