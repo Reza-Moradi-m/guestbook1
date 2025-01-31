@@ -62,15 +62,9 @@ async function loadChatMessages(userId) {
     console.log("Participants Array (from Firestore):", participants);
 
     if (!Array.isArray(participants)) {
-      console.error("Participants is not an array:", participants);
-      alert("Invalid chat participants data.");
-      window.location.href = "messenger.html";
-      return;
-    }
-
-    if (!Array.isArray(participants)) {
-      console.error("Invalid participants field:", participants);
+      console.error("Participants field is invalid:", participants);
       alert("Chat participants data is invalid.");
+      window.location.href = "messenger.html";
       return;
     }
 
@@ -93,7 +87,7 @@ async function loadChatMessages(userId) {
         messageDiv.innerHTML = `
             <p>${messageData.text || ''}</p>
             ${messageData.fileUrl ? `<a href="${messageData.fileUrl}" target="_blank">View File</a>` : ''}
-            <small>${new Date(messageData.timestamp?.toDate()).toLocaleString()}</small>
+            <small>${messageData.timestamp ? new Date(messageData.timestamp.toDate()).toLocaleString() : 'Unknown time'}</small>
           `;
         chatMessagesContainer.appendChild(messageDiv);
       });
@@ -109,17 +103,21 @@ function setupMessageSending(userId) {
   sendButton.addEventListener("click", async () => {
     const text = messageField.value.trim();
     if (!text) return;
-  
+
     const fileInput = document.getElementById("file-input");
-    const file = fileInput?.files[0];
+    const file = fileInput?.files?.[0];
+    if (fileInput && !file) {
+      alert("Please select a valid file.");
+      return;
+    }
     let fileUrl = "";
-  
+
     if (file) {
       const storageRef = firebase.storage().ref(`uploads/${file.name}`);
       const snapshot = await storageRef.put(file);
       fileUrl = await snapshot.ref.getDownloadURL();
     }
-  
+
     try {
       const chatRef = window.db.collection("messages").doc(chatId);
       await chatRef.collection("chatMessages").add({
