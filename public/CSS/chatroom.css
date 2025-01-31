@@ -93,28 +93,38 @@ body {
     background-color: #45a049;
   }
 
-  #back-button {
-    background-color: #007bff;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 10px;
+ 
+
+  
+  
+  
+  .message small {
+    display: block;
+    font-size: 0.8em;
+    color: gray;
+    margin-top: 5px;
   }
-  
-  #back-button:hover {
-    background-color: #0056b3;
-  }
-  
-  
+
+
+
+
   #chatroom-header {
     display: flex;
     align-items: center;
     gap: 10px;
-    background-color: #f1f1f1;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+  }
+  
+  .back-button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  .back-button:hover {
+    background-color: #0056b3;
   }
   
   .profile-picture {
@@ -123,9 +133,21 @@ body {
     border-radius: 50%;
   }
   
-  .message small {
-    display: block;
-    font-size: 0.8em;
-    color: gray;
-    margin-top: 5px;
+  #chatroom-header-content span {
+    font-size: 1.2em;
+    font-weight: bold;
+  }
+
+  .chat-image {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+  
+  .chat-video {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    cursor: pointer;
   }
