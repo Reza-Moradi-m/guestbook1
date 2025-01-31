@@ -19,24 +19,33 @@ async function displayChatList(userId) {
   const chatSnapshot = await chatRef.get();
 
   chatListDiv.innerHTML = "";
-  chatSnapshot.forEach((doc) => {
+  for (const doc of chatSnapshot.docs) {
     const data = doc.data();
     const otherParticipant = data.participants.find((id) => id !== userId);
-const userRef = window.db.collection("users").doc(otherParticipant);
-userRef.get().then((userDoc) => {
-  if (userDoc.exists) {
-    const username = userDoc.data().username || "Unknown User";
-    chatDiv.textContent = `Chat with: ${username}`;
-  } else {
-    chatDiv.textContent = `Chat with: Unknown User`;
-  }
-});
+
+    // Create the chatDiv element first
+    const chatDiv = document.createElement("div");
+    chatDiv.classList.add("chat-entry");
+
+    // Fetch the username of the other participant
+    const userRef = window.db.collection("users").doc(otherParticipant);
+    userRef.get().then((userDoc) => {
+      if (userDoc.exists) {
+        const username = userDoc.data().username || "Unknown User";
+        chatDiv.textContent = `Chat with: ${username}`;
+      } else {
+        chatDiv.textContent = `Chat with: Unknown User`;
+      }
+    });
+
+    // Add event listener to open the chatroom
     chatDiv.addEventListener("click", () => {
       window.location.href = `chatroom.html?chatId=${doc.id}`;
     });
 
+    // Append the chatDiv to the chatListDiv
     chatListDiv.appendChild(chatDiv);
-  });
+  }
 }
 
 async function createOrGetChatRoom(currentUserId, targetUserId) {
