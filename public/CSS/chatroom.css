@@ -92,3 +92,34 @@ body {
   #send-message:hover {
     background-color: #45a049;
   }
+
+  #back-button {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  #chatroom-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .profile-picture {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+  }
+  
+  .message small {
+    display: block;
+    font-size: 0.8em;
+    color: gray;
+    margin-top: 5px;
+  }
