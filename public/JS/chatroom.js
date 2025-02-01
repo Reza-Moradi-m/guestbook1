@@ -93,18 +93,37 @@ async function loadChatMessages(userId) {
         let fileContent = "";
         if (messageData.fileUrl) {
           const fileExtension = messageData.fileUrl.split(".").pop().toLowerCase();
+          
           if (["jpg", "jpeg", "png", "gif"].includes(fileExtension)) {
-            // Display images inline
-            fileContent = `<img src="${messageData.fileUrl}" alt="Image" class="chat-image" onclick="window.open('${messageData.fileUrl}', '_blank')">`;
+            // Display image inline with click-to-fullscreen feature
+            fileContent = `
+              <img src="${messageData.fileUrl}" alt="Image" class="chat-image"
+                style="max-width: 200px; max-height: 150px; cursor: pointer;"
+                onclick="window.open('${messageData.fileUrl}', '_blank')">
+            `;
           } else if (["mp4", "webm", "ogg"].includes(fileExtension)) {
-            // Display videos inline
-            fileContent = `<video controls class="chat-video" onclick="window.open('${messageData.fileUrl}', '_blank')">
-                     <source src="${messageData.fileUrl}" type="video/${fileExtension}">
-                     Your browser does not support the video tag.
-                   </video>`;
+            // Display video inline with click-to-fullscreen feature
+            fileContent = `
+              <video controls class="chat-video" style="max-width: 200px; max-height: 150px; cursor: pointer;"
+                onclick="window.open('${messageData.fileUrl}', '_blank')">
+                <source src="${messageData.fileUrl}" type="video/${fileExtension}">
+                Your browser does not support the video tag.
+              </video>
+            `;
+          } else if (["pdf", "docx", "xlsx", "pptx"].includes(fileExtension)) {
+            // Display a link for document files
+            fileContent = `
+              <a href="${messageData.fileUrl}" target="_blank" class="chat-document-link">
+                📄 View Document (${fileExtension.toUpperCase()})
+              </a>
+            `;
           } else {
-            // Display a link for other file types
-            fileContent = `<a href="${messageData.fileUrl}" target="_blank">View File</a>`;
+            // Generic fallback for other file types
+            fileContent = `
+              <a href="${messageData.fileUrl}" target="_blank" class="chat-generic-link">
+                Download File (${fileExtension.toUpperCase()})
+              </a>
+            `;
           }
         }
 

@@ -151,3 +151,26 @@ body {
     border-radius: 8px;
     cursor: pointer;
   }
+
+  .chat-image {
+    border-radius: 5px;
+    margin: 5px 0;
+  }
+  
+  .chat-video {
+    border-radius: 5px;
+    margin: 5px 0;
+  }
+  
+  .chat-document-link,
+  .chat-generic-link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+    margin: 5px 0;
+  }
+  
+  .chat-document-link:hover,
+  .chat-generic-link:hover {
+    text-decoration: underline;
+  }
