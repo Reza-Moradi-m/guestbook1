@@ -6,16 +6,13 @@ const chatMessagesContainer = document.getElementById("chatroom-messages");
 const messageField = document.getElementById("message-field");
 const sendButton = document.getElementById("send-message");
 
-const backButton = document.getElementById("back-button");
+
 
 if (!chatId) {
   alert("No chat specified!");
   window.location.href = "messenger.html";
 }
 
-backButton.addEventListener("click", () => {
-  window.location.href = "messenger.html";
-});
 
 firebase.auth().onAuthStateChanged((user) => {
   if (user) {
