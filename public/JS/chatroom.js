@@ -93,32 +93,31 @@ async function loadChatMessages(userId) {
         let fileContent = "";
         if (messageData.fileUrl) {
           const fileExtension = messageData.fileUrl.split(".").pop().toLowerCase();
-          
+        
           if (["jpg", "jpeg", "png", "gif"].includes(fileExtension)) {
-            // Display image inline with click-to-fullscreen feature
+            // Properly display images with a thumbnail and open full-size view on click
             fileContent = `
               <img src="${messageData.fileUrl}" alt="Image" class="chat-image"
-                style="max-width: 200px; max-height: 150px; cursor: pointer;"
+                style="max-width: 150px; max-height: 150px; cursor: pointer;"
                 onclick="window.open('${messageData.fileUrl}', '_blank')">
             `;
           } else if (["mp4", "webm", "ogg"].includes(fileExtension)) {
-            // Display video inline with click-to-fullscreen feature
+            // Properly display videos with a preview and play controls
             fileContent = `
-              <video controls class="chat-video" style="max-width: 200px; max-height: 150px; cursor: pointer;"
-                onclick="window.open('${messageData.fileUrl}', '_blank')">
+              <video controls class="chat-video" style="max-width: 200px; max-height: 150px; cursor: pointer;">
                 <source src="${messageData.fileUrl}" type="video/${fileExtension}">
                 Your browser does not support the video tag.
               </video>
             `;
           } else if (["pdf", "docx", "xlsx", "pptx"].includes(fileExtension)) {
-            // Display a link for document files
+            // Link for documents
             fileContent = `
               <a href="${messageData.fileUrl}" target="_blank" class="chat-document-link">
                 📄 View Document (${fileExtension.toUpperCase()})
               </a>
             `;
           } else {
-            // Generic fallback for other file types
+            // Generic fallback for unknown file types
             fileContent = `
               <a href="${messageData.fileUrl}" target="_blank" class="chat-generic-link">
                 Download File (${fileExtension.toUpperCase()})

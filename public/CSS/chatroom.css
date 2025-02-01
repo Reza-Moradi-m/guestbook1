@@ -152,19 +152,26 @@ body {
     cursor: pointer;
   }
 
+  
+  
+  
   .chat-image {
-    border-radius: 5px;
+    border-radius: 8px;
     margin: 5px 0;
+    cursor: pointer;
+    border: 1px solid #ddd;
   }
   
   .chat-video {
-    border-radius: 5px;
+    border-radius: 8px;
     margin: 5px 0;
+    cursor: pointer;
+    border: 1px solid #ddd;
   }
   
   .chat-document-link,
   .chat-generic-link {
-    color: #007bff;
+    color: #011d33;
     text-decoration: none;
     font-weight: bold;
     margin: 5px 0;
@@ -173,4 +180,28 @@ body {
   .chat-document-link:hover,
   .chat-generic-link:hover {
     text-decoration: underline;
+  }
+  
+  .message.user {
+    background-color: #e0ffe0; /* Light green for user messages */
+    color: #333;
+    align-self: flex-end;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 80%;
+  }
+  
+  .message.other {
+    background-color: #e8e8ff; /* Light blue for received messages */
+    color: #333;
+    align-self: flex-start;
+    padding: 10px;
+    border-radius: 8px;
+    max-width: 80%;
+  }
+  
+  .chatroom-container {
+    background-color: #ffffff; /* Bright background for chat */
+    padding: 15px;
+    border-radius: 10px;
   }
