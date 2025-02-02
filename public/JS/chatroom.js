@@ -83,65 +83,68 @@ async function loadChatMessages(userId) {
     // Load messages from the nested collection
     chatRef.collection("chatMessages").orderBy("timestamp").onSnapshot((snapshot) => {
       chatMessagesContainer.innerHTML = "";
-      snapshot.forEach((doc) => {
-        const messageData = doc.data();
-        const messageDiv = document.createElement("div");
-        messageDiv.className = `message ${messageData.sender === userId ? "user" : "other"
-          }`;
-
-        // Determine the best way to display the file
-        let fileContent = "";
-        if (messageData.fileUrl) {
-          try {
-            const response = await fetch(messageData.fileUrl, { method: "HEAD" });
-            const contentType = response.headers.get("Content-Type");
-        
-            if (contentType.startsWith("image/")) {
-              fileContent = `
-                <img src="${messageData.fileUrl}" alt="Image" class="chat-image"
-                  style="max-width: 150px; max-height: 150px; cursor: pointer;"
-                  onclick="window.open('${messageData.fileUrl}', '_blank')">
-              `;
-            } else if (contentType.startsWith("video/")) {
-              fileContent = `
-                <video controls class="chat-video" style="max-width: 200px; max-height: 150px; cursor: pointer;"
-                  onclick="window.open('${messageData.fileUrl}', '_blank')">
-                  <source src="${messageData.fileUrl}" type="${contentType}">
-                  Your browser does not support the video tag.
-                </video>
-              `;
-            } else {
+    
+      const fetchMessages = async () => {
+        for (const doc of snapshot.docs) {
+          const messageData = doc.data();
+          const messageDiv = document.createElement("div");
+          messageDiv.className = `message ${messageData.sender === userId ? "user" : "other"}`;
+          
+          let fileContent = "";
+          if (messageData.fileUrl) {
+            try {
+              const response = await fetch(messageData.fileUrl, { method: "HEAD" });
+              const contentType = response.headers.get("Content-Type");
+    
+              if (contentType.startsWith("image/")) {
+                fileContent = `
+                  <img src="${messageData.fileUrl}" alt="Image" class="chat-image"
+                    style="max-width: 150px; max-height: 150px; cursor: pointer;"
+                    onclick="window.open('${messageData.fileUrl}', '_blank')">
+                `;
+              } else if (contentType.startsWith("video/")) {
+                fileContent = `
+                  <video controls class="chat-video" style="max-width: 200px; max-height: 150px; cursor: pointer;"
+                    onclick="window.open('${messageData.fileUrl}', '_blank')">
+                    <source src="${messageData.fileUrl}" type="${contentType}">
+                    Your browser does not support the video tag.
+                  </video>
+                `;
+              } else {
+                fileContent = `
+                  <a href="${messageData.fileUrl}" target="_blank" class="chat-generic-link">
+                    Download File
+                  </a>
+                `;
+              }
+            } catch (error) {
+              console.error("Error fetching file metadata:", error);
               fileContent = `
                 <a href="${messageData.fileUrl}" target="_blank" class="chat-generic-link">
                   Download File
                 </a>
               `;
             }
-          } catch (error) {
-            console.error("Error fetching file metadata:", error);
-            fileContent = `
-              <a href="${messageData.fileUrl}" target="_blank" class="chat-generic-link">
-                Download File
-              </a>
-            `;
           }
+    
+          // Add message text and file content
+          messageDiv.innerHTML = `
+            <p>${messageData.text || ""}</p>
+            ${fileContent}
+            <small>${messageData.timestamp ? new Date(messageData.timestamp.toDate()).toLocaleString() : "Unknown time"}</small>
+          `;
+          chatMessagesContainer.appendChild(messageDiv);
         }
-
-        // Add message text and file content
-        messageDiv.innerHTML = `
-  <p>${messageData.text || ""}</p>
-  ${fileContent}
-  <small>${messageData.timestamp ? new Date(messageData.timestamp.toDate()).toLocaleString() : "Unknown time"}</small>
-`;
-        chatMessagesContainer.appendChild(messageDiv);
-      });
-      chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+        chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+      };
+    
+      fetchMessages();
     });
   } catch (error) {
     console.error("Error loading chat messages:", error);
     alert("Failed to load chat messages. Please try again.");
   }
-}
+} //
 
 function setupMessageSending(userId) {
   sendButton.addEventListener("click", async () => {
@@ -178,9 +181,8 @@ function setupMessageSending(userId) {
       messageField.value = "";
       if (fileInput) fileInput.value = ""; // Reset the file input
     } catch (error) {
-      console.error("Error sending message:", error);
-      alert("Failed to send message. Please try again.");
+      console.error("Error loading chat messages:", error.message);
+      alert("We encountered an issue loading messages. Please refresh the page or try again later.");
     }
   });
-}
-
+}   
