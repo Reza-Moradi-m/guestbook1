@@ -92,35 +92,36 @@ async function loadChatMessages(userId) {
         // Determine the best way to display the file
         let fileContent = "";
         if (messageData.fileUrl) {
-          const fileExtension = messageData.fileUrl.split(".").pop().toLowerCase();
+          try {
+            const response = await fetch(messageData.fileUrl, { method: "HEAD" });
+            const contentType = response.headers.get("Content-Type");
         
-          if (["jpg", "jpeg", "png", "gif"].includes(fileExtension)) {
-            // Properly display images with a thumbnail and open full-size view on click
-            fileContent = `
-              <img src="${messageData.fileUrl}" alt="Image" class="chat-image"
-                style="max-width: 150px; max-height: 150px; cursor: pointer;"
-                onclick="window.open('${messageData.fileUrl}', '_blank')">
-            `;
-          } else if (["mp4", "webm", "ogg"].includes(fileExtension)) {
-            // Properly display videos with a preview and play controls
-            fileContent = `
-              <video controls class="chat-video" style="max-width: 200px; max-height: 150px; cursor: pointer;">
-                <source src="${messageData.fileUrl}" type="video/${fileExtension}">
-                Your browser does not support the video tag.
-              </video>
-            `;
-          } else if (["pdf", "docx", "xlsx", "pptx"].includes(fileExtension)) {
-            // Link for documents
-            fileContent = `
-              <a href="${messageData.fileUrl}" target="_blank" class="chat-document-link">
-                📄 View Document (${fileExtension.toUpperCase()})
-              </a>
-            `;
-          } else {
-            // Generic fallback for unknown file types
+            if (contentType.startsWith("image/")) {
+              fileContent = `
+                <img src="${messageData.fileUrl}" alt="Image" class="chat-image"
+                  style="max-width: 150px; max-height: 150px; cursor: pointer;"
+                  onclick="window.open('${messageData.fileUrl}', '_blank')">
+              `;
+            } else if (contentType.startsWith("video/")) {
+              fileContent = `
+                <video controls class="chat-video" style="max-width: 200px; max-height: 150px; cursor: pointer;"
+                  onclick="window.open('${messageData.fileUrl}', '_blank')">
+                  <source src="${messageData.fileUrl}" type="${contentType}">
+                  Your browser does not support the video tag.
+                </video>
+              `;
+            } else {
+              fileContent = `
+                <a href="${messageData.fileUrl}" target="_blank" class="chat-generic-link">
+                  Download File
+                </a>
+              `;
+            }
+          } catch (error) {
+            console.error("Error fetching file metadata:", error);
             fileContent = `
               <a href="${messageData.fileUrl}" target="_blank" class="chat-generic-link">
-                Download File (${fileExtension.toUpperCase()})
+                Download File
               </a>
             `;
           }

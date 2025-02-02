@@ -1,8 +1,8 @@
 
 // Attach Firestore and Storage to `window` for global access
-        window.db = firebase.firestore();
-        window.storage = firebase.storage();
-   
+window.db = firebase.firestore();
+window.storage = firebase.storage();
+
 // Reference to the entry preview div
 const entryPreviewDiv = document.getElementById("entry-preview");
 
@@ -10,38 +10,38 @@ const entryPreviewDiv = document.getElementById("entry-preview");
 async function displayLatestEntries() {
     try {
         const authUser = firebase.auth().currentUser;
-if (!authUser) {
-    alert("You must be logged in to see posts!");
-    return;
-}
+        if (!authUser) {
+            alert("You must be logged in to see posts!");
+            return;
+        }
 
-// Fetch followed users
-const followingSnapshot = await window.db
-    .collection("users")
-    .doc(authUser.uid)
-    .collection("following")
-    .get();
+        // Fetch followed users
+        const followingSnapshot = await window.db
+            .collection("users")
+            .doc(authUser.uid)
+            .collection("following")
+            .get();
 
-if (followingSnapshot.empty) {
-    entryPreviewDiv.innerHTML = "<p>You are not following anyone. Follow users to see their posts here!</p>";
-    return;
-}
+        if (followingSnapshot.empty) {
+            entryPreviewDiv.innerHTML = "<p>You are not following anyone. Follow users to see their posts here!</p>";
+            return;
+        }
 
-const followedUserIds = followingSnapshot.docs.map((doc) => doc.id);
+        const followedUserIds = followingSnapshot.docs.map((doc) => doc.id);
 
-// Fetch posts from followed users
-const querySnapshot = await window.db
-    .collection("guestbook")
-    .where("userId", "in", followedUserIds)
-    .orderBy("timestamp", "desc")
-    .get();
+        // Fetch posts from followed users
+        const querySnapshot = await window.db
+            .collection("guestbook")
+            .where("userId", "in", followedUserIds)
+            .orderBy("timestamp", "desc")
+            .get();
 
-    entryPreviewDiv.innerHTML = ""; // Clear any existing content
+        entryPreviewDiv.innerHTML = ""; // Clear any existing content
 
-    if (querySnapshot.empty) {
-        entryPreviewDiv.innerHTML = "<p>No posts found from followed users. Start following users to see their posts!</p>";
-        return;
-    }
+        if (querySnapshot.empty) {
+            entryPreviewDiv.innerHTML = "<p>No posts found from followed users. Start following users to see their posts!</p>";
+            return;
+        }
 
         querySnapshot.forEach(async (doc) => {
             const data = doc.data();
@@ -52,8 +52,8 @@ const querySnapshot = await window.db
             entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
             // Display clickable username linking to userProfile.html
-const nameElement = document.createElement("h3");
-nameElement.innerHTML = `
+            const nameElement = document.createElement("h3");
+            nameElement.innerHTML = `
     <a href="userProfile.html?userId=${data.userId}" class="user-link">
         ${data.name || "Unknown"} (${data.username || "NoUsername"})
     </a>
@@ -112,56 +112,56 @@ nameElement.innerHTML = `
             interactionDiv.classList.add("interaction-buttons");
 
             // Like button logic
-const likeButton = document.createElement("button");
-likeButton.classList.add("like-button");
+            const likeButton = document.createElement("button");
+            likeButton.classList.add("like-button");
 
-const userId = firebase.auth().currentUser?.uid;
-const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
-let liked = false;
+            const userId = firebase.auth().currentUser?.uid;
+            const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
+            let liked = false;
 
-// Check if user already liked the post
-if (userId) {
-  const userLikeDoc = await likesRef.get();
-  liked = userLikeDoc.exists;
-}
+            // Check if user already liked the post
+            if (userId) {
+                const userLikeDoc = await likesRef.get();
+                liked = userLikeDoc.exists;
+            }
 
-async function updateLikes() {
-  if (!userId) {
-    alert("You need to log in to like this post!");
-    return;
-  }
+            async function updateLikes() {
+                if (!userId) {
+                    alert("You need to log in to like this post!");
+                    return;
+                }
 
-  try {
-    if (liked) {
-      // Remove the like
-      await likesRef.delete();
-      liked = false;
-    } else {
-      // Add a like
-      await likesRef.set({
-        likedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-      liked = true;
-    }
-    renderLikeButton();
-  } catch (error) {
-    console.error("Error updating like:", error);
-    alert("Failed to update like.");
-  }
-}
+                try {
+                    if (liked) {
+                        // Remove the like
+                        await likesRef.delete();
+                        liked = false;
+                    } else {
+                        // Add a like
+                        await likesRef.set({
+                            likedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        });
+                        liked = true;
+                    }
+                    renderLikeButton();
+                } catch (error) {
+                    console.error("Error updating like:", error);
+                    alert("Failed to update like.");
+                }
+            }
 
-async function getLikeCount() {
-  const snapshot = await window.db.collection("guestbook").doc(postId).collection("likes").get();
-  return snapshot.size; // Total number of likes
-}
+            async function getLikeCount() {
+                const snapshot = await window.db.collection("guestbook").doc(postId).collection("likes").get();
+                return snapshot.size; // Total number of likes
+            }
 
-async function renderLikeButton() {
-  const likeCount = await getLikeCount();
-  likeButton.innerHTML = `⭐ ${likeCount}`;
-}
+            async function renderLikeButton() {
+                const likeCount = await getLikeCount();
+                likeButton.innerHTML = `⭐ ${likeCount}`;
+            }
 
-likeButton.addEventListener("click", updateLikes);
-renderLikeButton();
+            likeButton.addEventListener("click", updateLikes);
+            renderLikeButton();
 
 
             // Comment button
@@ -208,7 +208,7 @@ renderLikeButton();
                 if (commentText) {
                     const userDoc = await window.db.collection("users").doc(user.uid).get();
                     const userData = userDoc.data();
-            
+
                     await window.db
                         .collection("guestbook")
                         .doc(postId)
@@ -298,9 +298,9 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         const commentId = doc.id;
 
         const commentDiv = document.createElement("div");
-commentDiv.classList.add("comment");
-commentDiv.style.marginLeft = `${indentLevel * 20}px`;
-commentDiv.innerHTML = `
+        commentDiv.classList.add("comment");
+        commentDiv.style.marginLeft = `${indentLevel * 20}px`;
+        commentDiv.innerHTML = `
     <p>
         <strong>
             <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
