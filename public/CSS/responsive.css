@@ -1,0 +1,96 @@
+/* General Screen Size Rules */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #main-nav ul {
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+    padding: 0;
+  }
+  
+  #main-nav li {
+    list-style: none;
+  }
+  
+  #main-nav a {
+    text-decoration: none;
+    color: #fff;
+    padding: 10px 20px;
+  }
+  
+  /* Hamburger Menu for Small Screens */
+  .hamburger-menu {
+    display: none;
+    cursor: pointer;
+    font-size: 2rem;
+    color: white;
+  }
+  
+  @media (max-width: 768px) {
+    #main-nav ul {
+      display: none;
+      flex-direction: column;
+      background-color: #000;
+    }
+  
+    #main-nav ul.active {
+      display: flex;
+    }
+  
+    .hamburger-menu {
+      display: block;
+    }
+  }
+  
+  @media (min-width: 769px) {
+    .hamburger-menu {
+      display: none;
+    }
+  
+    #main-nav ul {
+      display: flex;
+    }
+  }
+  
+  /* Responsive Form Styles */
+  form {
+    width: 100%;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+  
+  button {
+    width: 100%;
+    padding: 10px;
+  }
+  
+  /* Responsive Content Container */
+  .container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  @media (max-width: 768px) {
+    .container {
+      width: 100%;
+    }
+  }
+
+  #logo {
+    width: 150px;
+    height: auto;
+    display: block;
+    margin: 0 auto 10px auto;
+}
+
+header {
+    background-color: #000000;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+}

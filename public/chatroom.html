@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile</title>
+  <link rel="stylesheet" href="CSS/responsive.css">
   <link rel="stylesheet" href="CSS/chatroom.css">
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
@@ -15,7 +16,8 @@
 <body>
   <header>
     <nav id="main-nav">
-      <ul>
+      <span class="hamburger-menu" id="hamburger-menu">&#9776;</span> <!-- Add Hamburger Icon -->
+      <ul id="menu-list">
         <li><a href="index.html">Home</a></li>
         <li><a href="guestbook.html">Upload</a></li>
         <li><a href="profile.html">Profile</a></li>
@@ -25,7 +27,11 @@
         <li><a href="messenger.html">Messenger</a></li>
       </ul>
     </nav>
-  </header>
+    <img id="logo" src="images/logo.png" alt="Logo">
+    <h1>STELLARIOUSS</h1>
+   
+
+</header>
   <main>
     <div id="chatroom-container">
       

@@ -18,6 +18,17 @@ if (!firebase.apps.length) {
 window.db = firebase.firestore();
 window.storage = firebase.storage();
 
+// Toggle the hamburger menu
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburgerMenu = document.getElementById("hamburger-menu");
+  const menuList = document.getElementById("menu-list");
+
+  hamburgerMenu.addEventListener("click", () => {
+    // Toggle the "active" class
+    menuList.classList.toggle("active");
+  });
+});
+
 // Firebase Auth
 const auth = firebase.auth();
 const db = firebase.firestore();
