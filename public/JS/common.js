@@ -1,4 +1,4 @@
-console.log("common.js loaded");
+
  // Firebase configuration
  const firebaseConfig = {
     apiKey: "AIzaSyDjQvmQKE77NmdCNMjwQ9D8dEtxdo0ZrUc",
