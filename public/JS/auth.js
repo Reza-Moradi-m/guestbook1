@@ -1,5 +1,9 @@
 
 
+// Attach Firestore and Storage to `window` for global access
+window.db = firebase.firestore();
+window.storage = firebase.storage();
+
 // Signup Form Submission
 const signupForm = document.getElementById("signup-form");
 signupForm.addEventListener("submit", async (e) => {
