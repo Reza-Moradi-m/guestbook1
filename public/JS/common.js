@@ -1,4 +1,3 @@
-
  // Firebase configuration
  const firebaseConfig = {
     apiKey: "AIzaSyDjQvmQKE77NmdCNMjwQ9D8dEtxdo0ZrUc",
@@ -21,18 +20,18 @@ window.storage = firebase.storage();
 
 // Toggle the hamburger menu
 document.addEventListener("DOMContentLoaded", () => {
-  const hamburgerMenu = document.getElementById("hamburger-menu");
-  const menuList = document.getElementById("menu-list");
+    const hamburgerMenu = document.getElementById("hamburger-menu");
+    const menuList = document.getElementById("menu-list");
 
-  if (!hamburgerMenu || !menuList) {
-      console.error("Hamburger menu or menu list not found on this page.");
-      return;
-  }
+    if (!hamburgerMenu || !menuList) {
+        console.error("Hamburger menu or menu list not found on this page.");
+        return;
+    }
 
-  hamburgerMenu.addEventListener("click", () => {
-      menuList.classList.toggle("active");
-      console.log("Menu toggled:", menuList.classList.contains("active"));
-  });
+    hamburgerMenu.addEventListener("click", () => {
+        menuList.classList.toggle("active");
+        console.log("Menu toggled:", menuList.classList.contains("active"));
+    });
 });
 
 // Firebase Auth

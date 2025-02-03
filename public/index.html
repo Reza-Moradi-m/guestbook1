@@ -1,52 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Astronomy Guestbook</title>
-    <meta name="description" content="Welcome to the Astronomy Guestbook! Explore the wonders of the universe with our vibrant community.">
+    <meta name="description"
+        content="Welcome to the Astronomy Guestbook! Explore the wonders of the universe with our vibrant community.">
     <meta name="keywords" content="Astronomy, Guestbook, Stargazing, Celestial, Stars, Planets, Cosmic Events">
     <meta name="author" content="Your Name">
     <link rel="stylesheet" href="CSS/responsive.css">
     <link rel="stylesheet" href="CSS/styles.css">
 </head>
+
 <body>
     <header>
         <nav id="main-nav">
-          <span class="hamburger-menu" id="hamburger-menu">&#9776;</span> <!-- Add Hamburger Icon -->
-          <ul id="menu-list">
-            <li><a href="index.html">Home</a></li>
-            <li><a href="guestbook.html">Upload</a></li>
-            <li><a href="profile.html">Profile</a></li>
-            <li><a href="explore.html">Explore</a></li>
-            <li id="user-status"><a href="auth.html">Sign In</a></li>
-            <li><a href="about.html">About</a></li>
-            <li><a href="messenger.html">Messenger</a></li>
-          </ul>
+            <span class="hamburger-menu" id="hamburger-menu">&#9776;</span> <!-- Add Hamburger Icon -->
+            <ul id="menu-list">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="guestbook.html">Upload</a></li>
+                <li><a href="profile.html">Profile</a></li>
+                <li><a href="explore.html">Explore</a></li>
+                <li id="user-status"><a href="auth.html">Sign In</a></li>
+                <li><a href="about.html">About</a></li>
+                <li><a href="messenger.html">Messenger</a></li>
+            </ul>
         </nav>
         <img id="logo" src="images/logo.png" alt="Logo">
         <h1>STELLARIOUSS</h1>
-       
+
 
     </header>
-    
+
     <main>
         <section id="latest-entry">
             <h2>Latest Guestbook Entries</h2>
-            
+
             <div id="entry-preview">
                 <!-- Content will be dynamically inserted here -->
             </div>
         </section>
-    </main> 
+    </main>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="JS/common.js" defer></script>
+    <script src="JS/common.js" defer></script>
     <script src="JS/app.js"></script>
-    
+
 
 </body>
-</html>
 
+</html>
