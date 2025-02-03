@@ -1,3 +1,4 @@
+console.log("common.js loaded");
  // Firebase configuration
  const firebaseConfig = {
     apiKey: "AIzaSyDjQvmQKE77NmdCNMjwQ9D8dEtxdo0ZrUc",
@@ -23,9 +24,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const hamburgerMenu = document.getElementById("hamburger-menu");
   const menuList = document.getElementById("menu-list");
 
+  if (!hamburgerMenu || !menuList) {
+      console.error("Hamburger menu or menu list not found on this page.");
+      return;
+  }
+
   hamburgerMenu.addEventListener("click", () => {
-    // Toggle the "active" class
-    menuList.classList.toggle("active");
+      menuList.classList.toggle("active");
+      console.log("Menu toggled:", menuList.classList.contains("active"));
   });
 });
 
