@@ -32,19 +32,29 @@ body {
   
   @media (max-width: 768px) {
     #main-nav ul {
-      display: none;
-      flex-direction: column;
-      background-color: #000;
+        display: none;
+        flex-direction: column;
+        background-color: #000;
     }
-  
+
     #main-nav ul.active {
-      display: flex;
+        display: flex;
     }
-  
+
+    #main-nav li {
+        margin-bottom: 10px; /* Add space between menu items */
+    }
+
+    #main-nav a {
+        font-size: 1.5rem; /* Increase font size for menu links */
+        padding: 15px 20px; /* Increase padding for easier tapping */
+    }
+
     .hamburger-menu {
-      display: block;
+        display: block;
+        font-size: 2.5rem; /* Adjust hamburger icon size if needed */
     }
-  }
+}
   
   @media (min-width: 769px) {
     .hamburger-menu {
