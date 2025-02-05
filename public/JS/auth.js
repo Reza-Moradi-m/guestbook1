@@ -74,6 +74,34 @@ loginForm.addEventListener("submit", async (e) => {
   }
 });
 
+// Google Sign-In
+const googleSignInButton = document.getElementById("google-sign-in");
+googleSignInButton.addEventListener("click", async () => {
+  const provider = new firebase.auth.GoogleAuthProvider();
+
+  try {
+    const result = await auth.signInWithPopup(provider);
+    const user = result.user;
+
+    // Check if the user already exists in Firestore
+    const userDoc = await db.collection("users").doc(user.uid).get();
+    if (!userDoc.exists) {
+      // If not, create a new user in Firestore
+      await db.collection("users").doc(user.uid).set({
+        name: user.displayName,
+        email: user.email,
+        photoURL: user.photoURL,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    alert(`Welcome, ${user.displayName}!`);
+    updateUserStatus();
+  } catch (error) {
+    console.error("Error signing in with Google:", error.message);
+    alert(error.message);
+  }
+});
 
 
 // Update User Status Across Pages
