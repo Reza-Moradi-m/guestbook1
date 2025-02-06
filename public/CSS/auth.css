@@ -5,6 +5,7 @@ body {
     margin: 0;
     padding: 0;
     color: #333;
+    text-align: center;
 }
 
 
@@ -88,3 +89,39 @@ body {
     background-color: #2f557a;
   }
   
+  .google-sign-in {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+  }
+  
+  .google-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    padding: 10px 20px;
+    font-size: 16px;
+    font-family: Arial, sans-serif;
+    color: #5f6368;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgba(60, 64, 67, 0.3), 0 4px 8px rgba(60, 64, 67, 0.15);
+    transition: box-shadow 0.2s;
+    width: 250px;
+  }
+  
+  .google-btn:hover {
+    box-shadow: 0 2px 4px rgba(60, 64, 67, 0.35), 0 6px 12px rgba(60, 64, 67, 0.2);
+  }
+  
+  .google-btn:focus {
+    outline: none;
+  }
+  
+  .google-logo {
+    width: 20px;
+    height: 20px;
+    margin-right: 10px;
+  }
