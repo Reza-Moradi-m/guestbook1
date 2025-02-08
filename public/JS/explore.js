@@ -107,6 +107,8 @@ const querySnapshot = await window.db
 .orderBy("timestamp", "desc")
 .get();
 
+const entryPreviewDiv = document.getElementById("random-posts-container");
+
 entryPreviewDiv.innerHTML = ""; // Clear any existing content
 
 if (querySnapshot.empty) {
@@ -442,6 +444,8 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
       // Fetch replies for this comment
       displayComments(postId, commentDiv, commentId, indentLevel + 1);
   });
-}
+}}
 
-displayLatestEntries();}
+document.addEventListener("DOMContentLoaded", () => {
+  displayLatestEntries();
+});
