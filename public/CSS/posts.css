@@ -215,3 +215,22 @@
     color: #888;
     text-align: right;
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    main {
+        padding: 15px;
+    }
+
+    form {
+        padding: 15px;
+    }
+
+    textarea, input[type="file"] {
+        max-width: 100%;
+    }
+
+    .post-list {
+        gap: 15px;
+    }
+}
