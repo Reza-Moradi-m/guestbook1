@@ -130,3 +130,12 @@ form label {
     margin-bottom: 5px;
 }
 
+#latest-entry img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+    border: 4px solid #007bff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
