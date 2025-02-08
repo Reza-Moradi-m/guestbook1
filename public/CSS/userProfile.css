@@ -1,11 +1,20 @@
 
    
-    /* Profile Page Styling */
-  main {
-    text-align: center;
+/* Main content styles */
+main {
+    max-width: 100%;
     padding: 20px;
     background-color: #000000;
-  }
+    text-align: center;
+}
+
+
+main a {
+    text-align: center;
+    margin-top: 20px;
+    font-stretch: semi-expanded; /* Use a valid value for font-stretch */
+    font-weight: 500;
+}
   
   #profile-section {
     margin: 20px 0;
@@ -70,12 +79,7 @@ button:hover {
 }
 
 
-main a {
-    text-align: center;
-    margin-top: 20px;
-    font-stretch: semi-expanded; /* Use a valid value for font-stretch */
-    font-weight: 500;
-}
+
 
 
 #latest-entry {

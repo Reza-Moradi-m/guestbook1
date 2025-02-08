@@ -1,8 +1,16 @@
-/* Profile Page Styling */
+/* Main content styles */
 main {
-  text-align: center;
+  max-width: 100%;
   padding: 20px;
   background-color: #000000;
+}
+
+
+main a {
+  text-align: center;
+  margin-top: 20px;
+  font-stretch: semi-expanded; /* Use a valid value for font-stretch */
+  font-weight: 500;
 }
 
 #profile-section {
@@ -79,12 +87,3 @@ button:hover {
   background-color: #8f2b0d;
 }
 
-
-
-main a {
-  text-align: center;
-  margin-top: 20px;
-  font-stretch: semi-expanded;
-  /* Use a valid value for font-stretch */
-  font-weight: 500;
-}
