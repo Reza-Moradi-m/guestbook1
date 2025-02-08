@@ -226,11 +226,11 @@
         padding: 15px;
     }
 
-    textarea, input[type="file"] {
+    form textarea, form input[type="file"] {
         max-width: 100%;
     }
 
-    .post-list {
+    #messages {
         gap: 15px;
     }
 }
