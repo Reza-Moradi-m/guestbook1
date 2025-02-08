@@ -32,9 +32,9 @@ async function displayChatList(userId) {
     userRef.get().then((userDoc) => {
       if (userDoc.exists) {
         const username = userDoc.data().username || "Unknown User";
-        chatDiv.textContent = `Chat with: ${username}`;
+        chatDiv.textContent = `${username}`;
       } else {
-        chatDiv.textContent = `Chat with: Unknown User`;
+        chatDiv.textContent = `Unknown User`;
       }
     });
 

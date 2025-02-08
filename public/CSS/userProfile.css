@@ -69,28 +69,6 @@ button:hover {
     background-color: #8f2b0d;
 }
 
-/* Navigation styles */
-nav {
-    display: flex;
-    justify-content: center;
-    gap: 10px; /* Modern browsers support this */
-    /* For older browsers, use margin instead of gap */
-    /* margin-right: 10px; */
-    margin-top: 20px;
-}
-
-nav a {
-    text-decoration: none;
-    color: #396e94;
-    font-weight: bold;
-    padding: 10px;
-}
-
-nav a:hover {
-    color: #000000;
-    background-color: #396e94;
-    border-radius: 4px;
-}
 
 main a {
     text-align: center;
