@@ -28,6 +28,7 @@ body {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     padding: 20px;
+    gap: 15px;
   }
   
   #chatroom-messages {
@@ -48,8 +49,10 @@ body {
   
   .message.user {
     background-color: #007bff;
-    color: white;
     align-self: flex-end;
+    color: #ffffff;
+    padding: 10px;
+    border-radius: 12px;
   }
   
   .message.other {
