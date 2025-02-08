@@ -121,24 +121,3 @@ main {
   margin-top: 30px;
 }
 
-#random-posts-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.post {
-  padding: 15px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  text-align: left;
-}
-
-.post a {
-  color: #007BFF;
-  text-decoration: none;
-}
-
-.post a:hover {
-  text-decoration: underline;
-}
