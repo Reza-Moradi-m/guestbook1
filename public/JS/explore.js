@@ -19,8 +19,8 @@ searchButton.addEventListener("click", async () => {
     return;
   }
 
-  // Clear previous results
-  resultsList.innerHTML = "";
+  // Clear previous results resultsList.innerHTML = "";
+  
 
   try {
     let results = [];
