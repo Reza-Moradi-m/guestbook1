@@ -101,271 +101,280 @@ function displayResults(results, type) {
 async function displayLatestEntries() {
 
 
-      // Fetch all posts from the guestbook collection
-const querySnapshot = await window.db
-.collection("guestbook")
-.orderBy("timestamp", "desc")
-.get();
+  // Fetch all posts from the guestbook collection
+  const querySnapshot = await window.db
+    .collection("guestbook")
+    .orderBy("timestamp", "desc")
+    .get();
 
-const entryPreviewDiv = document.getElementById("random-posts-container");
+  const entryPreviewDiv = document.getElementById("random-posts-container");
 
-entryPreviewDiv.innerHTML = ""; // Clear any existing content
+  entryPreviewDiv.innerHTML = ""; // Clear any existing content
 
-if (querySnapshot.empty) {
-entryPreviewDiv.innerHTML = "<p>No posts found. Be the first to post something!</p>";
-return;
-}
+  if (querySnapshot.empty) {
+    entryPreviewDiv.innerHTML = "<p>No posts found. Be the first to post something!</p>";
+    return;
+  }
 
 
 
-      querySnapshot.forEach(async (doc) => {
-          const data = doc.data();
-          const postId = doc.id;
+  querySnapshot.forEach(async (doc) => {
+    const data = doc.data();
+    const postId = doc.id;
 
-          const entryDiv = document.createElement("div");
-          entryDiv.classList.add("entry");
-          entryDiv.id = `post-${postId}`; // Add unique ID for each post
+    const entryDiv = document.createElement("div");
+    entryDiv.classList.add("entry");
+    entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
-          // Display clickable username linking to userProfile.html
-          const nameElement = document.createElement("h3");
-          nameElement.innerHTML = `
+    // Add profile picture
+    const profilePicElement = document.createElement("img");
+    profilePicElement.src = userData.profilePicture || "images/default-avatar.png";
+    profilePicElement.alt = "Profile Picture";
+    profilePicElement.style.width = "40px";
+    profilePicElement.style.height = "40px";
+    profilePicElement.style.borderRadius = "50%";
+    profilePicElement.style.marginRight = "10px";
+
+    // Display clickable username linking to userProfile.html
+    const nameElement = document.createElement("h3");
+    nameElement.innerHTML = `
   <a href="userProfile.html?userId=${data.userId}" class="user-link">
       ${data.name || "Unknown"} (${data.username || "NoUsername"})
   </a>
 `;
 
-          const messageElement = document.createElement("p");
-          messageElement.innerHTML = `
+    const messageElement = document.createElement("p");
+    messageElement.innerHTML = `
             Message: <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
           `;
 
-          const timestampElement = document.createElement("p");
-          const timestamp = new Date(data.timestamp.seconds * 1000);
-          timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
+    const timestampElement = document.createElement("p");
+    const timestamp = new Date(data.timestamp.seconds * 1000);
+    timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
 
-          // Determine the media type
-          let mediaElement = null;
-          if (data.fileURL) {
-              try {
-                  const response = await fetch(data.fileURL, { method: "HEAD" });
-                  const contentType = response.headers.get("Content-Type");
+    // Determine the media type
+    let mediaElement = null;
+    if (data.fileURL) {
+      try {
+        const response = await fetch(data.fileURL, { method: "HEAD" });
+        const contentType = response.headers.get("Content-Type");
 
-                  if (contentType.startsWith("image/")) {
-                      mediaElement = document.createElement("img");
-                      mediaElement.src = data.fileURL;
-                      mediaElement.alt = "Uploaded Image";
-                      mediaElement.style.display = "block";
-                      mediaElement.style.margin = "auto";
-                      mediaElement.style.maxWidth = "100%";
-                      mediaElement.style.height = "auto";
-                  } else if (contentType.startsWith("video/")) {
-                      mediaElement = document.createElement("video");
-                      mediaElement.controls = true;
-                      mediaElement.style.display = "block";
-                      mediaElement.style.margin = "auto";
-                      mediaElement.style.maxWidth = "100%";
-                      mediaElement.style.height = "auto";
+        if (contentType.startsWith("image/")) {
+          mediaElement = document.createElement("img");
+          mediaElement.src = data.fileURL;
+          mediaElement.alt = "Uploaded Image";
+          mediaElement.style.display = "block";
+          mediaElement.style.margin = "auto";
+          mediaElement.style.maxWidth = "100%";
+          mediaElement.style.height = "auto";
+        } else if (contentType.startsWith("video/")) {
+          mediaElement = document.createElement("video");
+          mediaElement.controls = true;
+          mediaElement.style.display = "block";
+          mediaElement.style.margin = "auto";
+          mediaElement.style.maxWidth = "100%";
+          mediaElement.style.height = "auto";
 
-                      const sourceElement = document.createElement("source");
-                      sourceElement.src = data.fileURL;
-                      sourceElement.type = contentType;
-                      mediaElement.appendChild(sourceElement);
-                  } else {
-                      mediaElement = document.createElement("a");
-                      mediaElement.href = data.fileURL;
-                      mediaElement.target = "_blank";
-                      mediaElement.textContent = "Download Attachment";
-                      mediaElement.classList.add("entry-link");
-                  }
-              } catch (error) {
-                  console.error("Error fetching file metadata:", error);
-              }
-          }
+          const sourceElement = document.createElement("source");
+          sourceElement.src = data.fileURL;
+          sourceElement.type = contentType;
+          mediaElement.appendChild(sourceElement);
+        } else {
+          mediaElement = document.createElement("a");
+          mediaElement.href = data.fileURL;
+          mediaElement.target = "_blank";
+          mediaElement.textContent = "Download Attachment";
+          mediaElement.classList.add("entry-link");
+        }
+      } catch (error) {
+        console.error("Error fetching file metadata:", error);
+      }
+    }
 
-          // Create interaction buttons (like, comment, share)
-          const interactionDiv = document.createElement("div");
-          interactionDiv.classList.add("interaction-buttons");
+    // Create interaction buttons (like, comment, share)
+    const interactionDiv = document.createElement("div");
+    interactionDiv.classList.add("interaction-buttons");
 
-          // Like button logic
-          const likeButton = document.createElement("button");
-          likeButton.classList.add("like-button");
+    // Like button logic
+    const likeButton = document.createElement("button");
+    likeButton.classList.add("like-button");
 
-          const userId = firebase.auth().currentUser?.uid;
-          const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
-          let liked = false;
+    const userId = firebase.auth().currentUser?.uid;
+    const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
+    let liked = false;
 
-          // Check if user already liked the post
-          if (userId) {
-              const userLikeDoc = await likesRef.get();
-              liked = userLikeDoc.exists;
-          }
+    // Check if user already liked the post
+    if (userId) {
+      const userLikeDoc = await likesRef.get();
+      liked = userLikeDoc.exists;
+    }
 
-          async function updateLikes() {
-              if (!userId) {
-                  alert("You need to log in to like this post!");
-                  return;
-              }
+    async function updateLikes() {
+      if (!userId) {
+        alert("You need to log in to like this post!");
+        return;
+      }
 
-              try {
-                  if (liked) {
-                      // Remove the like
-                      await likesRef.delete();
-                      liked = false;
-                  } else {
-                      // Add a like
-                      await likesRef.set({
-                          likedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                      });
-                      liked = true;
-                  }
-                  renderLikeButton();
-              } catch (error) {
-                  console.error("Error updating like:", error);
-                  alert("Failed to update like.");
-              }
-          }
-
-          async function getLikeCount() {
-              const snapshot = await window.db.collection("guestbook").doc(postId).collection("likes").get();
-              return snapshot.size; // Total number of likes
-          }
-
-          async function renderLikeButton() {
-              const likeCount = await getLikeCount();
-              likeButton.innerHTML = `⭐ ${likeCount}`;
-          }
-
-          likeButton.addEventListener("click", updateLikes);
-          renderLikeButton();
-
-
-          // Comment button
-          const commentButton = document.createElement("button");
-          commentButton.classList.add("comment-button");
-          commentButton.textContent = "💬 Comment";
-
-          // Comment section
-          const commentSection = document.createElement("div");
-          commentSection.classList.add("comment-section");
-          commentSection.style.display = "none";
-
-          // Existing comments container
-          const existingComments = document.createElement("div");
-          existingComments.classList.add("existing-comments");
-
-          // Input field for comments
-          const commentInput = document.createElement("input");
-          commentInput.type = "text";
-          commentInput.placeholder = "Write a comment...";
-          commentInput.classList.add("comment-input");
-
-          // Submit button for comments
-          const commentSubmit = document.createElement("button");
-          commentSubmit.textContent = "Submit";
-          commentSubmit.classList.add("comment-submit");
-
-          const cancelCommentButton = document.createElement("button");
-          cancelCommentButton.textContent = "Cancel";
-          cancelCommentButton.classList.add("cancel-comment-button");
-
-          cancelCommentButton.addEventListener("click", () => {
-              commentSection.style.display = "none"; // Hide comment box without submitting
-              commentInput.value = ""; // Clear the input field
+      try {
+        if (liked) {
+          // Remove the like
+          await likesRef.delete();
+          liked = false;
+        } else {
+          // Add a like
+          await likesRef.set({
+            likedAt: firebase.firestore.FieldValue.serverTimestamp(),
           });
+          liked = true;
+        }
+        renderLikeButton();
+      } catch (error) {
+        console.error("Error updating like:", error);
+        alert("Failed to update like.");
+      }
+    }
 
-          commentSubmit.addEventListener("click", async () => {
-              const commentText = commentInput.value.trim();
-              const user = firebase.auth().currentUser;
-              if (!user) {
-                  alert("You must be logged in to comment.");
-                  return;
-              }
-              if (commentText) {
-                  const userDoc = await window.db.collection("users").doc(user.uid).get();
-                  const userData = userDoc.data();
+    async function getLikeCount() {
+      const snapshot = await window.db.collection("guestbook").doc(postId).collection("likes").get();
+      return snapshot.size; // Total number of likes
+    }
 
-                  await window.db
-                      .collection("guestbook")
-                      .doc(postId)
-                      .collection("comments")
-                      .add({
-                          author: userData.name || "Unknown",
-                          username: userData.username || "NoUsername",
-                          message: commentText,
-                          parentCommentId: null,
-                          timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                      });
-                  commentInput.value = ""; // Clear input after submitting
-                  displayComments(postId, existingComments);
-              }
+    async function renderLikeButton() {
+      const likeCount = await getLikeCount();
+      likeButton.innerHTML = `⭐ ${likeCount}`;
+    }
+
+    likeButton.addEventListener("click", updateLikes);
+    renderLikeButton();
+
+
+    // Comment button
+    const commentButton = document.createElement("button");
+    commentButton.classList.add("comment-button");
+    commentButton.textContent = "💬 Comment";
+
+    // Comment section
+    const commentSection = document.createElement("div");
+    commentSection.classList.add("comment-section");
+    commentSection.style.display = "none";
+
+    // Existing comments container
+    const existingComments = document.createElement("div");
+    existingComments.classList.add("existing-comments");
+
+    // Input field for comments
+    const commentInput = document.createElement("input");
+    commentInput.type = "text";
+    commentInput.placeholder = "Write a comment...";
+    commentInput.classList.add("comment-input");
+
+    // Submit button for comments
+    const commentSubmit = document.createElement("button");
+    commentSubmit.textContent = "Submit";
+    commentSubmit.classList.add("comment-submit");
+
+    const cancelCommentButton = document.createElement("button");
+    cancelCommentButton.textContent = "Cancel";
+    cancelCommentButton.classList.add("cancel-comment-button");
+
+    cancelCommentButton.addEventListener("click", () => {
+      commentSection.style.display = "none"; // Hide comment box without submitting
+      commentInput.value = ""; // Clear the input field
+    });
+
+    commentSubmit.addEventListener("click", async () => {
+      const commentText = commentInput.value.trim();
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        alert("You must be logged in to comment.");
+        return;
+      }
+      if (commentText) {
+        const userDoc = await window.db.collection("users").doc(user.uid).get();
+        const userData = userDoc.data();
+
+        await window.db
+          .collection("guestbook")
+          .doc(postId)
+          .collection("comments")
+          .add({
+            author: userData.name || "Unknown",
+            username: userData.username || "NoUsername",
+            message: commentText,
+            parentCommentId: null,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
           });
+        commentInput.value = ""; // Clear input after submitting
+        displayComments(postId, existingComments);
+      }
+    });
 
-          // Add input and buttons to the comment section
-          commentSection.appendChild(existingComments);
-          commentSection.appendChild(commentInput);
-          commentSection.appendChild(commentSubmit);
-          commentSection.appendChild(cancelCommentButton);
+    // Add input and buttons to the comment section
+    commentSection.appendChild(existingComments);
+    commentSection.appendChild(commentInput);
+    commentSection.appendChild(commentSubmit);
+    commentSection.appendChild(cancelCommentButton);
 
-          // Toggle the comment section on button click
-          commentButton.addEventListener("click", () => {
-              commentSection.style.display =
-                  commentSection.style.display === "none" ? "block" : "none";
-              displayComments(postId, existingComments); // Ensure comments are displayed when toggled
-          });
+    // Toggle the comment section on button click
+    commentButton.addEventListener("click", () => {
+      commentSection.style.display =
+        commentSection.style.display === "none" ? "block" : "none";
+      displayComments(postId, existingComments); // Ensure comments are displayed when toggled
+    });
 
-          displayComments(postId, existingComments); // Display comments
+    displayComments(postId, existingComments); // Display comments
 
-          // Share button
-          const shareButton = document.createElement("button");
-          shareButton.classList.add("share-button");
-          shareButton.textContent = "🔗 Share";
+    // Share button
+    const shareButton = document.createElement("button");
+    shareButton.classList.add("share-button");
+    shareButton.textContent = "🔗 Share";
 
-          shareButton.addEventListener("click", async () => {
-              const postUrl = `${window.location.origin}#post-${postId}`;
-              if (navigator.share) {
-                  navigator.share({
-                      title: "Check out this post!",
-                      text: `${data.firstName} says: ${data.message}`,
-                      url: postUrl,
-                  });
-              } else {
-                  await navigator.clipboard.writeText(postUrl);
-                  alert("Post link copied to clipboard!");
-              }
-          });
+    shareButton.addEventListener("click", async () => {
+      const postUrl = `${window.location.origin}#post-${postId}`;
+      if (navigator.share) {
+        navigator.share({
+          title: "Check out this post!",
+          text: `${data.firstName} says: ${data.message}`,
+          url: postUrl,
+        });
+      } else {
+        await navigator.clipboard.writeText(postUrl);
+        alert("Post link copied to clipboard!");
+      }
+    });
 
-          interactionDiv.appendChild(likeButton);
-          interactionDiv.appendChild(commentButton);
-          interactionDiv.appendChild(shareButton);
+    interactionDiv.appendChild(likeButton);
+    interactionDiv.appendChild(commentButton);
+    interactionDiv.appendChild(shareButton);
 
-          entryDiv.appendChild(nameElement);
-          entryDiv.appendChild(messageElement);
-          entryDiv.appendChild(timestampElement);
-          if (mediaElement) entryDiv.appendChild(mediaElement);
+    entryDiv.appendChild(nameElement);
+    entryDiv.appendChild(messageElement);
+    entryDiv.appendChild(timestampElement);
+    if (mediaElement) entryDiv.appendChild(mediaElement);
 
-          entryDiv.appendChild(interactionDiv);
-          entryDiv.appendChild(commentSection);
+    entryDiv.appendChild(interactionDiv);
+    entryDiv.appendChild(commentSection);
 
-          entryPreviewDiv.appendChild(entryDiv);
-      });
- 
+    entryPreviewDiv.appendChild(entryDiv);
+  });
 
-// Function to display comments with proper nesting
-async function displayComments(postId, parentElement, parentId = null, indentLevel = 0) {
-  if (parentId === null) {
+
+  // Function to display comments with proper nesting
+  async function displayComments(postId, parentElement, parentId = null, indentLevel = 0) {
+    if (parentId === null) {
       parentElement.innerHTML = ""; // Clear comments container for top-level comments only
-  }
+    }
 
-  const commentsRef = window.db
+    const commentsRef = window.db
       .collection("guestbook")
       .doc(postId)
       .collection("comments")
       .where("parentCommentId", "==", parentId)
       .orderBy("timestamp", "asc");
 
-  const querySnapshot = await commentsRef.get();
+    const querySnapshot = await commentsRef.get();
 
-  querySnapshot.forEach((doc) => {
+    querySnapshot.forEach((doc) => {
       const commentData = doc.data();
       const commentId = doc.id;
 
@@ -404,32 +413,32 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
       cancelReplyButton.classList.add("cancel-reply-button");
 
       cancelReplyButton.addEventListener("click", () => {
-          replySection.style.display = "none"; // Hide reply section
-          replyInput.value = ""; // Clear input
+        replySection.style.display = "none"; // Hide reply section
+        replyInput.value = ""; // Clear input
       });
 
       submitReplyButton.addEventListener("click", async () => {
-          const replyText = replyInput.value.trim();
-          if (replyText) {
-              await window.db
-                  .collection("guestbook")
-                  .doc(postId)
-                  .collection("comments")
-                  .add({
-                      author: "Anonymous User", // Replace with actual user
-                      message: replyText,
-                      parentCommentId: commentId, // Reply to this comment
-                      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                  });
-              replyInput.value = ""; // Clear input
-              replySection.style.display = "none"; // Hide reply box after submitting
-              displayComments(postId, parentElement, commentId, indentLevel + 1); // Refresh replies
-          }
+        const replyText = replyInput.value.trim();
+        if (replyText) {
+          await window.db
+            .collection("guestbook")
+            .doc(postId)
+            .collection("comments")
+            .add({
+              author: "Anonymous User", // Replace with actual user
+              message: replyText,
+              parentCommentId: commentId, // Reply to this comment
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+          replyInput.value = ""; // Clear input
+          replySection.style.display = "none"; // Hide reply box after submitting
+          displayComments(postId, parentElement, commentId, indentLevel + 1); // Refresh replies
+        }
       });
 
       replyButton.addEventListener("click", () => {
-          replySection.style.display =
-              replySection.style.display === "none" ? "block" : "none";
+        replySection.style.display =
+          replySection.style.display === "none" ? "block" : "none";
       });
 
       replySection.appendChild(replyInput);
@@ -443,8 +452,9 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
 
       // Fetch replies for this comment
       displayComments(postId, commentDiv, commentId, indentLevel + 1);
-  });
-}}
+    });
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   displayLatestEntries();

@@ -226,6 +226,10 @@ const currentUserId = authUser ? authUser.uid : null;
 // Function to fetch and display the latest entries
 async function displayLatestEntries() {
   try {
+
+    // Clear previous posts
+    postsContainer.innerHTML = "";
+
     const querySnapshot = await window.db
       .collection("guestbook")
       .where("userId", "==", userId)
@@ -253,12 +257,7 @@ async function displayLatestEntries() {
       const entryDiv = document.createElement("div");
       entryDiv.classList.add("entry");
       entryDiv.id = `post-${postId}`; // Add unique ID for each post
-      entryDiv.innerHTML = `
-      <p><strong>Message:</strong>
-        <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
-      </p>
-      <p><strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}</p>
-    `;
+      
 
 
       // Display clickable username linking to userProfile.html

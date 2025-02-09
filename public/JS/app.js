@@ -51,6 +51,15 @@ async function displayLatestEntries() {
             entryDiv.classList.add("entry");
             entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
+            // Add profile picture
+            const profilePicElement = document.createElement("img");
+            profilePicElement.src = userData.profilePicture || "images/default-avatar.png";
+            profilePicElement.alt = "Profile Picture";
+            profilePicElement.style.width = "40px";
+            profilePicElement.style.height = "40px";
+            profilePicElement.style.borderRadius = "50%";
+            profilePicElement.style.marginRight = "10px";
+
             // Display clickable username linking to userProfile.html
             const nameElement = document.createElement("h3");
             nameElement.innerHTML = `
