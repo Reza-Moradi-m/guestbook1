@@ -152,265 +152,277 @@ async function displayLatestEntries() {
             entryDiv.classList.add("entry");
             entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
-            postsContainer.appendChild(entryDiv);
-
-            // Display clickable username linking to userProfile.html
-            // Fetch user profile picture for each post
+            // Fetch user profile picture and details
             const userDoc = await window.db.collection("users").doc(data.userId).get();
             const postUserData = userDoc.data();
 
+            // Create the profile picture and username container
             const nameElement = document.createElement("div");
             nameElement.classList.add("post-user-info");
             nameElement.innerHTML = `
-  <div style="display: flex; align-items: center;">
-    <img src="${postUserData?.profilePicture || 'images/default-avatar.png'}" 
-         alt="Profile Picture" 
-         style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
-    <a href="userProfile.html?userId=${data.userId}" class="user-link">
-        ${postUserData?.name || "Unknown"} (${postUserData?.username || "NoUsername"})
-    </a>
-  </div>
-`;
+                <div style="display: flex; align-items: center;">
+                    <img src="${postUserData?.profilePicture || 'images/default-avatar.png'}" 
+                         alt="Profile Picture" 
+                         style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+                    <a href="userProfile.html?userId=${data.userId}" class="user-link">
+                        ${postUserData?.name || "Unknown"} (${postUserData?.username || "NoUsername"})
+                    </a>
+                </div>
+            `;
 
-            entryDiv.innerHTML = `
-      <p><strong>Message:</strong>
-        <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
-      </p>
-  <p><strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}</p>
-`;
+            // Create the message and timestamp container
+            const messageElement = document.createElement("p");
+            messageElement.innerHTML = `
+                <strong>Message:</strong>
+                <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
+            `;
+
+            const timestampElement = document.createElement("p");
+            timestampElement.innerHTML = `
+                <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
+            `;
+
+            // Append elements to entryDiv in the correct order
+            entryDiv.appendChild(nameElement); // Profile picture and username
+            entryDiv.appendChild(messageElement); // Post message
+            entryDiv.appendChild(timestampElement); // Post timestamp
+
+            // Append the entryDiv to the posts container
+            postsContainer.appendChild(entryDiv);
+        });
 
 
 
-            // Determine the media type
-            let mediaElement = null;
-            if (data.fileURL) {
-                try {
-                    const response = await fetch(data.fileURL, { method: "HEAD" });
-                    const contentType = response.headers.get("Content-Type");
+        // Determine the media type
+        let mediaElement = null;
+        if (data.fileURL) {
+            try {
+                const response = await fetch(data.fileURL, { method: "HEAD" });
+                const contentType = response.headers.get("Content-Type");
 
-                    if (contentType.startsWith("image/")) {
-                        mediaElement = document.createElement("img");
-                        mediaElement.src = data.fileURL;
-                        mediaElement.alt = "Uploaded Image";
-                        mediaElement.style.display = "block";
-                        mediaElement.style.margin = "auto";
-                        mediaElement.style.maxWidth = "100%";
-                        mediaElement.style.height = "auto";
-                    } else if (contentType.startsWith("video/")) {
-                        mediaElement = document.createElement("video");
-                        mediaElement.controls = true;
-                        mediaElement.style.display = "block";
-                        mediaElement.style.margin = "auto";
-                        mediaElement.style.maxWidth = "100%";
-                        mediaElement.style.height = "auto";
+                if (contentType.startsWith("image/")) {
+                    mediaElement = document.createElement("img");
+                    mediaElement.src = data.fileURL;
+                    mediaElement.alt = "Uploaded Image";
+                    mediaElement.style.display = "block";
+                    mediaElement.style.margin = "auto";
+                    mediaElement.style.maxWidth = "100%";
+                    mediaElement.style.height = "auto";
+                } else if (contentType.startsWith("video/")) {
+                    mediaElement = document.createElement("video");
+                    mediaElement.controls = true;
+                    mediaElement.style.display = "block";
+                    mediaElement.style.margin = "auto";
+                    mediaElement.style.maxWidth = "100%";
+                    mediaElement.style.height = "auto";
 
-                        const sourceElement = document.createElement("source");
-                        sourceElement.src = data.fileURL;
-                        sourceElement.type = contentType;
-                        mediaElement.appendChild(sourceElement);
-                    } else {
-                        mediaElement = document.createElement("a");
-                        mediaElement.href = data.fileURL;
-                        mediaElement.target = "_blank";
-                        mediaElement.textContent = "Download Attachment";
-                        mediaElement.classList.add("entry-link");
-                    }
-                } catch (error) {
-                    console.error("Error fetching file metadata:", error);
+                    const sourceElement = document.createElement("source");
+                    sourceElement.src = data.fileURL;
+                    sourceElement.type = contentType;
+                    mediaElement.appendChild(sourceElement);
+                } else {
+                    mediaElement = document.createElement("a");
+                    mediaElement.href = data.fileURL;
+                    mediaElement.target = "_blank";
+                    mediaElement.textContent = "Download Attachment";
+                    mediaElement.classList.add("entry-link");
                 }
+            } catch (error) {
+                console.error("Error fetching file metadata:", error);
             }
+        }
 
-            // Create interaction buttons (like, comment, share)
-            const interactionDiv = document.createElement("div");
-            interactionDiv.classList.add("interaction-buttons");
+        // Create interaction buttons (like, comment, share)
+        const interactionDiv = document.createElement("div");
+        interactionDiv.classList.add("interaction-buttons");
 
 
 
-            // Like button logic
-            const likeButton = document.createElement("button");
-            likeButton.classList.add("like-button");
-            likeButton.textContent = "⭐ Loading..."; // Placeholder text while loading likes
+        // Like button logic
+        const likeButton = document.createElement("button");
+        likeButton.classList.add("like-button");
+        likeButton.textContent = "⭐ Loading..."; // Placeholder text while loading likes
 
-            const likesRef = window.db.collection("guestbook").doc(postId).collection("likes");
-            let liked = false; // Default value for liked state
+        const likesRef = window.db.collection("guestbook").doc(postId).collection("likes");
+        let liked = false; // Default value for liked state
 
-            // Fetch like count and determine if current user liked the post
-            async function initializeLikes() {
-                try {
-                    const likeCount = await likesRef.get(); // Fetch all likes for this post
-                    const currentUser = firebase.auth().currentUser;
-
-                    if (currentUser && currentUser.uid) {
-                        const userLikeDoc = await likesRef.doc(currentUser.uid).get();
-                        liked = userLikeDoc.exists; // Check if the user already liked the post
-                    }
-
-                    renderLikeButton(likeCount.size); // Update button with total likes
-                } catch (error) {
-                    console.error("Error fetching like count:", error);
-                    likeButton.textContent = "⭐ Error";
-                }
-            }
-
-            // Function to update like count and button state
-            async function updateLikes() {
+        // Fetch like count and determine if current user liked the post
+        async function initializeLikes() {
+            try {
+                const likeCount = await likesRef.get(); // Fetch all likes for this post
                 const currentUser = firebase.auth().currentUser;
 
-                if (!currentUser) {
-                    alert("You need to log in to like this post!");
-                    return;
+                if (currentUser && currentUser.uid) {
+                    const userLikeDoc = await likesRef.doc(currentUser.uid).get();
+                    liked = userLikeDoc.exists; // Check if the user already liked the post
                 }
 
-                try {
-                    const userLikeRef = likesRef.doc(currentUser.uid);
+                renderLikeButton(likeCount.size); // Update button with total likes
+            } catch (error) {
+                console.error("Error fetching like count:", error);
+                likeButton.textContent = "⭐ Error";
+            }
+        }
 
-                    if (liked) {
-                        await userLikeRef.delete(); // Remove the like
-                        liked = false;
-                    } else {
-                        await userLikeRef.set({
-                            likedAt: firebase.firestore.FieldValue.serverTimestamp(),
-                        });
-                        liked = true;
-                    }
+        // Function to update like count and button state
+        async function updateLikes() {
+            const currentUser = firebase.auth().currentUser;
 
-                    const likeCount = (await likesRef.get()).size; // Refresh like count
-                    renderLikeButton(likeCount);
-                } catch (error) {
-                    console.error("Error updating like:", error);
-                    alert("Failed to update like.");
-                }
+            if (!currentUser) {
+                alert("You need to log in to like this post!");
+                return;
             }
 
-            // Render the like button with updated count
-            function renderLikeButton(likeCount) {
-                likeButton.innerHTML = liked ? `⭐ ${likeCount}` : `☆ ${likeCount}`;
-            }
+            try {
+                const userLikeRef = likesRef.doc(currentUser.uid);
 
-            likeButton.addEventListener("click", updateLikes);
-            initializeLikes(); // Initialize the like button on load
-
-
-
-            // Comment button
-            const commentButton = document.createElement("button");
-            commentButton.classList.add("comment-button");
-            commentButton.textContent = "💬 Comment";
-
-            // Comment section
-            const commentSection = document.createElement("div");
-            commentSection.classList.add("comment-section");
-            commentSection.style.display = "none";
-
-            // Existing comments container
-            const existingComments = document.createElement("div");
-            existingComments.classList.add("existing-comments");
-
-            // Input field for comments
-            const commentInput = document.createElement("input");
-            commentInput.type = "text";
-            commentInput.placeholder = "Write a comment...";
-            commentInput.classList.add("comment-input");
-
-            // Submit button for comments
-            const commentSubmit = document.createElement("button");
-            commentSubmit.textContent = "Submit";
-            commentSubmit.classList.add("comment-submit");
-
-            const cancelCommentButton = document.createElement("button");
-            cancelCommentButton.textContent = "Cancel";
-            cancelCommentButton.classList.add("cancel-comment-button");
-
-            cancelCommentButton.addEventListener("click", () => {
-                commentSection.style.display = "none"; // Hide comment box without submitting
-                commentInput.value = ""; // Clear the input field
-            });
-
-            commentSubmit.addEventListener("click", async () => {
-                const commentText = commentInput.value.trim();
-                const user = firebase.auth().currentUser;
-                if (!user) {
-                    alert("You must be logged in to comment.");
-                    return;
-                }
-                if (commentText) {
-                    const userDoc = await window.db.collection("users").doc(user.uid).get();
-                    const userData = userDoc.data();
-
-                    await window.db
-                        .collection("guestbook")
-                        .doc(postId)
-                        .collection("comments")
-                        .add({
-                            author: userData.name || "Unknown",
-                            username: userData.username || "NoUsername",
-                            message: commentText,
-                            parentCommentId: null,
-                            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                        });
-                    commentInput.value = ""; // Clear input after submitting
-                    displayComments(postId, existingComments);
-                }
-            });
-
-            // Add input and buttons to the comment section
-            commentSection.appendChild(existingComments);
-            commentSection.appendChild(commentInput);
-            commentSection.appendChild(commentSubmit);
-            commentSection.appendChild(cancelCommentButton);
-
-            // Toggle the comment section on button click
-            commentButton.addEventListener("click", () => {
-                commentSection.style.display =
-                    commentSection.style.display === "none" ? "block" : "none";
-                displayComments(postId, existingComments); // Ensure comments are displayed when toggled
-            });
-
-            displayComments(postId, existingComments); // Display comments
-
-            // Share button
-            const shareButton = document.createElement("button");
-            shareButton.classList.add("share-button");
-            shareButton.textContent = "🔗 Share";
-
-            shareButton.addEventListener("click", async () => {
-                const postUrl = `${window.location.origin}#post-${postId}`;
-                if (navigator.share) {
-                    navigator.share({
-                        title: "Check out this post!",
-                        text: `${data.firstName} says: ${data.message}`,
-                        url: postUrl,
-                    });
+                if (liked) {
+                    await userLikeRef.delete(); // Remove the like
+                    liked = false;
                 } else {
-                    await navigator.clipboard.writeText(postUrl);
-                    alert("Post link copied to clipboard!");
+                    await userLikeRef.set({
+                        likedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                    });
+                    liked = true;
                 }
-            });
 
-            interactionDiv.appendChild(likeButton);
-            interactionDiv.appendChild(commentButton);
-            interactionDiv.appendChild(shareButton);
+                const likeCount = (await likesRef.get()).size; // Refresh like count
+                renderLikeButton(likeCount);
+            } catch (error) {
+                console.error("Error updating like:", error);
+                alert("Failed to update like.");
+            }
+        }
 
-            entryDiv.appendChild(nameElement);
-            entryDiv.appendChild(messageElement);
-            entryDiv.appendChild(timestampElement);
+        // Render the like button with updated count
+        function renderLikeButton(likeCount) {
+            likeButton.innerHTML = liked ? `⭐ ${likeCount}` : `☆ ${likeCount}`;
+        }
 
-            // Append the post container to postsContainer
-            postsContainer.appendChild(entryDiv);
-
-            if (mediaElement) entryDiv.appendChild(mediaElement);
-
-            entryDiv.appendChild(interactionDiv);
-            entryDiv.appendChild(commentSection);
-
+        likeButton.addEventListener("click", updateLikes);
+        initializeLikes(); // Initialize the like button on load
 
 
 
+        // Comment button
+        const commentButton = document.createElement("button");
+        commentButton.classList.add("comment-button");
+        commentButton.textContent = "💬 Comment";
+
+        // Comment section
+        const commentSection = document.createElement("div");
+        commentSection.classList.add("comment-section");
+        commentSection.style.display = "none";
+
+        // Existing comments container
+        const existingComments = document.createElement("div");
+        existingComments.classList.add("existing-comments");
+
+        // Input field for comments
+        const commentInput = document.createElement("input");
+        commentInput.type = "text";
+        commentInput.placeholder = "Write a comment...";
+        commentInput.classList.add("comment-input");
+
+        // Submit button for comments
+        const commentSubmit = document.createElement("button");
+        commentSubmit.textContent = "Submit";
+        commentSubmit.classList.add("comment-submit");
+
+        const cancelCommentButton = document.createElement("button");
+        cancelCommentButton.textContent = "Cancel";
+        cancelCommentButton.classList.add("cancel-comment-button");
+
+        cancelCommentButton.addEventListener("click", () => {
+            commentSection.style.display = "none"; // Hide comment box without submitting
+            commentInput.value = ""; // Clear the input field
         });
-    } catch (error) {
-        console.error("Error fetching latest entries:", error);
-    }
+
+        commentSubmit.addEventListener("click", async () => {
+            const commentText = commentInput.value.trim();
+            const user = firebase.auth().currentUser;
+            if (!user) {
+                alert("You must be logged in to comment.");
+                return;
+            }
+            if (commentText) {
+                const userDoc = await window.db.collection("users").doc(user.uid).get();
+                const userData = userDoc.data();
+
+                await window.db
+                    .collection("guestbook")
+                    .doc(postId)
+                    .collection("comments")
+                    .add({
+                        author: userData.name || "Unknown",
+                        username: userData.username || "NoUsername",
+                        message: commentText,
+                        parentCommentId: null,
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    });
+                commentInput.value = ""; // Clear input after submitting
+                displayComments(postId, existingComments);
+            }
+        });
+
+        // Add input and buttons to the comment section
+        commentSection.appendChild(existingComments);
+        commentSection.appendChild(commentInput);
+        commentSection.appendChild(commentSubmit);
+        commentSection.appendChild(cancelCommentButton);
+
+        // Toggle the comment section on button click
+        commentButton.addEventListener("click", () => {
+            commentSection.style.display =
+                commentSection.style.display === "none" ? "block" : "none";
+            displayComments(postId, existingComments); // Ensure comments are displayed when toggled
+        });
+
+        displayComments(postId, existingComments); // Display comments
+
+        // Share button
+        const shareButton = document.createElement("button");
+        shareButton.classList.add("share-button");
+        shareButton.textContent = "🔗 Share";
+
+        shareButton.addEventListener("click", async () => {
+            const postUrl = `${window.location.origin}#post-${postId}`;
+            if (navigator.share) {
+                navigator.share({
+                    title: "Check out this post!",
+                    text: `${data.firstName} says: ${data.message}`,
+                    url: postUrl,
+                });
+            } else {
+                await navigator.clipboard.writeText(postUrl);
+                alert("Post link copied to clipboard!");
+            }
+        });
+
+        interactionDiv.appendChild(likeButton);
+        interactionDiv.appendChild(commentButton);
+        interactionDiv.appendChild(shareButton);
+
+        entryDiv.appendChild(nameElement);
+        entryDiv.appendChild(messageElement);
+        entryDiv.appendChild(timestampElement);
+
+        // Append the post container to postsContainer
+        postsContainer.appendChild(entryDiv);
+
+        if (mediaElement) entryDiv.appendChild(mediaElement);
+
+        entryDiv.appendChild(interactionDiv);
+        entryDiv.appendChild(commentSection);
+
+
+
+
+    
+} catch (error) {
+    console.error("Error fetching latest entries:", error);
 }
+
 
 // Function to display comments with proper nesting
 async function displayComments(postId, parentElement, parentId = null, indentLevel = 0) {
@@ -589,4 +601,4 @@ async function deletePost(postId) {
         console.error("Error deleting post:", error);
         alert("Failed to delete post. Please try again.");
     }
-}
+}}
