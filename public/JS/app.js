@@ -6,18 +6,11 @@ window.storage = firebase.storage();
 // Reference to the entry preview div
 const entryPreviewDiv = document.getElementById("entry-preview");
 
+
 // Function to fetch and display the latest entries for followed accounts
 async function displayLatestEntries(authUser) {
     // Rest of the logic remains the same
-} {
     try {
-        firebase.auth().onAuthStateChanged((authUser) => {
-            if (!authUser) {
-                entryPreviewDiv.innerHTML = "<p>You must log in to see posts from followed users.</p>";
-                return;
-            }
-            displayLatestEntries(authUser);
-        });
 
         // Fetch followed users
         const followingSnapshot = await window.db
@@ -47,7 +40,7 @@ async function displayLatestEntries(authUser) {
             return;
         }
 
-        querySnapshot.forEach(async (doc) => {
+        for (const doc of querySnapshot.docs) {
             const data = doc.data();
             const postId = doc.id;
 
@@ -55,7 +48,7 @@ async function displayLatestEntries(authUser) {
             entryDiv.classList.add("entry");
             entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
-            const userDoc = await window.db.collection("users").doc(authUser.uid).get();
+            const userDoc = await window.db.collection("users").doc(data.userId).get();
             const userData = userDoc.data();
 
             // Add profile picture
@@ -288,7 +281,7 @@ async function displayLatestEntries(authUser) {
             entryDiv.appendChild(commentSection);
 
             entryPreviewDiv.appendChild(entryDiv);
-        });
+        }
     } catch (error) {
         console.error("Error fetching latest entries:", error);
     }
@@ -360,7 +353,7 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
                     .doc(postId)
                     .collection("comments")
                     .add({
-                        author: authUser.displayName || "Anonymous User", // Replace with actual user
+                        author: userData.name || "Anonymous User", // Replace with actual user
                         message: replyText,
                         parentCommentId: commentId, // Reply to this comment
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -391,9 +384,9 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
 }
 
 // Call the function to display entries
-firebase.auth().onAuthStateChanged((user) => {
-    if (user) {
-        displayLatestEntries();
+firebase.auth().onAuthStateChanged((authUser) => {
+    if (authUser) {
+        displayLatestEntries(authUser);
     } else {
         entryPreviewDiv.innerHTML = "<p>You must log in to see posts from followed users.</p>";
     }
