@@ -126,6 +126,10 @@ async function displayLatestEntries() {
     entryDiv.classList.add("entry");
     entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
+    const userDoc = await window.db.collection("users").doc(user.uid).get();
+    const userData = userDoc.data();
+
+
     // Add profile picture
     const profilePicElement = document.createElement("img");
     profilePicElement.src = userData.profilePicture || "images/default-avatar.png";
