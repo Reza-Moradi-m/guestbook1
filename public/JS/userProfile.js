@@ -32,8 +32,6 @@ async function loadUserProfile() {
       return;
     }
 
-    entryPreviewDiv.innerHTML = ""; // Start with a clean slate
-
 
 
     // Display user details
