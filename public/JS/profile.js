@@ -177,12 +177,7 @@ async function displayLatestEntries() {
   </div>
 `;
 
-            const messageElement = document.createElement("p");
-            messageElement.textContent = `Message: ${data.message}`;
-
-            const timestampElement = document.createElement("p");
-            const timestamp = new Date(data.timestamp.seconds * 1000);
-            timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
+           
 
             // Determine the media type
             let mediaElement = null;
