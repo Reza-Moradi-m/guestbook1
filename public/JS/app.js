@@ -7,13 +7,17 @@ window.storage = firebase.storage();
 const entryPreviewDiv = document.getElementById("entry-preview");
 
 // Function to fetch and display the latest entries for followed accounts
-async function displayLatestEntries() {
+async function displayLatestEntries(authUser) {
+    // Rest of the logic remains the same
+} {
     try {
-        const authUser = firebase.auth().currentUser;
-        if (!authUser) {
-            alert("You must be logged in to see posts!");
-            return;
-        }
+        firebase.auth().onAuthStateChanged((authUser) => {
+            if (!authUser) {
+                entryPreviewDiv.innerHTML = "<p>You must log in to see posts from followed users.</p>";
+                return;
+            }
+            displayLatestEntries(authUser);
+        });
 
         // Fetch followed users
         const followingSnapshot = await window.db
@@ -51,7 +55,7 @@ async function displayLatestEntries() {
             entryDiv.classList.add("entry");
             entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
-            const userDoc = await window.db.collection("users").doc(user.uid).get();
+            const userDoc = await window.db.collection("users").doc(authUser.uid).get();
             const userData = userDoc.data();
 
             // Add profile picture
@@ -127,7 +131,7 @@ async function displayLatestEntries() {
             const likeButton = document.createElement("button");
             likeButton.classList.add("like-button");
 
-            const userId = firebase.auth().currentUser?.uid;
+            const userId = authUser.uid;
             const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
             let liked = false;
 
@@ -356,7 +360,7 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
                     .doc(postId)
                     .collection("comments")
                     .add({
-                        author: "Anonymous User", // Replace with actual user
+                        author: authUser.displayName || "Anonymous User", // Replace with actual user
                         message: replyText,
                         parentCommentId: commentId, // Reply to this comment
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
