@@ -105,7 +105,8 @@ function displayResults(results, type) {
 
 async function displayLatestEntries(authUser) {
   const userId = authUser ? authUser.uid : null;
-  entryPreviewDiv.innerHTML = ""; 
+
+  entryPreviewDiv.innerHTML = "";
   // Rest of the logic remains the same
   try {
 
@@ -123,10 +124,18 @@ async function displayLatestEntries(authUser) {
       return;
     }
 
+    const processedPosts = new Set(); // ✅ Prevent duplicate posts
+
     querySnapshot.forEach(async (doc) => {
       const data = doc.data();
       const postId = doc.id;
-      let userId = authUser ? authUser.uid : null;
+
+      // ✅ Prevent duplicate posts from being added
+      if (processedPosts.has(postId)) return;
+      processedPosts.add(postId);
+
+
+
 
       const entryDiv = document.createElement("div");
       entryDiv.classList.add("entry");
@@ -173,13 +182,16 @@ async function displayLatestEntries(authUser) {
       let mediaElement = null;
       if (data.fileURL) {
         try {
+          console.log("Checking file URL:", data.fileURL); // Debugging log
+
           const response = await fetch(data.fileURL, { method: "HEAD" });
 
-    if (!response.ok) {
-      throw new Error("File not found");
-    }
+          if (!response.ok) {
+            throw new Error(`File not found: ${data.fileURL}`);
+          }
 
-    const contentType = response.headers.get("Content-Type");
+
+          const contentType = response.headers.get("Content-Type");
 
           if (contentType.startsWith("image/")) {
             mediaElement = document.createElement("img");
@@ -209,7 +221,11 @@ async function displayLatestEntries(authUser) {
             mediaElement.classList.add("entry-link");
           }
         } catch (error) {
-          console.error("Error fetching file metadata:", error);
+          console.error("Error fetching file metadata:", error.message);
+
+          mediaElement = document.createElement("img");
+          mediaElement.src = "images/default-avatar.png"; // Default placeholder
+          mediaElement.alt = "File not found";
         }
       }
 
@@ -227,7 +243,7 @@ async function displayLatestEntries(authUser) {
         userId = authUser.uid;
         likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
       }
-      
+
 
       // Check if user already liked the post
       if (userId) {
@@ -315,6 +331,18 @@ async function displayLatestEntries(authUser) {
           alert("You must be logged in to comment.");
           return;
         }
+
+        // ✅ Fetch user details from Firestore
+        let userData = { name: "Unknown", username: "NoUsername", profilePicture: "images/default-avatar.png" };
+        try {
+          const userDoc = await window.db.collection("users").doc(user.uid).get();
+          if (userDoc.exists) {
+            userData = userDoc.data();
+          }
+        } catch (error) {
+          console.error("Error fetching user data:", error);
+        }
+
         if (commentText) {
 
 
@@ -409,8 +437,12 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
     const commentData = doc.data();
     const commentId = doc.id;
 
-    // Fetch user data asynchronously
-    let commentUserData = { profilePicture: null }; // Default if user data is missing
+    let commentUserData = {
+      profilePicture: "images/default-avatar.png",  // ✅ Default image
+      name: "Unknown",
+      username: "NoUsername",
+    };
+
     if (commentData.userId) {
       try {
         const commentUserDoc = await window.db.collection("users").doc(commentData.userId).get();
@@ -436,7 +468,7 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
               <p>
                   <strong>
                       <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
-                          ${commentData.author || "Unknown"} (${commentData.username || "NoUsername"})
+                          ${commentData.author || commentUserData.name || "Unknown"} (${commentData.username || commentUserData.username || "NoUsername"})
                       </a>
                   </strong>: ${commentData.message}
               </p>
