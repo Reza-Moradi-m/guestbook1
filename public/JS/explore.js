@@ -159,7 +159,7 @@ async function displayLatestEntries() {
       entryDiv.appendChild(timestampElement); // Post timestamp
 
       // Append the entryDiv to the posts container
-      postsContainer.appendChild(entryDiv);
+      entryPreviewDiv.appendChild(entryDiv); // Use entryPreviewDiv instead of postsContainer
       // Determine the media type
       let mediaElement = null;
       if (data.fileURL) {
