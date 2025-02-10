@@ -162,7 +162,7 @@ async function displayLatestEntries() {
             nameElement.innerHTML = `
                 <div style="display: flex; align-items: center;">
                     <img src="${postUserData?.profilePicture || 'images/default-avatar.png'}" 
-                         alt="Profile Picture" 
+                         alt="Profile Picture"  
                          style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
                     <a href="userProfile.html?userId=${data.userId}" class="user-link">
                         ${postUserData?.name || "Unknown"} (${postUserData?.username || "NoUsername"})

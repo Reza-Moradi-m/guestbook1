@@ -35,12 +35,7 @@ async function displayLatestEntries(authUser) {
 
         entryPreviewDiv.innerHTML = ""; // Clear any existing content
 
-        if (querySnapshot.empty) {
-            entryPreviewDiv.innerHTML = "<p>No posts found from followed users. Start following users to see their posts!</p>";
-            return;
-        }
-
-        for (const doc of querySnapshot.docs) {
+        querySnapshot.forEach(async (doc) => {
             const data = doc.data();
             const postId = doc.id;
 
@@ -48,47 +43,43 @@ async function displayLatestEntries(authUser) {
             entryDiv.classList.add("entry");
             entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
+            // Fetch user profile picture and details
             const userDoc = await window.db.collection("users").doc(data.userId).get();
-            const userData = userDoc.exists ? userDoc.data() : { profilePicture: null, name: "Unknown", username: "NoUsername" };
+            const postUserData = userDoc.data();
 
-            // Create a container for the profile picture and username
-            const userContainer = document.createElement("div");
-            userContainer.style.display = "flex";
-            userContainer.style.alignItems = "center";
-
-            // Add profile picture
-            const profilePicElement = document.createElement("img");
-            profilePicElement.src = userData.profilePicture || "images/default-avatar.png";
-            profilePicElement.alt = "Profile Picture";
-            profilePicElement.style.width = "40px";
-            profilePicElement.style.height = "40px";
-            profilePicElement.style.borderRadius = "50%";
-            profilePicElement.style.marginRight = "10px";
-
-            // Add clickable username linking to userProfile.html
-            const nameElement = document.createElement("h3");
+            // Create the profile picture and username container
+            const nameElement = document.createElement("div");
+            nameElement.classList.add("post-user-info");
             nameElement.innerHTML = `
-    <a href="userProfile.html?userId=${data.userId}" class="user-link">
-        ${userData.name} (${userData.username})
-    </a>
-`;
+                <div style="display: flex; align-items: center;">
+                    <img src="${postUserData?.profilePicture || 'images/default-avatar.png'}" 
+                         alt="Profile Picture"  
+                         style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+                    <a href="userProfile.html?userId=${data.userId}" class="user-link">
+                        ${postUserData?.name || "Unknown"} (${postUserData?.username || "NoUsername"})
+                    </a>
+                </div>
+            `;
 
-            // Append profile picture and username to the container
-            userContainer.appendChild(profilePicElement);
-            userContainer.appendChild(nameElement);
-
-            // Append the user container to the post entry
-            entryDiv.appendChild(userContainer);
-
+            // Create the message and timestamp container
             const messageElement = document.createElement("p");
             messageElement.innerHTML = `
-              Message: <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
+                <strong>Message:</strong>
+                <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
             `;
 
             const timestampElement = document.createElement("p");
-            const timestamp = new Date(data.timestamp.seconds * 1000);
-            timestampElement.textContent = `Posted on: ${timestamp.toLocaleString()}`;
+            timestampElement.innerHTML = `
+                <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
+            `;
 
+            // Append elements to entryDiv in the correct order
+            entryDiv.appendChild(nameElement); // Profile picture and username
+            entryDiv.appendChild(messageElement); // Post message
+            entryDiv.appendChild(timestampElement); // Post timestamp
+
+            // Append the entryDiv to the posts container
+            postsContainer.appendChild(entryDiv);
             // Determine the media type
             let mediaElement = null;
             if (data.fileURL) {
@@ -293,7 +284,7 @@ async function displayLatestEntries(authUser) {
             entryDiv.appendChild(commentSection);
 
             entryPreviewDiv.appendChild(entryDiv);
-        }
+        });
     } catch (error) {
         console.error("Error fetching latest entries:", error);
     }
