@@ -9,7 +9,8 @@
     <meta name="author" content="Your Name">
     <link rel= "icon" href = "images/logo.png" type = "image/x-icon">
     <link rel="stylesheet" href="CSS/responsive.css">
-    <link rel="stylesheet" href="CSS/styles.css">
+    
+    <link rel="stylesheet" href="CSS/post.css">
 </head>
 <body>
   <header>
@@ -31,21 +32,40 @@
 
 </header>
 
-    <main>
-        <div id="post-details">
-          <h1>Post Details</h1>
+<main>
+  <div class="post-details">
+      <h1>Post Details</h1>
+      <div class="post-metadata">
+          <img id="post-author-image" class="profile-picture" src="images/default-avatar.png" alt="Author's Profile Picture">
+          <p id="post-author" class="user-details">Posted by: <a href="#">Author</a></p>
+          <p id="post-timestamp">Posted on: <span>Loading...</span></p>
+      </div>
+      <div class="post-content">
           <p id="post-message">Loading...</p>
-          <p id="post-author"></p>
-          <p id="post-timestamp"></p>
-          <img id="post-media" style="max-width: 100%; display: none;" alt="Post Media">
-        </div>
-      </main>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
-<script src="JS/common.js" defer></script>
-  <script src="JS/post.js" defer></script>
+          <img id="post-media" class="post-image" style="display: none;" alt="Post Media">
+      </div>
+      <div class="interaction-buttons">
+          <button class="like-button" id="like-button">⭐ 0</button>
+          <button class="comment-button" id="comment-button">💬 Comment</button>
+          <button class="share-button" id="share-button">🔗 Share</button>
+      </div>
+      <div class="comment-section" id="comment-section" style="display: none;">
+          <div class="existing-comments" id="existing-comments">
+              <!-- Comments will be dynamically added here -->
+          </div>
+          <div class="comment-input-container">
+              <input id="comment-input" class="comment-input" type="text" placeholder="Write a comment...">
+              <button id="comment-submit" class="comment-submit">Submit</button>
+          </div>
+      </div>
+  </div>
+</main>
 
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="JS/common.js" defer></script>
+<script src="JS/post.js" defer></script>
 </body>
 </html>
