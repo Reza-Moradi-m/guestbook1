@@ -317,28 +317,31 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         commentDiv.style.textAlign = "left"; // Align text to the left
 
         let commentUserData = { profilePicture: null }; // Default if user data is missing
-        try {
-            if (commentData.userId) {
+        if (commentData.userId) {
+            try {
                 const commentUserDoc = await window.db.collection("users").doc(commentData.userId).get();
                 if (commentUserDoc.exists) {
                     commentUserData = { ...commentUserDoc.data(), userId: commentData.userId }; // Attach userId explicitly
+                } else {
+                    console.warn("No user data found for userId:", commentData.userId);
                 }
+            } catch (error) {
+                console.error("Error fetching user data for comment:", error);
             }
-        } catch (error) {
-            console.error("Error fetching user data for comment:", error);
+        } else {
+            console.warn("Missing userId in comment data:", commentData);
         }
 
-        // Ensure `commentUserData` is assigned to the current iteration only
-        const currentCommentUserData = { ...commentUserData };
+        console.log("Final User Data for Comment:", commentUserData);
 
         commentDiv.innerHTML = `
 <div style="display: flex; align-items: center;">
-  <img src="${currentCommentUserData.profilePicture || 'images/default-avatar.png'}"
+  <img src="${commentUserData.profilePicture || 'images/default-avatar.png'}"
        alt="Profile Picture"
        style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
   <p>
       <strong>
-          <a href="userProfile.html?userId=${currentCommentUserData.userId}" class="user-link">
+          <a href="userProfile.html?userId=${commentUserData.userId || '#'}" class="user-link">
               ${commentData.author || "Anonymous"} (${commentData.username || "NoUsername"})
           </a>
       </strong>: ${commentData.message}
