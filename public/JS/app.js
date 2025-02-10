@@ -290,6 +290,8 @@ async function displayLatestEntries(authUser) {
     }
 }
 
+
+// Function to display comments with proper nesting
 // Function to display comments with proper nesting
 async function displayComments(postId, parentElement, parentId = null, indentLevel = 0) {
     if (parentId === null) {
@@ -309,13 +311,6 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         const commentData = doc.data();
         const commentId = doc.id;
 
-        const commentDiv = document.createElement("div");
-        commentDiv.classList.add("comment");
-
-        // Ensure only a single level of indentation
-        const indentationLevel = parentId === null ? 0 : 20;
-        commentDiv.style.marginLeft = `${indentationLevel}px`;
-
         // Fetch user data asynchronously
         let commentUserData = { profilePicture: null }; // Default if user data is missing
         if (commentData.userId) {
@@ -329,6 +324,12 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
             }
         }
 
+        // Create the comment div
+        const commentDiv = document.createElement("div");
+        commentDiv.classList.add("comment");
+        commentDiv.style.marginLeft = `${indentLevel * 20}px`; // Adjust margin for nesting
+
+        // Set the correct profile picture and username for each comment
         commentDiv.innerHTML = `
             <div style="display: flex; align-items: center;">
                 <img src="${commentUserData.profilePicture || 'images/default-avatar.png'}"
@@ -344,7 +345,7 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
             </div>
         `;
 
-        // Add Reply button and section
+        // Add Reply button and reply section (if needed)
         const replyButton = document.createElement("button");
         replyButton.textContent = "Reply";
         replyButton.classList.add("reply-button");
@@ -366,11 +367,13 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         cancelReplyButton.textContent = "Cancel";
         cancelReplyButton.classList.add("cancel-reply-button");
 
-        cancelReplyButton.addEventListener("click", () => {
-            replySection.style.display = "none"; // Hide reply section
-            replyInput.value = ""; // Clear input
+        // Toggle reply section on reply button click
+        replyButton.addEventListener("click", () => {
+            replySection.style.display =
+                replySection.style.display === "none" ? "block" : "none";
         });
 
+        // Submit reply logic
         submitReplyButton.addEventListener("click", async () => {
             const replyText = replyInput.value.trim();
             if (replyText) {
@@ -379,36 +382,35 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
                     .doc(postId)
                     .collection("comments")
                     .add({
-                        author: commentData.author || "Anonymous User",
-                        username: commentData.username || "NoUsername",
+                        author: commentUserData.name || "Anonymous User",
+                        username: commentUserData.username || "NoUsername",
+                        userId: commentData.userId,
                         message: replyText,
-                        parentCommentId: commentId, // Reply to this comment
+                        parentCommentId: commentId,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     });
-                replyInput.value = ""; // Clear input
-                replySection.style.display = "none"; // Hide reply box after submitting
-                displayComments(postId, parentElement); // Refresh comments
+                replyInput.value = ""; // Clear input field
+                replySection.style.display = "none"; // Hide reply section
+                displayComments(postId, parentElement, parentId, indentLevel + 1); // Refresh comments
             }
         });
 
-        replyButton.addEventListener("click", () => {
-            replySection.style.display =
-                replySection.style.display === "none" ? "block" : "none";
+        // Cancel reply logic
+        cancelReplyButton.addEventListener("click", () => {
+            replySection.style.display = "none"; // Hide reply section
+            replyInput.value = ""; // Clear input
         });
 
         replySection.appendChild(replyInput);
         replySection.appendChild(submitReplyButton);
         replySection.appendChild(cancelReplyButton);
-
         commentDiv.appendChild(replyButton);
         commentDiv.appendChild(replySection);
 
         parentElement.appendChild(commentDiv);
 
-        // Fetch replies for this comment (limit nesting to one level)
-        if (parentId === null) {
-            await displayComments(postId, commentDiv, commentId, 1);
-        }
+        // Fetch and display replies recursively
+        await displayComments(postId, parentElement, commentId, indentLevel + 1);
     }
 }
 
