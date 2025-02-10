@@ -108,7 +108,7 @@ async function displayLatestEntries() {
       .get();
 
 
-    entryPreviewDiv.innerHTML = ""; // Clear any existing content
+    
 
     if (querySnapshot.empty) {
       entryPreviewDiv.innerHTML = "<p>No posts found. Be the first to post something!</p>";
