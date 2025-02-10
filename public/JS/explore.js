@@ -215,10 +215,10 @@ async function displayLatestEntries(authUser) {
       const likeButton = document.createElement("button");
       likeButton.classList.add("like-button");
 
-      
+      let likesRef = null;
       if (authUser) {
         userId = authUser.uid;
-        const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
+        likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
       }
       let liked = false;
 
