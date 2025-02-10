@@ -102,12 +102,18 @@ async function displayLatestEntries() {
   try {
 
     // Fetch followed users
-    const followingSnapshot = await window.db
+    const querySnapshot = await window.db
       .collection("guestbook")
       .orderBy("timestamp", "desc")
       .get();
 
 
+    
+
+    if (querySnapshot.empty) {
+      entryPreviewDiv.innerHTML = "<p>No posts found. Be the first to post something!</p>";
+      return;
+    }
 
     querySnapshot.forEach(async (doc) => {
       const data = doc.data();
