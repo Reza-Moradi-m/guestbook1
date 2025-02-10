@@ -8,6 +8,7 @@ const searchType = document.getElementById("search-type");
 const searchButton = document.getElementById("search-button");
 const resultsList = document.getElementById("results-list");
 const randomPostsContainer = document.getElementById("random-posts-container");
+const entryPreviewDiv = document.getElementById("entry-preview");
 
 // Event listener for the search button
 searchButton.addEventListener("click", async () => {
