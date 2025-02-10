@@ -1,4 +1,3 @@
-
 // Attach Firestore and Storage to `window` for global access
 window.db = firebase.firestore();
 window.storage = firebase.storage();
@@ -6,12 +5,9 @@ window.storage = firebase.storage();
 // Reference to the entry preview div
 const entryPreviewDiv = document.getElementById("entry-preview");
 
-
 // Function to fetch and display the latest entries for followed accounts
 async function displayLatestEntries(authUser) {
-    // Rest of the logic remains the same
     try {
-
         // Fetch followed users
         const followingSnapshot = await window.db
             .collection("users")
@@ -35,7 +31,7 @@ async function displayLatestEntries(authUser) {
 
         entryPreviewDiv.innerHTML = ""; // Clear any existing content
 
-        querySnapshot.forEach(async (doc) => {
+        for (const doc of querySnapshot.docs) {
             const data = doc.data();
             const postId = doc.id;
 
@@ -51,27 +47,27 @@ async function displayLatestEntries(authUser) {
             const nameElement = document.createElement("div");
             nameElement.classList.add("post-user-info");
             nameElement.innerHTML = `
-                <div style="display: flex; align-items: center;">
-                    <img src="${postUserData?.profilePicture || 'images/default-avatar.png'}" 
-                         alt="Profile Picture"  
-                         style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
-                    <a href="userProfile.html?userId=${data.userId}" class="user-link">
-                        ${postUserData?.name || "Unknown"} (${postUserData?.username || "NoUsername"})
-                    </a>
-                </div>
-            `;
+        <div style="display: flex; align-items: center;">
+          <img src="${postUserData?.profilePicture || 'images/default-avatar.png'}" 
+               alt="Profile Picture"  
+               style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+          <a href="userProfile.html?userId=${data.userId}" class="user-link">
+            ${postUserData?.name || "Unknown"} (${postUserData?.username || "NoUsername"})
+          </a>
+        </div>
+      `;
 
             // Create the message and timestamp container
             const messageElement = document.createElement("p");
             messageElement.innerHTML = `
-                <strong>Message:</strong>
-                <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
-            `;
+        <strong>Message:</strong>
+        <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
+      `;
 
             const timestampElement = document.createElement("p");
             timestampElement.innerHTML = `
-                <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
-            `;
+        <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
+      `;
 
             // Append elements to entryDiv in the correct order
             entryDiv.appendChild(nameElement); // Profile picture and username
@@ -80,7 +76,7 @@ async function displayLatestEntries(authUser) {
 
             // Append the entryDiv to the posts container
             entryPreviewDiv.appendChild(entryDiv); // Use entryPreviewDiv instead of postsContainer
-            // Determine the media type
+            // Media type handling
             let mediaElement = null;
             if (data.fileURL) {
                 try {
@@ -119,7 +115,7 @@ async function displayLatestEntries(authUser) {
                 }
             }
 
-            // Create interaction buttons (like, comment, share)
+            // Interaction buttons (like, comment, share)
             const interactionDiv = document.createElement("div");
             interactionDiv.classList.add("interaction-buttons");
 
@@ -186,7 +182,6 @@ async function displayLatestEntries(authUser) {
             commentSection.classList.add("comment-section");
             commentSection.style.display = "none";
 
-            // Existing comments container
             const existingComments = document.createElement("div");
             existingComments.classList.add("existing-comments");
 
@@ -218,32 +213,37 @@ async function displayLatestEntries(authUser) {
                     return;
                 }
                 if (commentText) {
+                    const userDoc = await window.db.collection("users").doc(user.uid).get();
+                    const userData = userDoc.data();
 
-
+                    if (!userData) {
+                        alert("Failed to fetch user data.");
+                        return;
+                    }
 
                     await window.db
                         .collection("guestbook")
                         .doc(postId)
                         .collection("comments")
                         .add({
-                            author: userData.name || "Unknown",
+                            author: userData.name || "Anonymous",
                             username: userData.username || "NoUsername",
                             message: commentText,
                             parentCommentId: null,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                         });
-                    commentInput.value = ""; // Clear input after submitting
-                    displayComments(postId, existingComments);
+                    commentInput.value = ""; // Clear input
+                    displayComments(postId, existingComments); // Refresh comments
                 }
             });
 
-            // Add input and buttons to the comment section
             commentSection.appendChild(existingComments);
             commentSection.appendChild(commentInput);
             commentSection.appendChild(commentSubmit);
             commentSection.appendChild(cancelCommentButton);
 
-            // Toggle the comment section on button click
+
+            commentButton.textContent = "💬 Comment";
             commentButton.addEventListener("click", () => {
                 commentSection.style.display =
                     commentSection.style.display === "none" ? "block" : "none";
@@ -279,30 +279,27 @@ async function displayLatestEntries(authUser) {
             entryDiv.appendChild(messageElement);
             entryDiv.appendChild(timestampElement);
             if (mediaElement) entryDiv.appendChild(mediaElement);
-
             entryDiv.appendChild(interactionDiv);
             entryDiv.appendChild(commentSection);
 
             entryPreviewDiv.appendChild(entryDiv);
-        });
+        }
     } catch (error) {
         console.error("Error fetching latest entries:", error);
     }
 }
 
-
-// Function to display comments with proper nesting
 // Function to display comments with proper nesting
 async function displayComments(postId, parentElement, parentId = null, indentLevel = 0) {
     if (parentId === null) {
-        parentElement.innerHTML = ""; // Clear comments container for top-level comments only
+        parentElement.innerHTML = "";
     }
 
     const commentsRef = window.db
         .collection("guestbook")
         .doc(postId)
         .collection("comments")
-        .where("parentCommentId", "==", parentId)
+        .where("parentCommentId", "==", parentId || null)
         .orderBy("timestamp", "asc");
 
     const querySnapshot = await commentsRef.get();
@@ -311,7 +308,13 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         const commentData = doc.data();
         const commentId = doc.id;
 
-        // Fetch user data asynchronously
+
+
+        // Create the comment div
+        const commentDiv = document.createElement("div");
+        commentDiv.classList.add("comment");
+        commentDiv.style.marginLeft = `${indentLevel * 20}px`;
+
         let commentUserData = { profilePicture: null }; // Default if user data is missing
         if (commentData.userId) {
             try {
@@ -324,27 +327,20 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
             }
         }
 
-        // Create the comment div
-        const commentDiv = document.createElement("div");
-        commentDiv.classList.add("comment");
-        commentDiv.style.marginLeft = `${indentLevel * 20}px`; // Adjust margin for nesting
-
-        // Set the correct profile picture and username for each comment
         commentDiv.innerHTML = `
-            <div style="display: flex; align-items: center;">
-                <img src="${commentUserData.profilePicture || 'images/default-avatar.png'}"
-                     alt="Profile Picture"
-                     style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-                <p>
-                    <strong>
-                        <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
-                            ${commentData.author || "Unknown"} (${commentData.username || "NoUsername"})
-                        </a>
-                    </strong>: ${commentData.message}
-                </p>
-            </div>
-        `;
-
+  <div style="display: flex; align-items: center;">
+    <img src="${commentUserData.profilePicture || 'images/default-avatar.png'}"
+     alt="Profile Picture"
+     style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+    <p>
+        <strong>
+            <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
+                ${commentData.author || "Unknown"} (${commentData.username || "NoUsername"})
+            </a>
+        </strong>: ${commentData.message}
+    </p>
+  </div>
+`;
         // Add Reply button and reply section (if needed)
         const replyButton = document.createElement("button");
         replyButton.textContent = "Reply";
@@ -408,7 +404,6 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         commentDiv.appendChild(replySection);
 
         parentElement.appendChild(commentDiv);
-
         // Fetch and display replies recursively
         await displayComments(postId, parentElement, commentId, indentLevel + 1);
     }
