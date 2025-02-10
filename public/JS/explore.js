@@ -105,6 +105,7 @@ function displayResults(results, type) {
 
 async function displayLatestEntries(authUser) {
   const userId = authUser ? authUser.uid : null;
+  entryPreviewDiv.innerHTML = ""; 
   // Rest of the logic remains the same
   try {
 
@@ -173,7 +174,12 @@ async function displayLatestEntries(authUser) {
       if (data.fileURL) {
         try {
           const response = await fetch(data.fileURL, { method: "HEAD" });
-          const contentType = response.headers.get("Content-Type");
+
+    if (!response.ok) {
+      throw new Error("File not found");
+    }
+
+    const contentType = response.headers.get("Content-Type");
 
           if (contentType.startsWith("image/")) {
             mediaElement = document.createElement("img");
@@ -216,11 +222,12 @@ async function displayLatestEntries(authUser) {
       likeButton.classList.add("like-button");
 
       let likesRef = null;
+      let liked = false;
       if (authUser) {
         userId = authUser.uid;
         likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
       }
-      let liked = false;
+      
 
       // Check if user already liked the post
       if (userId) {
