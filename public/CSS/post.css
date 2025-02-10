@@ -1,5 +1,5 @@
 /* General Post Container Styling */
-.post-details {
+#post-details {
     max-width: 800px;
     margin: 20px auto;
     padding: 20px;
@@ -9,7 +9,7 @@
 }
 
 /* Header Section for Post Details */
-.post-details h1 {
+#post-details h1 {
     font-size: 2rem;
     font-weight: bold;
     margin-bottom: 20px;
@@ -221,7 +221,7 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .post-details {
+    #post-details {
         padding: 15px;
     }
 
