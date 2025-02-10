@@ -313,33 +313,37 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         // Create the comment div
         const commentDiv = document.createElement("div");
         commentDiv.classList.add("comment");
-        commentDiv.style.marginLeft = `${indentLevel * 20}px`;
+        commentDiv.style.marginLeft = parentId === null ? "20px" : "40px";
+        commentDiv.style.textAlign = "left"; // Align text to the left
 
         let commentUserData = { profilePicture: null }; // Default if user data is missing
-        if (commentData.userId) {
-            try {
+        try {
+            if (commentData.userId) {
                 const commentUserDoc = await window.db.collection("users").doc(commentData.userId).get();
                 if (commentUserDoc.exists) {
-                    commentUserData = commentUserDoc.data();
+                    commentUserData = { ...commentUserDoc.data(), userId: commentData.userId }; // Attach userId explicitly
                 }
-            } catch (error) {
-                console.error("Error fetching user data for comment:", error);
             }
+        } catch (error) {
+            console.error("Error fetching user data for comment:", error);
         }
 
+        // Ensure `commentUserData` is assigned to the current iteration only
+        const currentCommentUserData = { ...commentUserData };
+
         commentDiv.innerHTML = `
-  <div style="display: flex; align-items: center;">
-    <img src="${commentUserData.profilePicture || 'images/default-avatar.png'}"
-     alt="Profile Picture"
-     style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-    <p>
-        <strong>
-            <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
-                ${commentData.author || "Unknown"} (${commentData.username || "NoUsername"})
-            </a>
-        </strong>: ${commentData.message}
-    </p>
-  </div>
+<div style="display: flex; align-items: center;">
+  <img src="${currentCommentUserData.profilePicture || 'images/default-avatar.png'}"
+       alt="Profile Picture"
+       style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+  <p>
+      <strong>
+          <a href="userProfile.html?userId=${currentCommentUserData.userId}" class="user-link">
+              ${commentData.author || "Anonymous"} (${commentData.username || "NoUsername"})
+          </a>
+      </strong>: ${commentData.message}
+  </p>
+</div>
 `;
         // Add Reply button and reply section (if needed)
         const replyButton = document.createElement("button");
