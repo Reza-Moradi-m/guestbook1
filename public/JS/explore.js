@@ -10,6 +10,11 @@ const resultsList = document.getElementById("results-list");
 const randomPostsContainer = document.getElementById("random-posts-container");
 const entryPreviewDiv = document.getElementById("entry-preview");
 
+firebase.auth().onAuthStateChanged((authUser) => {
+  console.log("Auth state changed:", authUser);
+  displayLatestEntries(authUser); // Pass `authUser` to enable like functionality if logged in
+});
+
 // Event listener for the search button
 searchButton.addEventListener("click", async () => {
   const query = searchInput.value.trim();
@@ -99,6 +104,7 @@ function displayResults(results, type) {
 }
 
 async function displayLatestEntries() {
+  
   // Rest of the logic remains the same
   try {
 
@@ -109,7 +115,7 @@ async function displayLatestEntries() {
       .get();
 
 
-    
+
 
     if (querySnapshot.empty) {
       entryPreviewDiv.innerHTML = "<p>No posts found. Be the first to post something!</p>";
@@ -119,6 +125,7 @@ async function displayLatestEntries() {
     querySnapshot.forEach(async (doc) => {
       const data = doc.data();
       const postId = doc.id;
+      let userId = authUser ? authUser.uid : null;
 
       const entryDiv = document.createElement("div");
       entryDiv.classList.add("entry");
@@ -126,7 +133,7 @@ async function displayLatestEntries() {
 
       // Fetch user profile picture and details
       const userDoc = await window.db.collection("users").doc(data.userId).get();
-      const postUserData = userDoc.data();
+      const postUserData = userDoc.exists ? userDoc.data() : null;
 
       // Create the profile picture and username container
       const nameElement = document.createElement("div");
@@ -208,8 +215,11 @@ async function displayLatestEntries() {
       const likeButton = document.createElement("button");
       likeButton.classList.add("like-button");
 
-      const userId = authUser.uid;
-      const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
+      
+      if (authUser) {
+        userId = authUser.uid;
+        const likesRef = window.db.collection("guestbook").doc(postId).collection("likes").doc(userId);
+      }
       let liked = false;
 
       // Check if user already liked the post
