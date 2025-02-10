@@ -49,7 +49,7 @@ async function displayLatestEntries(authUser) {
             entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
             const userDoc = await window.db.collection("users").doc(data.userId).get();
-            const userData = userDoc.data();
+            const userData = userDoc.exists ? userDoc.data() : { profilePicture: null };
 
             // Add profile picture
             const profilePicElement = document.createElement("img");
@@ -308,15 +308,30 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
 
         const commentDiv = document.createElement("div");
         commentDiv.classList.add("comment");
-        commentDiv.style.marginLeft = `${indentLevel * 20}px`;
+
+        // Ensure only a single level of indentation
+        const indentationLevel = parentId === null ? 0 : 20;
+        commentDiv.style.marginLeft = `${indentationLevel}px`;
+        async function fetchCommentUserData(commentData) {
+            const commentUserDoc = await window.db.collection("users").doc(commentData.userId).get();
+            return commentUserDoc.exists ? commentUserDoc.data() : { profilePicture: null };
+        }
+        
+        // Example usage inside displayComments
+    
         commentDiv.innerHTML = `
-    <p>
-        <strong>
-            <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
-                ${commentData.author} (${commentData.username})
-            </a>
-        </strong>: ${commentData.message}
-    </p>
+    <div style="display: flex; align-items: center;">
+        <img src="${commentUserData.profilePicture || 'images/default-avatar.png'}"
+             alt="Profile Picture"
+             style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+        <p>
+            <strong>
+                <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
+                    ${commentData.author} (${commentData.username})
+                </a>
+            </strong>: ${commentData.message}
+        </p>
+    </div>
 `;
 
         const replyButton = document.createElement("button");
@@ -360,7 +375,10 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
                     });
                 replyInput.value = ""; // Clear input
                 replySection.style.display = "none"; // Hide reply box after submitting
-                displayComments(postId, parentElement, commentId, indentLevel + 1); // Refresh replies
+                // Fetch replies for this comment (limit nesting to one level)
+                if (parentId === null) {
+                    displayComments(postId, commentDiv, commentId, 1);
+                }
             }
         });
 
