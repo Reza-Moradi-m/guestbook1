@@ -103,8 +103,8 @@ function displayResults(results, type) {
   });
 }
 
-async function displayLatestEntries() {
-  
+async function displayLatestEntries(authUser) {
+  const userId = authUser ? authUser.uid : null;
   // Rest of the logic remains the same
   try {
 
@@ -505,5 +505,7 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
   }
 }
 
-
-displayLatestEntries();
+firebase.auth().onAuthStateChanged((authUser) => {
+  console.log("Auth state changed:", authUser);
+  displayLatestEntries(authUser); // Pass `authUser` to enable conditional functionality
+});
