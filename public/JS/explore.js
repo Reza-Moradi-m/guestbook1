@@ -108,12 +108,6 @@ async function displayLatestEntries() {
       .get();
 
 
-    
-
-    if (querySnapshot.empty) {
-      entryPreviewDiv.innerHTML = "<p>No posts found. Be the first to post something!</p>";
-      return;
-    }
 
     querySnapshot.forEach(async (doc) => {
       const data = doc.data();
