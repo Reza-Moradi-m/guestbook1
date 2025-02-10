@@ -49,7 +49,12 @@ async function displayLatestEntries(authUser) {
             entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
             const userDoc = await window.db.collection("users").doc(data.userId).get();
-            const userData = userDoc.exists ? userDoc.data() : { profilePicture: null };
+            const userData = userDoc.exists ? userDoc.data() : { profilePicture: null, name: "Unknown", username: "NoUsername" };
+
+            // Create a container for the profile picture and username
+            const userContainer = document.createElement("div");
+            userContainer.style.display = "flex";
+            userContainer.style.alignItems = "center";
 
             // Add profile picture
             const profilePicElement = document.createElement("img");
@@ -60,13 +65,20 @@ async function displayLatestEntries(authUser) {
             profilePicElement.style.borderRadius = "50%";
             profilePicElement.style.marginRight = "10px";
 
-            // Display clickable username linking to userProfile.html
+            // Add clickable username linking to userProfile.html
             const nameElement = document.createElement("h3");
             nameElement.innerHTML = `
     <a href="userProfile.html?userId=${data.userId}" class="user-link">
-        ${data.name || "Unknown"} (${data.username || "NoUsername"})
+        ${userData.name} (${userData.username})
     </a>
 `;
+
+            // Append profile picture and username to the container
+            userContainer.appendChild(profilePicElement);
+            userContainer.appendChild(nameElement);
+
+            // Append the user container to the post entry
+            entryDiv.appendChild(userContainer);
 
             const messageElement = document.createElement("p");
             messageElement.innerHTML = `
@@ -302,7 +314,7 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
 
     const querySnapshot = await commentsRef.get();
 
-    querySnapshot.forEach((doc) => {
+    for (const doc of querySnapshot.docs) {
         const commentData = doc.data();
         const commentId = doc.id;
 
@@ -312,28 +324,36 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         // Ensure only a single level of indentation
         const indentationLevel = parentId === null ? 0 : 20;
         commentDiv.style.marginLeft = `${indentationLevel}px`;
-        async function fetchCommentUserData(commentData) {
-            const commentUserDoc = await window.db.collection("users").doc(commentData.userId).get();
-            return commentUserDoc.exists ? commentUserDoc.data() : { profilePicture: null };
-        }
-        
-        // Example usage inside displayComments
-    
-        commentDiv.innerHTML = `
-    <div style="display: flex; align-items: center;">
-        <img src="${commentUserData.profilePicture || 'images/default-avatar.png'}"
-             alt="Profile Picture"
-             style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
-        <p>
-            <strong>
-                <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
-                    ${commentData.author} (${commentData.username})
-                </a>
-            </strong>: ${commentData.message}
-        </p>
-    </div>
-`;
 
+        // Fetch user data asynchronously
+        let commentUserData = { profilePicture: null }; // Default if user data is missing
+        if (commentData.userId) {
+            try {
+                const commentUserDoc = await window.db.collection("users").doc(commentData.userId).get();
+                if (commentUserDoc.exists) {
+                    commentUserData = commentUserDoc.data();
+                }
+            } catch (error) {
+                console.error("Error fetching user data for comment:", error);
+            }
+        }
+
+        commentDiv.innerHTML = `
+            <div style="display: flex; align-items: center;">
+                <img src="${commentUserData.profilePicture || 'images/default-avatar.png'}"
+                     alt="Profile Picture"
+                     style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                <p>
+                    <strong>
+                        <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
+                            ${commentData.author || "Unknown"} (${commentData.username || "NoUsername"})
+                        </a>
+                    </strong>: ${commentData.message}
+                </p>
+            </div>
+        `;
+
+        // Add Reply button and section
         const replyButton = document.createElement("button");
         replyButton.textContent = "Reply";
         replyButton.classList.add("reply-button");
@@ -368,17 +388,15 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
                     .doc(postId)
                     .collection("comments")
                     .add({
-                        author: userData.name || "Anonymous User", // Replace with actual user
+                        author: commentData.author || "Anonymous User",
+                        username: commentData.username || "NoUsername",
                         message: replyText,
                         parentCommentId: commentId, // Reply to this comment
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     });
                 replyInput.value = ""; // Clear input
                 replySection.style.display = "none"; // Hide reply box after submitting
-                // Fetch replies for this comment (limit nesting to one level)
-                if (parentId === null) {
-                    displayComments(postId, commentDiv, commentId, 1);
-                }
+                displayComments(postId, parentElement); // Refresh comments
             }
         });
 
@@ -396,9 +414,11 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
 
         parentElement.appendChild(commentDiv);
 
-        // Fetch replies for this comment
-        displayComments(postId, commentDiv, commentId, indentLevel + 1);
-    });
+        // Fetch replies for this comment (limit nesting to one level)
+        if (parentId === null) {
+            await displayComments(postId, commentDiv, commentId, 1);
+        }
+    }
 }
 
 // Call the function to display entries
