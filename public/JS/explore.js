@@ -105,8 +105,6 @@ function displayResults(results, type) {
 
 async function displayLatestEntries(authUser) {
   let userId = authUser ? authUser.uid : null;
-  likesRef = userId ? window.db.collection("guestbook").doc(postId).collection("likes").doc(userId) : null;
-
   entryPreviewDiv.innerHTML = "";
   // Rest of the logic remains the same
   try {
@@ -135,7 +133,7 @@ async function displayLatestEntries(authUser) {
       if (processedPosts.has(postId)) return;
       processedPosts.add(postId);
 
-
+      let likesRef = userId ? window.db.collection("guestbook").doc(postId).collection("likes").doc(userId) : null;
 
 
       const entryDiv = document.createElement("div");
@@ -243,7 +241,7 @@ async function displayLatestEntries(authUser) {
       const likeButton = document.createElement("button");
       likeButton.classList.add("like-button");
 
-      let likesRef = null;
+      
       let liked = false;
       if (authUser) {
         userId = authUser.uid;
