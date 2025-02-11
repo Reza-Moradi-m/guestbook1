@@ -327,41 +327,41 @@ async function displayLatestEntries(authUser) {
       commentSubmit.addEventListener("click", async () => {
         const commentText = commentInput.value.trim();
         const user = firebase.auth().currentUser;
-    
+
         if (!user) {
-            alert("You must be logged in to comment.");
-            return;
+          alert("You must be logged in to comment.");
+          return;
         }
-    
+
         // ✅ Fetch user details from Firestore
         let userData = { name: "Unknown", username: "NoUsername", profilePicture: "images/default-avatar.png" };
         try {
-            const userDoc = await window.db.collection("users").doc(user.uid).get();
-            if (userDoc.exists) {
-                userData = userDoc.data();
-            }
+          const userDoc = await window.db.collection("users").doc(user.uid).get();
+          if (userDoc.exists) {
+            userData = userDoc.data();
+          }
         } catch (error) {
-            console.error("Error fetching user data:", error);
+          console.error("Error fetching user data:", error);
         }
-    
+
         if (commentText) {
-            await window.db
-                .collection("guestbook")
-                .doc(postId)
-                .collection("comments")
-                .add({
-                    author: userData.name || "Unknown",  // ✅ Now `userData` is defined
-                    username: userData.username || "NoUsername",
-                    userId: user.uid,  // ✅ Save userId for profile picture lookup
-                    message: commentText,
-                    parentCommentId: null,
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                });
-    
-            commentInput.value = ""; // Clear input after submitting
-            displayComments(postId, existingComments);
+          await window.db
+            .collection("guestbook")
+            .doc(postId)
+            .collection("comments")
+            .add({
+              author: userData.name || "Unknown",  // ✅ Now `userData` is defined
+              username: userData.username || "NoUsername",
+              userId: user.uid,  // ✅ Save userId for profile picture lookup
+              message: commentText,
+              parentCommentId: null,
+              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            });
+
+          commentInput.value = ""; // Clear input after submitting
+          displayComments(postId, existingComments);
         }
-    });
+      });
 
       // Add input and buttons to the comment section
       commentSection.appendChild(existingComments);
@@ -457,7 +457,8 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
     // Create the comment div
     const commentDiv = document.createElement("div");
     commentDiv.classList.add("comment");
-    commentDiv.style.marginLeft = `${indentLevel * 20}px`; // Adjust margin for nesting
+    commentDiv.style.marginLeft = parentId === null ? "20px" : "40px";
+    commentDiv.style.textAlign = "left"; // Align text to the left
 
     // Set the correct profile picture and username for each comment
     commentDiv.innerHTML = `
