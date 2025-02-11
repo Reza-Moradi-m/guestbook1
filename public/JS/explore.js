@@ -182,50 +182,63 @@ async function displayLatestEntries(authUser) {
       let mediaElement = null;
       if (data.fileURL) {
         try {
-
-          const fileRef = window.storage.ref(`uploads/${data.fileName}`);
-          const fileURL = await fileRef.getDownloadURL();
-
-          console.log("Checking file URL:", data.fileURL); // Debugging log
-
-          const response = await fetch(data.fileURL, { method: "HEAD" });
-
-          if (!response.ok) {
-            throw new Error(`File not found: ${data.fileURL}`);
-          }
-
-
-          const contentType = response.headers.get("Content-Type");
-
-          if (contentType.startsWith("image/")) {
-            mediaElement = document.createElement("img");
-            mediaElement.src = data.fileURL;
-            mediaElement.alt = "Uploaded Image";
-            mediaElement.style.display = "block";
-            mediaElement.style.margin = "auto";
-            mediaElement.style.maxWidth = "100%";
-            mediaElement.style.height = "auto";
-          } else if (contentType.startsWith("video/")) {
-            mediaElement = document.createElement("video");
-            mediaElement.controls = true;
-            mediaElement.style.display = "block";
-            mediaElement.style.margin = "auto";
-            mediaElement.style.maxWidth = "100%";
-            mediaElement.style.height = "auto";
-
-            const sourceElement = document.createElement("source");
-            sourceElement.src = data.fileURL;
-            sourceElement.type = contentType;
-            mediaElement.appendChild(sourceElement);
-          } else {
-            mediaElement = document.createElement("a");
-            mediaElement.href = data.fileURL;
-            mediaElement.target = "_blank";
-            mediaElement.textContent = "Download Attachment";
-            mediaElement.classList.add("entry-link");
-          }
+            console.log("Debugging file retrieval:", {
+                fileName: data.fileName,
+                fileURL: data.fileURL,
+            });
+    
+            let fileURL = data.fileURL; // Prefer using Firestore's stored URL
+    
+            // Only fetch from Firebase Storage if fileURL isn't complete
+            if (!fileURL.startsWith("https://")) {
+                if (data.fileName) {
+                    const fileRef = window.storage.ref(`uploads/${data.fileName}`);
+                    fileURL = await fileRef.getDownloadURL();
+                    console.log("File URL Retrieved from Storage:", fileURL);
+                } else {
+                    console.warn("Missing fileName in Firestore document:", data);
+                    throw new Error("File metadata incomplete (no fileName).");
+                }
+            }
+    
+            const response = await fetch(fileURL, { method: "HEAD" });
+    
+            if (!response.ok) {
+                throw new Error(`File not found: ${fileURL}`);
+            }
+    
+            const contentType = response.headers.get("Content-Type");
+    
+            if (contentType.startsWith("image/")) {
+                mediaElement = document.createElement("img");
+                mediaElement.src = fileURL;
+                mediaElement.alt = "Uploaded Image";
+                mediaElement.style.display = "block";
+                mediaElement.style.margin = "auto";
+                mediaElement.style.maxWidth = "100%";
+                mediaElement.style.height = "auto";
+            } else if (contentType.startsWith("video/")) {
+                mediaElement = document.createElement("video");
+                mediaElement.controls = true;
+                mediaElement.style.display = "block";
+                mediaElement.style.margin = "auto";
+                mediaElement.style.maxWidth = "100%";
+                mediaElement.style.height = "auto";
+    
+                const sourceElement = document.createElement("source");
+                sourceElement.src = fileURL;
+                sourceElement.type = contentType;
+                mediaElement.appendChild(sourceElement);
+            } else {
+                mediaElement = document.createElement("a");
+                mediaElement.href = fileURL;
+                mediaElement.target = "_blank";
+                mediaElement.textContent = "Download Attachment";
+                mediaElement.classList.add("entry-link");
+            }
         } catch (error) {
-          console.error("Error fetching file metadata:", error.message);
+            console.error("Error fetching file metadata:", error.message);
+        
 
           mediaElement = document.createElement("img");
           mediaElement.src = "images/default-avatar.png"; // Default placeholder
@@ -241,7 +254,7 @@ async function displayLatestEntries(authUser) {
       const likeButton = document.createElement("button");
       likeButton.classList.add("like-button");
 
-      
+
       let liked = false;
       if (authUser) {
         userId = authUser.uid;
