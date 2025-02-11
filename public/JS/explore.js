@@ -104,7 +104,8 @@ function displayResults(results, type) {
 }
 
 async function displayLatestEntries(authUser) {
-  const userId = authUser ? authUser.uid : null;
+  let userId = authUser ? authUser.uid : null;
+  likesRef = userId ? window.db.collection("guestbook").doc(postId).collection("likes").doc(userId) : null;
 
   entryPreviewDiv.innerHTML = "";
   // Rest of the logic remains the same
@@ -150,7 +151,8 @@ async function displayLatestEntries(authUser) {
       nameElement.classList.add("post-user-info");
       nameElement.innerHTML = `
               <div style="display: flex; align-items: center;">
-                  <img src="${postUserData?.profilePicture || 'images/default-avatar.png'}" 
+                  <img src="${postUserData?.profilePicture || '/images/default-avatar.png'}"
+     onerror="this.onerror=null; this.src='/images/default-avatar.png';" 
                        alt="Profile Picture"  
                        style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
                   <a href="userProfile.html?userId=${data.userId}" class="user-link">
@@ -182,6 +184,10 @@ async function displayLatestEntries(authUser) {
       let mediaElement = null;
       if (data.fileURL) {
         try {
+
+          const fileRef = window.storage.ref(`uploads/${data.fileName}`);
+          const fileURL = await fileRef.getDownloadURL();
+
           console.log("Checking file URL:", data.fileURL); // Debugging log
 
           const response = await fetch(data.fileURL, { method: "HEAD" });

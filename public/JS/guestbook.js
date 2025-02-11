@@ -8,7 +8,7 @@ messageForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const message = document.getElementById("messageInput").value.trim();
-    const file = fileInput.files[0];
+    let file = fileInput.files[0];
 
     if (!message) {
         alert("Message is required!");
@@ -17,7 +17,6 @@ messageForm.addEventListener("submit", async (event) => {
 
     try {
         const user = firebase.auth().currentUser;
-
         if (!user) {
             alert("You must be logged in to submit a post.");
             return;
@@ -29,15 +28,33 @@ messageForm.addEventListener("submit", async (event) => {
 
         let fileURL = null;
 
-        // Upload file only if it exists
+        // ✅ Convert HEIC files before upload
+        if (file && (file.type === "image/heic" || file.name.endsWith(".heic"))) {
+            try {
+                const convertedBlob = await heic2any({
+                    blob: file,
+                    toType: "image/jpeg",  // Convert to JPEG
+                    quality: 0.8,
+                });
+
+                file = new File([convertedBlob], file.name.replace(".heic", ".jpg"), { type: "image/jpeg" });
+                console.log("Converted HEIC to JPEG:", file);
+            } catch (error) {
+                console.error("Error converting HEIC file:", error);
+                alert("Failed to convert HEIC file. Please use JPEG or PNG.");
+                return;
+            }
+        }
+
+        // ✅ Upload file if exists
         if (file) {
             const storageRef = window.storage.ref(`uploads/${file.name}`);
             const snapshot = await storageRef.put(file);
             fileURL = await snapshot.ref.getDownloadURL();
         }
 
-        // Save post data to Firestore
-        await window.db.collection("guestbook").add({
+        // ✅ Save post data to Firestore
+        const docRef = await window.db.collection("guestbook").add({
             userId: user.uid,
             username: userData.username,
             name: userData.name,
@@ -45,7 +62,8 @@ messageForm.addEventListener("submit", async (event) => {
             fileURL,
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
-        // Update the document with the postId
+
+        // ✅ Update the document with postId
         await docRef.update({ postId: docRef.id });
 
         alert("Post uploaded successfully!");
