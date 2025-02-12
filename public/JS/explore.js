@@ -10,10 +10,6 @@ const resultsList = document.getElementById("results-list");
 const randomPostsContainer = document.getElementById("random-posts-container");
 const entryPreviewDiv = document.getElementById("entry-preview");
 
-firebase.auth().onAuthStateChanged((authUser) => {
-  console.log("Auth state changed:", authUser);
-  displayLatestEntries(authUser); // Pass `authUser` to enable like functionality if logged in
-});
 
 // Event listener for the search button
 searchButton.addEventListener("click", async () => {
@@ -105,6 +101,7 @@ function displayResults(results, type) {
 
 async function displayLatestEntries(authUser) {
   let userId = authUser ? authUser.uid : null;
+
   entryPreviewDiv.innerHTML = "";
   // Rest of the logic remains the same
   try {
@@ -434,7 +431,6 @@ async function displayLatestEntries(authUser) {
 }
 
 
-// Function to display comments with proper nesting
 // Function to display comments with proper nesting
 async function displayComments(postId, parentElement, parentId = null, indentLevel = 0) {
   if (parentId === null) {
