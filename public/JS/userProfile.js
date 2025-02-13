@@ -44,6 +44,7 @@ async function loadUserProfile() {
     // ✅ Follow button goes in `profile-section`
     const followButton = document.createElement("button");
     followButton.id = "follow-button";
+    followButton.textContent = "follow";
     profileSection.appendChild(followButton); // ✅ Correct placement
 
     // Check if the current user is following the profile user
