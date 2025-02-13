@@ -64,6 +64,18 @@ function setDefaultProfile() {
 const authUser = firebase.auth().currentUser;
 const currentUserId = authUser ? authUser.uid : null;
 
+// Function to check if a username is already taken
+async function isUsernameTaken(username, currentUserId) {
+    const usernameQuery = await db.collection("users").where("username", "==", username).get();
+  
+    for (const doc of usernameQuery.docs) {
+      if (doc.id !== currentUserId) {
+        return true; // Username is taken by another user
+      }
+    }
+    return false; // Username is available
+  }
+
 // Function to save profile changes
 document.getElementById("edit-profile-form").addEventListener("submit", async (e) => {
     e.preventDefault();
@@ -80,22 +92,28 @@ document.getElementById("edit-profile-form").addEventListener("submit", async (e
     const newProfilePicture = document.getElementById("edit-profile-picture").files[0];
 
     try {
-        // Prepare profile updates
+        // ✅ Step 1: Check if the new username is already taken (excluding the current user)
+        if (newUsername && await isUsernameTaken(newUsername, user.uid)) {
+            alert("Username is already taken. Please choose another.");
+            return;
+        }
+
+        // ✅ Step 2: Prepare profile updates
         const updates = {};
         if (newName) updates.name = newName;
         if (newUsername) updates.username = newUsername;
 
-        // Upload profile picture if a file is selected
+        // ✅ Step 3: Upload profile picture if a file is selected
         if (newProfilePicture) {
             const storageRef = window.storage.ref(`profilePictures/${user.uid}`);
             await storageRef.put(newProfilePicture);
             updates.profilePicture = await storageRef.getDownloadURL();
         }
 
-        // Update Firestore user document
+        // ✅ Step 4: Update Firestore user document
         await window.db.collection("users").doc(user.uid).update(updates);
 
-        // Update email if changed
+        // ✅ Step 5: Update email if changed
         if (newEmail && newEmail !== user.email) {
             await user.updateEmail(newEmail);
         }
