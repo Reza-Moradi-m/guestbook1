@@ -10,15 +10,7 @@ if (!userId) {
   window.location.href = "index.html";
 }
 
-firebase.auth().onAuthStateChanged((user) => {
-  if (user) {
-    console.log("User authenticated:", user.uid);
-    loadUserProfile();
-  } else {
-    console.warn("No user authenticated. Posts may still load without user-specific actions.");
-    loadUserProfile(); // Allow posts to load without authentication
-  }
-});
+
 
 async function loadUserProfile() {
   try {
@@ -33,20 +25,26 @@ async function loadUserProfile() {
     }
 
 
+    // ✅ Get the correct container for profile details
+    const profileSection = document.getElementById("profile-section");
+    profileSection.innerHTML = ""; // Clear any previous content
 
-    // Display user details
+    // ✅ Append profile info to `profile-section`
     const header = document.createElement("div");
     header.classList.add("profile-header");
     header.innerHTML = `
-        <img src="${userData.profilePicture || "images/default-avatar.png"}" alt="Profile Picture" class="profile-pic">
-        <h2>${userData.name || "Unknown"}</h2>
-        <p>Username: ${userData.username || "NoUsername"}</p>
-      `;
-    entryPreviewDiv.appendChild(header);
+         <img src="${userData.profilePicture || "images/default-avatar.png"}" alt="Profile Picture" class="profile-pic">
+         <h2>${userData.name || "Unknown"}</h2>
+         <p>Username: ${userData.username || "NoUsername"}</p>
+     `;
+
+    profileSection.appendChild(header); // ✅ Correct placement
+
     // Add Follow/Unfollow button
+    // ✅ Follow button goes in `profile-section`
     const followButton = document.createElement("button");
     followButton.id = "follow-button";
-    entryPreviewDiv.appendChild(followButton);
+    profileSection.appendChild(followButton); // ✅ Correct placement
 
     // Check if the current user is following the profile user
     async function updateFollowButton() {
@@ -145,12 +143,11 @@ async function loadUserProfile() {
         followButton.style.display = "none";
       }
     });
-
-    // After creating the followButton, add the messaging button
+    // ✅ Message button goes in `profile-section`
     const messageButton = document.createElement("button");
     messageButton.id = "message-button";
     messageButton.textContent = "Message";
-    entryPreviewDiv.appendChild(messageButton);
+    profileSection.appendChild(messageButton); // ✅ Correct placement
 
     // Navigate to the messenger page with the selected user
     messageButton.addEventListener("click", async () => {
@@ -209,7 +206,7 @@ async function loadUserProfile() {
     if (!postsContainer) {
       postsContainer = document.createElement("div");
       postsContainer.id = "posts-container"; // Unique ID for posts
-      entryPreviewDiv.appendChild(postsContainer); // Add it to the page
+      document.getElementById("profile-section").innerHTML = "<p>Error loading user profile.</p>";
     }
 
     // Step 4: Fetch and display posts
@@ -225,7 +222,7 @@ const currentUserId = authUser ? authUser.uid : null;
 async function displayLatestEntries() {
   try {
 
-    
+
 
     const querySnapshot = await window.db
       .collection("guestbook")
@@ -248,21 +245,21 @@ async function displayLatestEntries() {
 
 
     querySnapshot.forEach(async (doc) => {
-            const data = doc.data();
-            const postId = doc.id;
+      const data = doc.data();
+      const postId = doc.id;
 
-            const entryDiv = document.createElement("div");
-            entryDiv.classList.add("entry");
-            entryDiv.id = `post-${postId}`; // Add unique ID for each post
+      const entryDiv = document.createElement("div");
+      entryDiv.classList.add("entry");
+      entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
-            // Fetch user profile picture and details
-            const userDoc = await window.db.collection("users").doc(data.userId).get();
-            const postUserData = userDoc.data();
+      // Fetch user profile picture and details
+      const userDoc = await window.db.collection("users").doc(data.userId).get();
+      const postUserData = userDoc.data();
 
-            // Create the profile picture and username container
-            const nameElement = document.createElement("div");
-            nameElement.classList.add("post-user-info");
-            nameElement.innerHTML = `
+      // Create the profile picture and username container
+      const nameElement = document.createElement("div");
+      nameElement.classList.add("post-user-info");
+      nameElement.innerHTML = `
                 <div style="display: flex; align-items: center;">
                     <img src="${postUserData?.profilePicture || 'images/default-avatar.png'}" 
                          alt="Profile Picture" 
@@ -273,25 +270,25 @@ async function displayLatestEntries() {
                 </div>
             `;
 
-            // Create the message and timestamp container
-            const messageElement = document.createElement("p");
-            messageElement.innerHTML = `
+      // Create the message and timestamp container
+      const messageElement = document.createElement("p");
+      messageElement.innerHTML = `
                 <strong>Message:</strong>
                 <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
             `;
 
-            const timestampElement = document.createElement("p");
-            timestampElement.innerHTML = `
+      const timestampElement = document.createElement("p");
+      timestampElement.innerHTML = `
                 <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
             `;
 
-            // Append elements to entryDiv in the correct order
-            entryDiv.appendChild(nameElement); // Profile picture and username
-            entryDiv.appendChild(messageElement); // Post message
-            entryDiv.appendChild(timestampElement); // Post timestamp
+      // Append elements to entryDiv in the correct order
+      entryDiv.appendChild(nameElement); // Profile picture and username
+      entryDiv.appendChild(messageElement); // Post message
+      entryDiv.appendChild(timestampElement); // Post timestamp
 
-            // Append the entryDiv to the posts container
-            postsContainer.appendChild(entryDiv);
+      // Append the entryDiv to the posts container
+      postsContainer.appendChild(entryDiv);
 
 
 
