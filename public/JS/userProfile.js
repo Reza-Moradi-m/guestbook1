@@ -288,6 +288,7 @@ async function displayLatestEntries() {
             `;
 
       // ✅ Append profile info to the correct section
+      const profileSection = document.getElementById("profile-section");
       profileSection.appendChild(header);
       profileSection.appendChild(followButton);
       profileSection.appendChild(messageButton);
