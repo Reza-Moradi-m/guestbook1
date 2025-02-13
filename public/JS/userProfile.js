@@ -27,6 +27,10 @@ async function loadUserProfile() {
 
     // ✅ Get the correct container for profile details
     const profileSection = document.getElementById("profile-section");
+    if (!profileSection) {
+      console.error("ERROR: Profile section not found in the HTML!");
+      return; // Prevent further errors
+    }
     profileSection.innerHTML = ""; // Clear any previous content
 
     // ✅ Append profile info to `profile-section`
@@ -283,10 +287,10 @@ async function displayLatestEntries() {
                 <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
             `;
 
-      // Append elements to entryDiv in the correct order
-      entryDiv.appendChild(nameElement); // Profile picture and username
-      entryDiv.appendChild(messageElement); // Post message
-      entryDiv.appendChild(timestampElement); // Post timestamp
+      // ✅ Append profile info to the correct section
+      profileSection.appendChild(header);
+      profileSection.appendChild(followButton);
+      profileSection.appendChild(messageButton);
 
       // Append the entryDiv to the posts container
       postsContainer.appendChild(entryDiv);
@@ -672,8 +676,10 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
   });
 }
 
-// Call the function to display entries
-window.onload = displayLatestEntries;
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadUserProfile(); // ✅ Ensure profile loads first
+  displayLatestEntries(); // ✅ Then load posts
+});
 
 
 firebase.auth().onAuthStateChanged((user) => {
