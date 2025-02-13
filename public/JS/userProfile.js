@@ -287,6 +287,8 @@ async function displayLatestEntries() {
                 <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
             `;
 
+      const header = document.createElement("div");
+
       // ✅ Append profile info to the correct section
       const profileSection = document.getElementById("profile-section");
       profileSection.appendChild(header);
