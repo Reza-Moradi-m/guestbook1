@@ -26,21 +26,17 @@ async function loadUserProfile() {
 
 
     // ✅ Get the correct container for profile details
-    const profileSection = document.getElementById("profile-section");
+    let profileSection = document.getElementById("profile-section");
     if (!profileSection) {
-      console.error("ERROR: Profile section not found in the HTML!");
-      return; // Prevent further errors
+      console.warn("WARNING: Profile section missing, creating one.");
+      profileSection = document.createElement("div");
+      profileSection.id = "profile-section";
+      document.body.appendChild(profileSection); // ✅ Creates it dynamically
     }
+
     profileSection.innerHTML = ""; // Clear any previous content
 
-    // ✅ Append profile info to `profile-section`
-    const header = document.createElement("div");
-    header.classList.add("profile-header");
-    header.innerHTML = `
-         <img src="${userData.profilePicture || "images/default-avatar.png"}" alt="Profile Picture" class="profile-pic">
-         <h2>${userData.name || "Unknown"}</h2>
-         <p>Username: ${userData.username || "NoUsername"}</p>
-     `;
+
 
     profileSection.appendChild(header); // ✅ Correct placement
 
@@ -207,11 +203,10 @@ async function loadUserProfile() {
 
     // Step 3: Check if postsContainer already exists; if not, create it
     let postsContainer = document.getElementById("posts-container");
-
     if (!postsContainer) {
       postsContainer = document.createElement("div");
-      postsContainer.id = "posts-container"; // Unique ID for posts
-      document.getElementById("profile-section").innerHTML = "<p>Error loading user profile.</p>";
+      postsContainer.id = "posts-container";
+      profileSection.appendChild(postsContainer); // ✅ Appends instead of overwriting
     }
 
     // Step 4: Fetch and display posts
@@ -221,8 +216,18 @@ async function loadUserProfile() {
     entryPreviewDiv.innerHTML = "<p>Error loading user profile.</p>";
   }
 }
-const authUser = firebase.auth().currentUser;
-const currentUserId = authUser ? authUser.uid : null;
+
+firebase.auth().onAuthStateChanged((user) => {
+  if (!user) {
+    console.error("No user is signed in.");
+    alert("You need to sign in to perform this action.");
+    window.location.href = "auth.html";
+  } else {
+    console.log("Current user ID:", user.uid);
+    loadUserProfile(user.uid);
+  }
+});
+
 // Function to fetch and display the latest entries
 async function displayLatestEntries() {
   try {
@@ -287,7 +292,23 @@ async function displayLatestEntries() {
                 <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
             `;
 
+      // ✅ Append profile info to `profile-section`
       const header = document.createElement("div");
+      header.classList.add("profile-header");
+      header.innerHTML = `
+         <img src="${userData.profilePicture || "images/default-avatar.png"}" alt="Profile Picture" class="profile-pic">
+         <h2>${userData.name || "Unknown"}</h2>
+         <p>Username: ${userData.username || "NoUsername"}</p>
+     `;
+
+      const followButton = document.createElement("button");
+      followButton.id = "follow-button";
+      followButton.textContent = "Follow";
+
+      // ✅ Define messageButton before using it
+      const messageButton = document.createElement("button");
+      messageButton.id = "message-button";
+      messageButton.textContent = "Message";
 
       // ✅ Append profile info to the correct section
       const profileSection = document.getElementById("profile-section");
