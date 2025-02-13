@@ -152,23 +152,38 @@ if (!postId) {
     commentsContainer.id = "comments-container";
 
     async function displayComments() {
-      commentsContainer.innerHTML = "";
+      commentsContainer.innerHTML = ""; // Clear previous comments
+  
       const commentsSnapshot = await window.db
-        .collection("guestbook")
-        .doc(postId)
-        .collection("comments")
-        .orderBy("timestamp", "asc")
-        .get();
-
+          .collection("guestbook")
+          .doc(postId)
+          .collection("comments")
+          .orderBy("timestamp", "asc")
+          .get();
+  
       commentsSnapshot.forEach((doc) => {
-        const comment = doc.data();
-        const commentDiv = document.createElement("div");
-        commentDiv.innerHTML = `
-          <p><strong>${comment.author} (${comment.username}):</strong> ${comment.message}</p>
-        `;
-        commentsContainer.appendChild(commentDiv);
+          const comment = doc.data();
+          const commentDiv = document.createElement("div");
+          commentDiv.classList.add("comment"); // ✅ Apply correct CSS
+  
+          commentDiv.innerHTML = `
+              <div class="comment-header">
+                  <img src="${comment.profilePicture || 'images/default-avatar.png'}" 
+                       alt="Profile Picture" 
+                       class="comment-profile-pic">
+                  <div class="comment-user">
+                      <a href="userProfile.html?userId=${comment.userId}" class="user-link">
+                          <strong>${comment.author} (${comment.username})</strong>
+                      </a>
+                      <span class="comment-timestamp">${new Date(comment.timestamp.seconds * 1000).toLocaleString()}</span>
+                  </div>
+              </div>
+              <p class="comment-message">${comment.message}</p>
+          `;
+  
+          commentsContainer.appendChild(commentDiv);
       });
-    }
+  }
 
     await displayComments();
     commentSection.appendChild(commentsContainer);
@@ -192,4 +207,4 @@ if (!postId) {
     console.error("Error fetching post data:", error);
     alert("Failed to load the post.");
   }
-})();
+});
