@@ -241,16 +241,14 @@ async function displayLatestEntries() {
       .get();
 
     // Get the posts container
-    const postsContainer = document.getElementById("posts-container");
-
-
-    if (querySnapshot.empty) {
-      entryPreviewDiv.innerHTML += "<p>No posts found for this user.</p>";
-      return;
+    let postsContainer = document.getElementById("posts-container");
+    if (!postsContainer) {
+      console.warn("WARNING: Posts container missing, creating a new one.");
+      postsContainer = document.createElement("div");
+      postsContainer.id = "posts-container";
+      profileSection.appendChild(postsContainer);
     }
-
-    // Step 2: Clear only the posts container (do not touch the profile header)
-    postsContainer.innerHTML = ""; // Clear previous posts if any
+    postsContainer.innerHTML = "";
 
 
 
@@ -292,18 +290,8 @@ async function displayLatestEntries() {
                 <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
             `;
 
-      // ✅ Append profile info to `profile-section`
-      const header = document.createElement("div");
-      header.classList.add("profile-header");
-      header.innerHTML = `
-         <img src="${userData.profilePicture || "images/default-avatar.png"}" alt="Profile Picture" class="profile-pic">
-         <h2>${userData.name || "Unknown"}</h2>
-         <p>Username: ${userData.username || "NoUsername"}</p>
-     `;
 
-      const followButton = document.createElement("button");
-      followButton.id = "follow-button";
-      followButton.textContent = "Follow";
+
 
       // ✅ Define messageButton before using it
       const messageButton = document.createElement("button");
@@ -312,6 +300,21 @@ async function displayLatestEntries() {
 
       // ✅ Append profile info to the correct section
       const profileSection = document.getElementById("profile-section");
+
+      // ✅ Append profile info to `profile-section`
+      const header = document.createElement("div");
+      header.classList.add("profile-header");
+      header.innerHTML = `
+          <img src="${userData.profilePicture || "images/default-avatar.png"}" alt="Profile Picture" class="profile-pic">
+          <h2>${userData.name || "Unknown"}</h2>
+          <p>Username: ${userData.username || "NoUsername"}</p>
+      `;
+
+      const followButton = document.createElement("button");
+      followButton.id = "follow-button";
+      followButton.textContent = "Follow";
+
+
       profileSection.appendChild(header);
       profileSection.appendChild(followButton);
       profileSection.appendChild(messageButton);
