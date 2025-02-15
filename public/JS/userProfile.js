@@ -38,7 +38,7 @@ async function loadUserProfile() {
 
 
 
-    profileSection.appendChild(header); // ✅ Correct placement
+   
 
     // Add Follow/Unfollow button
     // ✅ Follow button goes in `profile-section`
@@ -309,13 +309,14 @@ async function displayLatestEntries() {
           <h2>${userData.name || "Unknown"}</h2>
           <p>Username: ${userData.username || "NoUsername"}</p>
       `;
+      profileSection.appendChild(header);
 
       const followButton = document.createElement("button");
       followButton.id = "follow-button";
       followButton.textContent = "Follow";
 
 
-      profileSection.appendChild(header);
+      
       profileSection.appendChild(followButton);
       profileSection.appendChild(messageButton);
 
