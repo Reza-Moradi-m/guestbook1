@@ -22,7 +22,7 @@ body {
   
   #chatroom-container {
     width: 100%;
-    max-width: 600px;
+    max-width: 100%;
     background-color: #fff;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -32,7 +32,7 @@ body {
   }
   
   #chatroom-messages {
-    height: 400px;
+    height: auto;
     overflow-y: auto;
     margin-bottom: 20px;
     border: 1px solid #ddd;
@@ -45,6 +45,7 @@ body {
     margin: 10px 0;
     padding: 10px;
     border-radius: 4px;
+    margin: 10px auto;
   }
   
   .message.user {
@@ -79,6 +80,7 @@ body {
     padding: 10px 20px;
     border-radius: 4px;
     cursor: pointer;
+    max-width: 8%;
   }
   
   #send-message:hover {
@@ -180,7 +182,10 @@ body {
     align-self: flex-end;
     padding: 10px;
     border-radius: 8px;
-    max-width: 80%;
+    max-width: 90%;
+    margin-left: auto; 
+    margin-right: 10px; /* Keeps some space from the right edge */
+    display: block;
   }
   
   .message.other {
@@ -189,7 +194,10 @@ body {
     align-self: flex-start;
     padding: 10px;
     border-radius: 8px;
-    max-width: 80%;
+    max-width: 90%;
+    margin-left: auto; 
+    margin-left: 10px; /* Keeps some space from the right edge */
+    display: block;
   }
   
   .chatroom-container {

@@ -83,33 +83,34 @@ async function loadChatMessages(userId) {
     // Load messages from the nested collection
     chatRef.collection("chatMessages").orderBy("timestamp").onSnapshot((snapshot) => {
       chatMessagesContainer.innerHTML = "";
-    
+
       const fetchMessages = async () => {
         for (const doc of snapshot.docs) {
           const messageData = doc.data();
           const messageDiv = document.createElement("div");
           messageDiv.className = `message ${messageData.sender === userId ? "user" : "other"}`;
-          
+
           let fileContent = "";
           if (messageData.fileUrl) {
             try {
               const response = await fetch(messageData.fileUrl, { method: "HEAD" });
               const contentType = response.headers.get("Content-Type");
-    
+
               if (contentType.startsWith("image/")) {
                 fileContent = `
                   <img src="${messageData.fileUrl}" alt="Image" class="chat-image"
-                    style="max-width: 150px; max-height: 150px; cursor: pointer;"
+                    
                     onclick="window.open('${messageData.fileUrl}', '_blank')">
                 `;
               } else if (contentType.startsWith("video/")) {
                 fileContent = `
-                  <video controls class="chat-video" style="max-width: 200px; max-height: 150px; cursor: pointer;"
-                    onclick="window.open('${messageData.fileUrl}', '_blank')">
-                    <source src="${messageData.fileUrl}" type="${contentType}">
-                    Your browser does not support the video tag.
-                  </video>
-                `;
+      <video controls class="chat-video"
+        ondblclick="window.open('${messageData.fileUrl}', '_blank')"
+        onclick="handleVideoClick(event)">
+        <source src="${messageData.fileUrl}" type="${contentType}">
+        Your browser does not support the video tag.
+      </video>
+    `;
               } else {
                 fileContent = `
                   <a href="${messageData.fileUrl}" target="_blank" class="chat-generic-link">
@@ -126,7 +127,7 @@ async function loadChatMessages(userId) {
               `;
             }
           }
-    
+
           // Add message text and file content
           messageDiv.innerHTML = `
             <p>${messageData.text || ""}</p>
@@ -137,7 +138,7 @@ async function loadChatMessages(userId) {
         }
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
       };
-    
+
       fetchMessages();
     });
   } catch (error) {
@@ -145,6 +146,15 @@ async function loadChatMessages(userId) {
     alert("Failed to load chat messages. Please try again.");
   }
 } //
+
+// Function to handle video click: play on single tap, open in new tab on double tap
+function handleVideoClick(event) {
+  if (event.target.paused) {
+    event.target.play(); // Play video on single tap
+  } else {
+    event.target.pause(); // Pause if already playing
+  }
+}
 
 function setupMessageSending(userId) {
   sendButton.addEventListener("click", async () => {
