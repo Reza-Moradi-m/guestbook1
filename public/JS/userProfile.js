@@ -218,7 +218,7 @@ async function displayLatestEntries() {
       .orderBy("timestamp", "desc")
       .get();
 
-
+    let profileSection = document.getElementById("profile-section");
 
     let postsContainer = document.getElementById("posts-container");
     if (!postsContainer) {
@@ -657,7 +657,7 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         if (parentElement) {
           parentElement.appendChild(newReplyDiv);
         }
-        
+
       } catch (error) {
         console.error("Error submitting reply:", error);
         alert("Failed to submit reply. Please try again.");
