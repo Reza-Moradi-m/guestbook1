@@ -21,20 +21,18 @@ async function loadUserProfile() {
       return;
     }
     // ✅ Ensure userData is declared before using it
-    const userData = userDoc.data() || { name: "Anonymous User", username: "NoUsername", profilePicture: "images/default-avatar.png" };
+    userData = userDoc.data() || { name: "Anonymous User", username: "NoUsername", profilePicture: "images/default-avatar.png" };
 
 
-    // ✅ Get the correct container for profile details
+    // Ensure profile section is cleared before appending new elements
     let profileSection = document.getElementById("profile-section");
     if (!profileSection) {
-      console.warn("WARNING: Profile section missing, creating one.");
       profileSection = document.createElement("div");
       profileSection.id = "profile-section";
-      document.body.appendChild(profileSection); // ✅ Creates it dynamically
+      document.body.appendChild(profileSection);
+    } else {
+      profileSection.innerHTML = ""; // ✅ Clear previous elements properly
     }
-
-    profileSection.innerHTML = ""; // Clear any previous content
-
 
 
 
@@ -200,32 +198,13 @@ async function loadUserProfile() {
       return newChat.id;
     }
 
-    // Step 3: Check if postsContainer already exists; if not, create it
-    let postsContainer = document.getElementById("posts-container");
-    if (!postsContainer) {
-      postsContainer = document.createElement("div");
-      postsContainer.id = "posts-container";
-      profileSection.appendChild(postsContainer); // ✅ Appends instead of overwriting
-    }
-
-    // Step 4: Fetch and display posts
-    displayLatestEntries();
   } catch (error) {
     console.error("Error loading user profile:", error);
     entryPreviewDiv.innerHTML = "<p>Error loading user profile.</p>";
   }
 }
 
-firebase.auth().onAuthStateChanged((user) => {
-  if (!user) {
-    console.error("No user is signed in.");
-    alert("You need to sign in to perform this action.");
-    window.location.href = "auth.html";
-  } else {
-    console.log("Current user ID:", user.uid);
-    loadUserProfile(user.uid);
-  }
-});
+
 
 // Function to fetch and display the latest entries
 async function displayLatestEntries() {
@@ -239,15 +218,16 @@ async function displayLatestEntries() {
       .orderBy("timestamp", "desc")
       .get();
 
-    // Get the posts container
+
+
     let postsContainer = document.getElementById("posts-container");
     if (!postsContainer) {
-      console.warn("WARNING: Posts container missing, creating a new one.");
       postsContainer = document.createElement("div");
       postsContainer.id = "posts-container";
       profileSection.appendChild(postsContainer);
+    } else {
+      postsContainer.innerHTML = ""; // ✅ Clear previous posts
     }
-    postsContainer.innerHTML = "";
 
 
 
@@ -292,34 +272,7 @@ async function displayLatestEntries() {
 
 
 
-      // ✅ Define messageButton before using it
-      const messageButton = document.createElement("button");
-      messageButton.id = "message-button";
-      messageButton.textContent = "Message";
 
-      // ✅ Append profile info to the correct section
-      const profileSection = document.getElementById("profile-section");
-
-      const userData = userDoc.data() || { name: "Anonymous User", username: "NoUsername", profilePicture: "images/default-avatar.png" };
-
-      // ✅ Append profile info to `profile-section`
-      const header = document.createElement("div");
-      header.classList.add("profile-header");
-      header.innerHTML = `
-          <img src="${userData.profilePicture || "images/default-avatar.png"}" alt="Profile Picture" class="profile-pic">
-          <h2>${userData.name || "Unknown"}</h2>
-          <p>Username: ${userData.username || "NoUsername"}</p>
-      `;
-      profileSection.appendChild(header);
-
-      const followButton = document.createElement("button");
-      followButton.id = "follow-button";
-      followButton.textContent = "Follow";
-
-
-
-      profileSection.appendChild(followButton);
-      profileSection.appendChild(messageButton);
 
       // Append the entryDiv to the posts container
       postsContainer.appendChild(entryDiv);
@@ -560,11 +513,9 @@ async function displayLatestEntries() {
 
 // Function to display comments with proper nesting
 async function displayComments(postId, parentElement, parentId = null, indentLevel = 0) {
-
   if (parentId === null) {
-    parentElement.innerHTML = ""; // Clear top-level comments only
+    parentElement.innerHTML = ""; // ✅ Clear top-level comments only
   }
-
 
   const commentsRef = window.db
     .collection("guestbook")
@@ -575,28 +526,53 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
 
   const querySnapshot = await commentsRef.get();
 
-  querySnapshot.forEach((doc) => {
+  querySnapshot.forEach(async (doc) => {
     const commentData = doc.data();
     const commentId = doc.id;
 
+    let commentUserData = {
+      profilePicture: "images/default-avatar.png", // ✅ Default image
+      name: "Unknown",
+      username: "NoUsername",
+    };
+
+    if (commentData.userId) {
+      try {
+        const commentUserDoc = await window.db.collection("users").doc(commentData.userId).get();
+        if (commentUserDoc.exists) {
+          commentUserData = commentUserDoc.data();
+        }
+      } catch (error) {
+        console.error("Error fetching comment user data:", error);
+      }
+    }
+
     const commentDiv = document.createElement("div");
     commentDiv.classList.add("comment");
-    commentDiv.style.marginLeft = parentId === null ? "20px" : "40px";
-    commentDiv.style.textAlign = "left"; // Align text to the left
-    commentDiv.innerHTML = `
-<p class="comment-text">
-<strong class="comment-author">
-    <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
-        ${commentData.author} (${commentData.username})
-    </a>
-</strong>: ${commentData.message}
-</p>
-`;
+    commentDiv.style.marginLeft = `${indentLevel * 20}px`; // ✅ Proper indentation for nested replies
 
+    // ✅ Comment format (same as reply format)
+    commentDiv.innerHTML = `
+      <div style="display: flex; align-items: center;">
+          <img src="${commentUserData.profilePicture}" 
+               alt="Profile Picture" 
+               style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+          <p>
+              <strong>
+                  <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
+                      ${commentUserData.name} (${commentUserData.username})
+                  </a>
+              </strong>: ${commentData.message}
+          </p>
+      </div>
+    `;
+
+    // ✅ Reply button
     const replyButton = document.createElement("button");
     replyButton.textContent = "Reply";
     replyButton.classList.add("reply-button");
 
+    // ✅ Reply section (initially hidden)
     const replySection = document.createElement("div");
     replySection.classList.add("reply-section");
     replySection.style.display = "none";
@@ -614,13 +590,14 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
     cancelReplyButton.textContent = "Cancel";
     cancelReplyButton.classList.add("cancel-reply-button");
 
+    // ✅ Hide reply section when cancel is clicked
     cancelReplyButton.addEventListener("click", () => {
-      replySection.style.display = "none"; // Hide reply section
-      replyInput.value = ""; // Clear input
+      replySection.style.display = "none";
+      replyInput.value = "";
     });
 
+    // ✅ Submit reply logic
     submitReplyButton.addEventListener("click", async () => {
-      // Check if the user is authenticated
       const user = firebase.auth().currentUser;
       if (!user) {
         alert("You must be logged in to submit a reply.");
@@ -634,89 +611,95 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
       }
 
       try {
-
-
-
-        // Fetch the user data for the current user
         const userDoc = await window.db.collection("users").doc(user.uid).get();
         const userData = userDoc.exists ? userDoc.data() : null;
 
         if (!userData || !userData.username) {
-          console.error("Error: Username for current user not found.");
           alert("Your profile is missing a username. Please update it before replying.");
           return;
         }
 
-        // Ensure 'commentData.username' exists for the person being replied to
-        const repliedTo = commentData.username || "UnknownUser"; // Fallback if username is missing
+        const repliedTo = commentUserData.username || "UnknownUser";
 
-        // Add the reply to Firestore
+        // ✅ Store reply in Firestore
         await window.db.collection("guestbook").doc(postId).collection("comments").add({
-          author: userData.name || "Anonymous User", // Current reply author
-          username: userData.username || "NoUsername", // Current reply author's username
-          userId: user.uid, // ID of the current reply author
-          message: `@${repliedTo} ${replyText}`, // Prefix reply text with the replied-to username
-          parentCommentId: commentId, // Parent comment ID for nesting
+          author: userData.name || "Anonymous User",
+          username: userData.username || "NoUsername",
+          userId: user.uid,
+          message: `@${repliedTo} ${replyText}`, // ✅ Prefix reply text with username
+          parentCommentId: commentId,
           timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
-        // Clear input and hide reply box
+
+        // ✅ Clear input and hide reply box
         replyInput.value = "";
         replySection.style.display = "none";
 
-        // Dynamically append the new reply to the DOM
+        // ✅ Append the new reply dynamically (same format as comments)
         const newReplyDiv = document.createElement("div");
         newReplyDiv.classList.add("comment");
-        newReplyDiv.style.marginLeft = `${(indentLevel + 1) * 20}px`; // Indent reply properly
-        newReplyDiv.style.textAlign = "left";
+        newReplyDiv.style.marginLeft = `${(indentLevel + 1) * 20}px`;
         newReplyDiv.innerHTML = `
-<p>
-<strong>
-    <a href="userProfile.html?userId=${user.uid}" class="user-link">
-        ${userData?.name || "Anonymous User"} (${userData?.username || "NoUsername"})
-    </a>
-</strong>: ${replyText}
-</p>
-`;
+          <div style="display: flex; align-items: center;">
+              <img src="${userData.profilePicture || 'images/default-avatar.png'}" 
+                   alt="Profile Picture" 
+                   style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+              <p>
+                  <strong>
+                      <a href="userProfile.html?userId=${user.uid}" class="user-link">
+                          ${userData.name || "Anonymous User"} (${userData.username || "NoUsername"})
+                      </a>
+                  </strong>: ${replyText}
+              </p>
+          </div>
+        `;
 
-        // Append the new reply
-        parentElement.appendChild(newReplyDiv);
+        if (parentElement) {
+          parentElement.appendChild(newReplyDiv);
+        }
+        
       } catch (error) {
         console.error("Error submitting reply:", error);
         alert("Failed to submit reply. Please try again.");
       }
     });
 
+    // ✅ Toggle reply section on button click
     replyButton.addEventListener("click", () => {
-      replySection.style.display =
-        replySection.style.display === "none" ? "block" : "none";
+      replySection.style.display = replySection.style.display === "none" ? "block" : "none";
     });
 
+    // ✅ Append reply input and buttons
     replySection.appendChild(replyInput);
     replySection.appendChild(submitReplyButton);
     replySection.appendChild(cancelReplyButton);
 
+    // ✅ Append buttons to comment
     commentDiv.appendChild(replyButton);
     commentDiv.appendChild(replySection);
 
+    // ✅ Append comment to parent element
     parentElement.appendChild(commentDiv);
 
-    // Fetch replies for this comment
+    // ✅ Recursively fetch and display replies
     displayComments(postId, parentElement, commentId, indentLevel + 1);
   });
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadUserProfile(); // Wait for user data to load
-  await displayLatestEntries(); // Only then display posts
+  await loadUserProfile();
 });
 
 
-firebase.auth().onAuthStateChanged((user) => {
+firebase.auth().onAuthStateChanged(async (user) => {
   if (!user) {
     console.error("No user is signed in.");
     alert("You need to sign in to perform this action.");
-    window.location.href = "auth.html"; // Redirect to login
+    window.location.href = "auth.html";
   } else {
     console.log("Current user ID:", user.uid);
+    if (!userData || Object.keys(userData).length === 0) {
+      await loadUserProfile(); // ✅ Only call once
+    }
   }
 });
