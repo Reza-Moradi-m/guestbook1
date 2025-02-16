@@ -300,6 +300,8 @@ async function displayLatestEntries() {
       // ✅ Append profile info to the correct section
       const profileSection = document.getElementById("profile-section");
 
+      const userData = userDoc.data() || { name: "Anonymous User", username: "NoUsername", profilePicture: "images/default-avatar.png" };
+
       // ✅ Append profile info to `profile-section`
       const header = document.createElement("div");
       header.classList.add("profile-header");
