@@ -14,15 +14,14 @@ if (!userId) {
 
 async function loadUserProfile() {
   try {
-
-    // Fetch user details
+    // Fetch user details from Firestore
     const userDoc = await window.db.collection("users").doc(userId).get();
-    const userData = userDoc.exists ? userDoc.data() : { name: "Anonymous User", username: "NoUsername" };
-
-    if (!userData) {
+    if (!userDoc.exists) {
       entryPreviewDiv.innerHTML = "<p>User not found.</p>";
       return;
     }
+    // ✅ Ensure userData is declared before using it
+    const userData = userDoc.data() || { name: "Anonymous User", username: "NoUsername", profilePicture: "images/default-avatar.png" };
 
 
     // ✅ Get the correct container for profile details
