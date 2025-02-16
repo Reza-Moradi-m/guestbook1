@@ -24,15 +24,40 @@ async function loadUserProfile() {
     userData = userDoc.data() || { name: "Anonymous User", username: "NoUsername", profilePicture: "images/default-avatar.png" };
 
 
-    // Ensure profile section is cleared before appending new elements
+    let mainContainer = document.getElementById("main-container"); // Ensure there's a container
+    if (!mainContainer) {
+      mainContainer = document.createElement("div");
+      mainContainer.id = "main-container";
+      document.body.appendChild(mainContainer);
+    }
+
     let profileSection = document.getElementById("profile-section");
     if (!profileSection) {
       profileSection = document.createElement("div");
       profileSection.id = "profile-section";
-      document.body.appendChild(profileSection);
+      mainContainer.appendChild(profileSection); // ✅ Append to the correct container
     } else {
       profileSection.innerHTML = ""; // ✅ Clear previous elements properly
     }
+
+    // ✅ Add profile picture and name
+    const profileImage = document.createElement("img");
+    profileImage.src = userData.profilePicture || "images/default-avatar.png";
+    profileImage.alt = "Profile Picture";
+    profileImage.style.width = "100px";
+    profileImage.style.height = "100px";
+    profileImage.style.borderRadius = "50%";
+    profileImage.style.display = "block";
+    profileImage.style.margin = "auto";
+
+    const profileName = document.createElement("h2");
+    profileName.textContent = userData.name || "Anonymous User";
+    profileName.style.textAlign = "center";
+    profileName.style.color = "#fff"; // Ensure visibility on dark background
+
+    // Append elements to profile section
+    profileSection.appendChild(profileImage);
+    profileSection.appendChild(profileName);
 
 
 
@@ -218,54 +243,75 @@ async function displayLatestEntries() {
       .orderBy("timestamp", "desc")
       .get();
 
-    let profileSection = document.getElementById("profile-section");
+    let mainContainer = document.getElementById("main-container"); // Ensure a parent container
+    if (!mainContainer) {
+      mainContainer = document.createElement("div");
+      mainContainer.id = "main-container";
+      document.body.appendChild(mainContainer);
+    }
 
     let postsContainer = document.getElementById("posts-container");
     if (!postsContainer) {
       postsContainer = document.createElement("div");
       postsContainer.id = "posts-container";
-      profileSection.appendChild(postsContainer);
+      mainContainer.appendChild(postsContainer); // ✅ Append to main container, not profile section
     } else {
       postsContainer.innerHTML = ""; // ✅ Clear previous posts
     }
 
 
+    if (querySnapshot.empty) {
+      postsContainer.innerHTML = "<p style='text-align: center; color: white;'>No posts found.</p>";
+    } else {
+      querySnapshot.forEach(async (doc) => {
+        const data = doc.data();
+        const postId = doc.id;
 
-    querySnapshot.forEach(async (doc) => {
-      const data = doc.data();
-      const postId = doc.id;
+        const entryDiv = document.createElement("div");
+        entryDiv.classList.add("entry");
+        entryDiv.id = `post-${postId}`; // Add unique ID for each post
 
-      const entryDiv = document.createElement("div");
-      entryDiv.classList.add("entry");
-      entryDiv.id = `post-${postId}`; // Add unique ID for each post
+        let postUserData = {
+          profilePicture: "images/default-avatar.png",
+          name: "Unknown",
+          username: "NoUsername",
+        };
 
-      // Fetch user profile picture and details
-      const userDoc = await window.db.collection("users").doc(data.userId).get();
-      const postUserData = userDoc.exists ? userDoc.data() : { name: "Unknown", username: "NoUsername", profilePicture: "images/default-avatar.png" };
+        // Only fetch user details if `data.userId` exists
+        if (data.userId) {
+          try {
+            const userDoc = await window.db.collection("users").doc(data.userId).get();
+            if (userDoc.exists) {
+              postUserData = userDoc.data();
+            }
+          } catch (error) {
+            console.error("Error fetching post user data:", error);
+          }
+        }
 
-      // Create the profile picture and username container
-      const nameElement = document.createElement("div");
-      nameElement.classList.add("post-user-info");
-      nameElement.innerHTML = `
-    <div style="display: flex; align-items: center;">
-        <img src="${postUserData.profilePicture}" 
-             alt="Profile Picture" 
-             style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
-        <a href="userProfile.html?userId=${data.userId}" class="user-link">
-            ${postUserData.name} (${postUserData.username})
-        </a>
-    </div>
-`;
+        // Ensure all values are properly set
+        const nameElement = document.createElement("div");
+        nameElement.classList.add("post-user-info");
+        nameElement.innerHTML = `
+        <div style="display: flex; align-items: center;">
+            <img src="${postUserData.profilePicture}" 
+                 alt="Profile Picture" 
+                 style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+            <a href="userProfile.html?userId=${data.userId || '#'}" class="user-link">
+                ${postUserData.name} (${postUserData.username})
+            </a>
+        </div>
+      `;
 
-      // Create the message and timestamp container
-      const messageElement = document.createElement("p");
-      messageElement.innerHTML = `
+        // Create the message and timestamp container
+        const messageElement = document.createElement("p");
+        messageElement.innerHTML = `
                 <strong>Message:</strong>
                 <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
             `;
 
-      const timestampElement = document.createElement("p");
-      timestampElement.innerHTML = `
+        const timestampElement = document.createElement("p");
+        timestampElement.innerHTML = `
                 <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
             `;
 
@@ -274,238 +320,253 @@ async function displayLatestEntries() {
 
 
 
-      // Append the entryDiv to the posts container
-      postsContainer.appendChild(entryDiv);
+        // Append user details
+        entryDiv.innerHTML = `
+<div style="display: flex; align-items: center; margin-bottom: 10px;">
+    <img src="${postUserData.profilePicture}" 
+         alt="Profile Picture" 
+         style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+    <a href="userProfile.html?userId=${data.userId}" class="user-link">
+        ${postUserData.name} (${postUserData.username})
+    </a>
+</div>
+<p><strong>Message:</strong> ${data.message}</p>
+<p><strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}</p>
+`;
+
+        // Append the entryDiv to the posts container
+        postsContainer.appendChild(entryDiv);
 
 
 
 
-      // Determine the media type
-      let mediaElement = null;
-      if (data.fileURL) {
-        try {
-          const response = await fetch(data.fileURL, { method: "HEAD" });
-          const contentType = response.headers.get("Content-Type");
+        // Determine the media type
+        let mediaElement = null;
+        if (data.fileURL) {
+          try {
+            const response = await fetch(data.fileURL, { method: "HEAD" });
+            const contentType = response.headers.get("Content-Type");
 
-          if (contentType.startsWith("image/")) {
-            mediaElement = document.createElement("img");
-            mediaElement.src = data.fileURL;
-            mediaElement.alt = "Uploaded Image";
-            mediaElement.style.display = "block";
-            mediaElement.style.margin = "auto";
-            mediaElement.style.maxWidth = "100%";
-            mediaElement.style.height = "auto";
-          } else if (contentType.startsWith("video/")) {
-            mediaElement = document.createElement("video");
-            mediaElement.controls = true;
-            mediaElement.style.display = "block";
-            mediaElement.style.margin = "auto";
-            mediaElement.style.maxWidth = "100%";
-            mediaElement.style.height = "auto";
+            if (contentType.startsWith("image/")) {
+              mediaElement = document.createElement("img");
+              mediaElement.src = data.fileURL;
+              mediaElement.alt = "Uploaded Image";
+              mediaElement.style.display = "block";
+              mediaElement.style.margin = "auto";
+              mediaElement.style.maxWidth = "100%";
+              mediaElement.style.height = "auto";
+            } else if (contentType.startsWith("video/")) {
+              mediaElement = document.createElement("video");
+              mediaElement.controls = true;
+              mediaElement.style.display = "block";
+              mediaElement.style.margin = "auto";
+              mediaElement.style.maxWidth = "100%";
+              mediaElement.style.height = "auto";
 
-            const sourceElement = document.createElement("source");
-            sourceElement.src = data.fileURL;
-            sourceElement.type = contentType;
-            mediaElement.appendChild(sourceElement);
-          } else {
-            mediaElement = document.createElement("a");
-            mediaElement.href = data.fileURL;
-            mediaElement.target = "_blank";
-            mediaElement.textContent = "Download Attachment";
-            mediaElement.classList.add("entry-link");
+              const sourceElement = document.createElement("source");
+              sourceElement.src = data.fileURL;
+              sourceElement.type = contentType;
+              mediaElement.appendChild(sourceElement);
+            } else {
+              mediaElement = document.createElement("a");
+              mediaElement.href = data.fileURL;
+              mediaElement.target = "_blank";
+              mediaElement.textContent = "Download Attachment";
+              mediaElement.classList.add("entry-link");
+            }
+          } catch (error) {
+            console.error("Error fetching file metadata:", error);
           }
-        } catch (error) {
-          console.error("Error fetching file metadata:", error);
         }
-      }
 
-      // Create interaction buttons (like, comment, share)
-      const interactionDiv = document.createElement("div");
-      interactionDiv.classList.add("interaction-buttons");
-
+        // Create interaction buttons (like, comment, share)
+        const interactionDiv = document.createElement("div");
+        interactionDiv.classList.add("interaction-buttons");
 
 
-      // Like button logic
-      const likeButton = document.createElement("button");
-      likeButton.classList.add("like-button");
-      likeButton.textContent = "⭐ Loading..."; // Placeholder text while loading likes
 
-      const likesRef = window.db.collection("guestbook").doc(postId).collection("likes");
-      let liked = false; // Default value for liked state
+        // Like button logic
+        const likeButton = document.createElement("button");
+        likeButton.classList.add("like-button");
+        likeButton.textContent = "⭐ Loading..."; // Placeholder text while loading likes
 
-      // Fetch like count and determine if current user liked the post
-      async function initializeLikes() {
-        try {
-          const likeCount = await likesRef.get(); // Fetch all likes for this post
+        const likesRef = window.db.collection("guestbook").doc(postId).collection("likes");
+        let liked = false; // Default value for liked state
+
+        // Fetch like count and determine if current user liked the post
+        async function initializeLikes() {
+          try {
+            const likeCount = await likesRef.get(); // Fetch all likes for this post
+            const currentUser = firebase.auth().currentUser;
+
+            if (currentUser && currentUser.uid) {
+              const userLikeDoc = await likesRef.doc(currentUser.uid).get();
+              liked = userLikeDoc.exists; // Check if the user already liked the post
+            }
+
+            renderLikeButton(likeCount.size); // Update button with total likes
+          } catch (error) {
+            console.error("Error fetching like count:", error);
+            likeButton.textContent = "⭐ Error";
+          }
+        }
+
+        // Function to update like count and button state
+        async function updateLikes() {
           const currentUser = firebase.auth().currentUser;
 
-          if (currentUser && currentUser.uid) {
-            const userLikeDoc = await likesRef.doc(currentUser.uid).get();
-            liked = userLikeDoc.exists; // Check if the user already liked the post
+          if (!currentUser) {
+            alert("You need to log in to like this post!");
+            return;
           }
 
-          renderLikeButton(likeCount.size); // Update button with total likes
-        } catch (error) {
-          console.error("Error fetching like count:", error);
-          likeButton.textContent = "⭐ Error";
+          try {
+            const userLikeRef = likesRef.doc(currentUser.uid);
+
+            if (liked) {
+              await userLikeRef.delete(); // Remove the like
+              liked = false;
+            } else {
+              await userLikeRef.set({
+                likedAt: firebase.firestore.FieldValue.serverTimestamp(),
+              });
+              liked = true;
+            }
+
+            const likeCount = (await likesRef.get()).size; // Refresh like count
+            renderLikeButton(likeCount);
+          } catch (error) {
+            console.error("Error updating like:", error);
+            alert("Failed to update like.");
+          }
         }
-      }
 
-      // Function to update like count and button state
-      async function updateLikes() {
-        const currentUser = firebase.auth().currentUser;
-
-        if (!currentUser) {
-          alert("You need to log in to like this post!");
-          return;
+        // Render the like button with updated count
+        function renderLikeButton(likeCount) {
+          likeButton.innerHTML = liked ? `⭐ ${likeCount}` : `☆ ${likeCount}`;
         }
 
-        try {
-          const userLikeRef = likesRef.doc(currentUser.uid);
+        likeButton.addEventListener("click", updateLikes);
+        initializeLikes(); // Initialize the like button on load
 
-          if (liked) {
-            await userLikeRef.delete(); // Remove the like
-            liked = false;
+
+
+        // Comment button
+        const commentButton = document.createElement("button");
+        commentButton.classList.add("comment-button");
+        commentButton.textContent = "💬 Comment";
+
+        // Comment section
+        const commentSection = document.createElement("div");
+        commentSection.classList.add("comment-section");
+        commentSection.style.display = "none";
+
+        // Existing comments container
+        const existingComments = document.createElement("div");
+        existingComments.classList.add("existing-comments");
+
+        // Input field for comments
+        const commentInput = document.createElement("input");
+        commentInput.type = "text";
+        commentInput.placeholder = "Write a comment...";
+        commentInput.classList.add("comment-input");
+
+        // Submit button for comments
+        const commentSubmit = document.createElement("button");
+        commentSubmit.textContent = "Submit";
+        commentSubmit.classList.add("comment-submit");
+
+        const cancelCommentButton = document.createElement("button");
+        cancelCommentButton.textContent = "Cancel";
+        cancelCommentButton.classList.add("cancel-comment-button");
+
+        cancelCommentButton.addEventListener("click", () => {
+          commentSection.style.display = "none"; // Hide comment box without submitting
+          commentInput.value = ""; // Clear the input field
+        });
+
+        commentSubmit.addEventListener("click", async () => {
+          const commentText = commentInput.value.trim();
+          const user = firebase.auth().currentUser;
+          if (!user) {
+            alert("You must be logged in to comment.");
+            return;
+          }
+          if (commentText) {
+            const userDoc = await window.db.collection("users").doc(user.uid).get();
+            const userData = userDoc.data();
+
+            await window.db
+              .collection("guestbook")
+              .doc(postId)
+              .collection("comments")
+              .add({
+                author: userData.name || "Unknown",
+                username: userData.username || "NoUsername",
+                message: commentText,
+                parentCommentId: null,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+              });
+            commentInput.value = ""; // Clear input after submitting
+            displayComments(postId, existingComments);
+          }
+        });
+
+        // Add input and buttons to the comment section
+        commentSection.appendChild(existingComments);
+        commentSection.appendChild(commentInput);
+        commentSection.appendChild(commentSubmit);
+        commentSection.appendChild(cancelCommentButton);
+
+        // Toggle the comment section on button click
+        commentButton.addEventListener("click", () => {
+          commentSection.style.display =
+            commentSection.style.display === "none" ? "block" : "none";
+          displayComments(postId, existingComments); // Ensure comments are displayed when toggled
+        });
+
+        displayComments(postId, existingComments); // Display comments
+
+        // Share button
+        const shareButton = document.createElement("button");
+        shareButton.classList.add("share-button");
+        shareButton.textContent = "🔗 Share";
+
+        shareButton.addEventListener("click", async () => {
+          const postUrl = `${window.location.origin}#post-${postId}`;
+          if (navigator.share) {
+            navigator.share({
+              title: "Check out this post!",
+              text: `${data.firstName} says: ${data.message}`,
+              url: postUrl,
+            });
           } else {
-            await userLikeRef.set({
-              likedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            });
-            liked = true;
+            await navigator.clipboard.writeText(postUrl);
+            alert("Post link copied to clipboard!");
           }
+        });
 
-          const likeCount = (await likesRef.get()).size; // Refresh like count
-          renderLikeButton(likeCount);
-        } catch (error) {
-          console.error("Error updating like:", error);
-          alert("Failed to update like.");
-        }
-      }
+        interactionDiv.appendChild(likeButton);
+        interactionDiv.appendChild(commentButton);
+        interactionDiv.appendChild(shareButton);
 
-      // Render the like button with updated count
-      function renderLikeButton(likeCount) {
-        likeButton.innerHTML = liked ? `⭐ ${likeCount}` : `☆ ${likeCount}`;
-      }
+        entryDiv.appendChild(nameElement);
+        entryDiv.appendChild(messageElement);
+        entryDiv.appendChild(timestampElement);
 
-      likeButton.addEventListener("click", updateLikes);
-      initializeLikes(); // Initialize the like button on load
+        // Append the post container to postsContainer
+        postsContainer.appendChild(entryDiv);
+
+        if (mediaElement) entryDiv.appendChild(mediaElement);
+
+        entryDiv.appendChild(interactionDiv);
+        entryDiv.appendChild(commentSection);
 
 
 
-      // Comment button
-      const commentButton = document.createElement("button");
-      commentButton.classList.add("comment-button");
-      commentButton.textContent = "💬 Comment";
 
-      // Comment section
-      const commentSection = document.createElement("div");
-      commentSection.classList.add("comment-section");
-      commentSection.style.display = "none";
-
-      // Existing comments container
-      const existingComments = document.createElement("div");
-      existingComments.classList.add("existing-comments");
-
-      // Input field for comments
-      const commentInput = document.createElement("input");
-      commentInput.type = "text";
-      commentInput.placeholder = "Write a comment...";
-      commentInput.classList.add("comment-input");
-
-      // Submit button for comments
-      const commentSubmit = document.createElement("button");
-      commentSubmit.textContent = "Submit";
-      commentSubmit.classList.add("comment-submit");
-
-      const cancelCommentButton = document.createElement("button");
-      cancelCommentButton.textContent = "Cancel";
-      cancelCommentButton.classList.add("cancel-comment-button");
-
-      cancelCommentButton.addEventListener("click", () => {
-        commentSection.style.display = "none"; // Hide comment box without submitting
-        commentInput.value = ""; // Clear the input field
       });
-
-      commentSubmit.addEventListener("click", async () => {
-        const commentText = commentInput.value.trim();
-        const user = firebase.auth().currentUser;
-        if (!user) {
-          alert("You must be logged in to comment.");
-          return;
-        }
-        if (commentText) {
-          const userDoc = await window.db.collection("users").doc(user.uid).get();
-          const userData = userDoc.data();
-
-          await window.db
-            .collection("guestbook")
-            .doc(postId)
-            .collection("comments")
-            .add({
-              author: userData.name || "Unknown",
-              username: userData.username || "NoUsername",
-              message: commentText,
-              parentCommentId: null,
-              timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-            });
-          commentInput.value = ""; // Clear input after submitting
-          displayComments(postId, existingComments);
-        }
-      });
-
-      // Add input and buttons to the comment section
-      commentSection.appendChild(existingComments);
-      commentSection.appendChild(commentInput);
-      commentSection.appendChild(commentSubmit);
-      commentSection.appendChild(cancelCommentButton);
-
-      // Toggle the comment section on button click
-      commentButton.addEventListener("click", () => {
-        commentSection.style.display =
-          commentSection.style.display === "none" ? "block" : "none";
-        displayComments(postId, existingComments); // Ensure comments are displayed when toggled
-      });
-
-      displayComments(postId, existingComments); // Display comments
-
-      // Share button
-      const shareButton = document.createElement("button");
-      shareButton.classList.add("share-button");
-      shareButton.textContent = "🔗 Share";
-
-      shareButton.addEventListener("click", async () => {
-        const postUrl = `${window.location.origin}#post-${postId}`;
-        if (navigator.share) {
-          navigator.share({
-            title: "Check out this post!",
-            text: `${data.firstName} says: ${data.message}`,
-            url: postUrl,
-          });
-        } else {
-          await navigator.clipboard.writeText(postUrl);
-          alert("Post link copied to clipboard!");
-        }
-      });
-
-      interactionDiv.appendChild(likeButton);
-      interactionDiv.appendChild(commentButton);
-      interactionDiv.appendChild(shareButton);
-
-      entryDiv.appendChild(nameElement);
-      entryDiv.appendChild(messageElement);
-      entryDiv.appendChild(timestampElement);
-
-      // Append the post container to postsContainer
-      postsContainer.appendChild(entryDiv);
-
-      if (mediaElement) entryDiv.appendChild(mediaElement);
-
-      entryDiv.appendChild(interactionDiv);
-      entryDiv.appendChild(commentSection);
-
-
-
-
-    });
+    }
   } catch (error) {
     console.error("Error fetching latest entries:", error);
   }
@@ -685,9 +746,18 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
     displayComments(postId, parentElement, commentId, indentLevel + 1);
   });
 }
-
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadUserProfile();
+  try {
+    await loadUserProfile();
+  } catch (error) {
+    console.error("Error loading user profile:", error);
+  }
+
+  try {
+    await displayLatestEntries();
+  } catch (error) {
+    console.error("Error loading latest entries:", error);
+  }
 });
 
 
