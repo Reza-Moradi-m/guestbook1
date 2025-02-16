@@ -9,7 +9,7 @@ if (!userId) {
   alert("No user specified!");
   window.location.href = "index.html";
 }
-
+let userData = {};  // Declare it globally
 
 
 async function loadUserProfile() {
@@ -37,7 +37,7 @@ async function loadUserProfile() {
 
 
 
-   
+
 
     // Add Follow/Unfollow button
     // ✅ Follow button goes in `profile-section`
@@ -261,21 +261,21 @@ async function displayLatestEntries() {
 
       // Fetch user profile picture and details
       const userDoc = await window.db.collection("users").doc(data.userId).get();
-      const postUserData = userDoc.data();
+      const postUserData = userDoc.exists ? userDoc.data() : { name: "Unknown", username: "NoUsername", profilePicture: "images/default-avatar.png" };
 
       // Create the profile picture and username container
       const nameElement = document.createElement("div");
       nameElement.classList.add("post-user-info");
       nameElement.innerHTML = `
-                <div style="display: flex; align-items: center;">
-                    <img src="${postUserData?.profilePicture || 'images/default-avatar.png'}" 
-                         alt="Profile Picture" 
-                         style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
-                    <a href="userProfile.html?userId=${data.userId}" class="user-link">
-                        ${postUserData?.name || "Unknown"} (${postUserData?.username || "NoUsername"})
-                    </a>
-                </div>
-            `;
+    <div style="display: flex; align-items: center;">
+        <img src="${postUserData.profilePicture}" 
+             alt="Profile Picture" 
+             style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+        <a href="userProfile.html?userId=${data.userId}" class="user-link">
+            ${postUserData.name} (${postUserData.username})
+        </a>
+    </div>
+`;
 
       // Create the message and timestamp container
       const messageElement = document.createElement("p");
@@ -317,7 +317,7 @@ async function displayLatestEntries() {
       followButton.textContent = "Follow";
 
 
-      
+
       profileSection.appendChild(followButton);
       profileSection.appendChild(messageButton);
 
@@ -706,8 +706,8 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadUserProfile(); // ✅ Ensure profile loads first
-  displayLatestEntries(); // ✅ Then load posts
+  await loadUserProfile(); // Wait for user data to load
+  await displayLatestEntries(); // Only then display posts
 });
 
 
