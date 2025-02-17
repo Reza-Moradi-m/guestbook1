@@ -310,8 +310,12 @@ async function displayLatestEntries() {
                 <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
             `;
 
-        const timestampElement = document.createElement("p");
         
+        const timestampElement = document.createElement("p");
+        timestampElement.innerHTML = `
+  <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
+`;
+
 
 
 
