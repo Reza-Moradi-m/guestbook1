@@ -133,15 +133,15 @@ body {
   }
 
   .chat-image {
-    max-width: 200px;
-    max-height: 200px;
+    max-width: 70%;
+    max-height: auto;
     border-radius: 8px;
     cursor: pointer;
   }
   
   .chat-video {
-    max-width: 200px;
-    max-height: 200px;
+    max-width: 70%;
+    max-height: auto;
     border-radius: 8px;
     cursor: pointer;
   }
