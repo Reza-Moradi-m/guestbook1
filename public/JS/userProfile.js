@@ -311,28 +311,9 @@ async function displayLatestEntries() {
             `;
 
         const timestampElement = document.createElement("p");
-        timestampElement.innerHTML = `
-                <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
-            `;
+        
 
 
-
-
-
-
-        // Append user details
-        entryDiv.innerHTML = `
-<div style="display: flex; align-items: center; margin-bottom: 10px;">
-    <img src="${postUserData.profilePicture}" 
-         alt="Profile Picture" 
-         style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
-    <a href="userProfile.html?userId=${data.userId}" class="user-link">
-        ${postUserData.name} (${postUserData.username})
-    </a>
-</div>
-<p><strong>Message:</strong> ${data.message}</p>
-<p><strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}</p>
-`;
 
         // Append the entryDiv to the posts container
         postsContainer.appendChild(entryDiv);
