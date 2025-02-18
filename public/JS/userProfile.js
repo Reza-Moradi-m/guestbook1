@@ -595,7 +595,8 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
 
     const commentDiv = document.createElement("div");
     commentDiv.classList.add("comment");
-    commentDiv.style.marginLeft = `${indentLevel * 20}px`; // ✅ Proper indentation for nested replies
+    commentDiv.style.marginLeft = parentId === null ? "20px" : "40px";
+    commentDiv.style.textAlign = "left"; // Align text to the left
 
     // ✅ Comment format (same as reply format)
     commentDiv.innerHTML = `
