@@ -7,7 +7,7 @@
   background-color: #000; /* Adjust as needed */
   z-index: 1000; /* Keeps it above other elements */
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Adds shadow for better visibility */
-  padding: 10px 10; /* Adjust spacing */
+  padding: 10px 10px; /* Adjust spacing */
 }
 
 body {
