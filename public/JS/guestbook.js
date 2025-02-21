@@ -1,6 +1,7 @@
 // Reference to form and input elements
 const messageForm = document.getElementById("messageForm");
 const fileInput = document.getElementById("fileInput");
+const linkInput = document.getElementById("linkInput"); // ✅ New input field for links
 const messagesDiv = document.getElementById("messages");
 
 // Form submission handler
@@ -9,9 +10,11 @@ messageForm.addEventListener("submit", async (event) => {
 
     const message = document.getElementById("messageInput").value.trim();
     let file = fileInput.files[0];
+    const link = linkInput.value.trim(); // ✅ Get the link input value
 
-    if (!message) {
-        alert("Message is required!");
+    // ✅ Ensure at least one field is filled (message, file, or link)
+    if (!message && !file && !link) {
+        alert("You must provide a message, a file, or a link.");
         return;
     }
 
@@ -53,13 +56,14 @@ messageForm.addEventListener("submit", async (event) => {
             fileURL = await snapshot.ref.getDownloadURL();
         }
 
-        // ✅ Save post data to Firestore
+        // ✅ Save post data to Firestore (including link)
         const docRef = await window.db.collection("guestbook").add({
             userId: user.uid,
             username: userData.username,
             name: userData.name,
             message,
             fileURL,
+            link, // ✅ Store the link if provided
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
 
@@ -95,18 +99,28 @@ async function displayMessages() {
                 ? `<a href="${data.fileURL}" target="_blank">View Attachment</a>`
                 : "";
 
+            const isYouTube = data.link && data.link.includes("youtube.com/watch?v=");
+            const embeddedVideo = isYouTube
+                ? `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${new URL(data.link).searchParams.get("v")}" frameborder="0" allowfullscreen></iframe>`
+                : "";
+
+            const linkPreview = data.link
+                ? isYouTube ? embeddedVideo : `<a href="${data.link}" target="_blank" class="post-link">🔗 ${data.link}</a>`
+                : ""; // ✅ Embed YouTube video if it's a YouTube link
+
             const deleteButton =
                 data.userId === firebase.auth().currentUser?.uid
                     ? `<button onclick="deletePost('${doc.id}')">Delete</button>`
                     : "";
 
-                    messageElement.innerHTML = `
-                      <p><strong>${data.name} (${data.username}):</strong>
-                        <a href="post.html?postId=${doc.id}" class="post-link">${data.message}</a>
-                      </p>
-                      ${fileLink}
-                      ${deleteButton}
-                    `;
+            messageElement.innerHTML = `
+                    <p><strong>${data.name} (${data.username}):</strong>
+                      <a href="post.html?postId=${doc.id}" class="post-link">${data.message}</a>
+                    </p>
+                    ${fileLink}
+                    ${linkPreview} <!-- ✅ Show link preview -->
+                    ${deleteButton}
+                  `;
             messagesDiv.appendChild(messageElement);
         });
     } catch (error) {

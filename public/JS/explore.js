@@ -45,9 +45,10 @@ searchButton.addEventListener("click", async () => {
 // Search by name
 async function searchByName(query) {
   const querySnapshot = await db
-    .collection("users")
-    .where("nameLower", ">=", query.toLowerCase())
-    .where("nameLower", "<=", query.toLowerCase() + "\uf8ff")
+    .collection("guestbook")
+    .orderBy("timestamp", "desc") // ✅ Ensure chronological order
+    .where("message", ">=", query.toLowerCase())
+    .where("message", "<=", query.toLowerCase() + "\uf8ff")
     .get();
   return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), type: "user" }));
 }
@@ -179,63 +180,63 @@ async function displayLatestEntries(authUser) {
       let mediaElement = null;
       if (data.fileURL) {
         try {
-            console.log("Debugging file retrieval:", {
-                fileName: data.fileName,
-                fileURL: data.fileURL,
-            });
-    
-            let fileURL = data.fileURL; // Prefer using Firestore's stored URL
-    
-            // Only fetch from Firebase Storage if fileURL isn't complete
-            if (!fileURL.startsWith("https://")) {
-                if (data.fileName) {
-                    const fileRef = window.storage.ref(`uploads/${data.fileName}`);
-                    fileURL = await fileRef.getDownloadURL();
-                    console.log("File URL Retrieved from Storage:", fileURL);
-                } else {
-                    console.warn("Missing fileName in Firestore document:", data);
-                    throw new Error("File metadata incomplete (no fileName).");
-                }
-            }
-    
-            const response = await fetch(fileURL, { method: "HEAD" });
-    
-            if (!response.ok) {
-                throw new Error(`File not found: ${fileURL}`);
-            }
-    
-            const contentType = response.headers.get("Content-Type");
-    
-            if (contentType.startsWith("image/")) {
-                mediaElement = document.createElement("img");
-                mediaElement.src = fileURL;
-                mediaElement.alt = "Uploaded Image";
-                mediaElement.style.display = "block";
-                mediaElement.style.margin = "auto";
-                mediaElement.style.maxWidth = "100%";
-                mediaElement.style.height = "auto";
-            } else if (contentType.startsWith("video/")) {
-                mediaElement = document.createElement("video");
-                mediaElement.controls = true;
-                mediaElement.style.display = "block";
-                mediaElement.style.margin = "auto";
-                mediaElement.style.maxWidth = "100%";
-                mediaElement.style.height = "auto";
-    
-                const sourceElement = document.createElement("source");
-                sourceElement.src = fileURL;
-                sourceElement.type = contentType;
-                mediaElement.appendChild(sourceElement);
+          console.log("Debugging file retrieval:", {
+            fileName: data.fileName,
+            fileURL: data.fileURL,
+          });
+
+          let fileURL = data.fileURL; // Prefer using Firestore's stored URL
+
+          // Only fetch from Firebase Storage if fileURL isn't complete
+          if (!fileURL.startsWith("https://")) {
+            if (data.fileName) {
+              const fileRef = window.storage.ref(`uploads/${data.fileName}`);
+              fileURL = await fileRef.getDownloadURL();
+              console.log("File URL Retrieved from Storage:", fileURL);
             } else {
-                mediaElement = document.createElement("a");
-                mediaElement.href = fileURL;
-                mediaElement.target = "_blank";
-                mediaElement.textContent = "Download Attachment";
-                mediaElement.classList.add("entry-link");
+              console.warn("Missing fileName in Firestore document:", data);
+              throw new Error("File metadata incomplete (no fileName).");
             }
+          }
+
+          const response = await fetch(fileURL, { method: "HEAD" });
+
+          if (!response.ok) {
+            throw new Error(`File not found: ${fileURL}`);
+          }
+
+          const contentType = response.headers.get("Content-Type");
+
+          if (contentType.startsWith("image/")) {
+            mediaElement = document.createElement("img");
+            mediaElement.src = fileURL;
+            mediaElement.alt = "Uploaded Image";
+            mediaElement.style.display = "block";
+            mediaElement.style.margin = "auto";
+            mediaElement.style.maxWidth = "100%";
+            mediaElement.style.height = "auto";
+          } else if (contentType.startsWith("video/")) {
+            mediaElement = document.createElement("video");
+            mediaElement.controls = true;
+            mediaElement.style.display = "block";
+            mediaElement.style.margin = "auto";
+            mediaElement.style.maxWidth = "100%";
+            mediaElement.style.height = "auto";
+
+            const sourceElement = document.createElement("source");
+            sourceElement.src = fileURL;
+            sourceElement.type = contentType;
+            mediaElement.appendChild(sourceElement);
+          } else {
+            mediaElement = document.createElement("a");
+            mediaElement.href = fileURL;
+            mediaElement.target = "_blank";
+            mediaElement.textContent = "Download Attachment";
+            mediaElement.classList.add("entry-link");
+          }
         } catch (error) {
-            console.error("Error fetching file metadata:", error.message);
-        
+          console.error("Error fetching file metadata:", error.message);
+
 
           mediaElement = document.createElement("img");
           mediaElement.src = "images/default-avatar.png"; // Default placeholder

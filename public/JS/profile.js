@@ -215,7 +215,18 @@ async function displayLatestEntries() {
             let mediaElement = null;
             if (data.fileURL) {
                 try {
-                    const response = await fetch(data.fileURL, { method: "HEAD" });
+                    let fileURL = data.fileURL;
+
+                    if (!fileURL.startsWith("https://")) {
+                        if (data.fileName) {
+                            const fileRef = window.storage.ref(`uploads/${data.fileName}`);
+                            fileURL = await fileRef.getDownloadURL();
+                        } else {
+                            throw new Error("File metadata missing fileName.");
+                        }
+                    }
+
+                    const response = await fetch(fileURL, { method: "HEAD" });
                     const contentType = response.headers.get("Content-Type");
 
                     if (contentType.startsWith("image/")) {
