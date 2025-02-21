@@ -67,14 +67,14 @@ const currentUserId = authUser ? authUser.uid : null;
 // Function to check if a username is already taken
 async function isUsernameTaken(username, currentUserId) {
     const usernameQuery = await db.collection("users").where("username", "==", username).get();
-  
+
     for (const doc of usernameQuery.docs) {
-      if (doc.id !== currentUserId) {
-        return true; // Username is taken by another user
-      }
+        if (doc.id !== currentUserId) {
+            return true; // Username is taken by another user
+        }
     }
     return false; // Username is available
-  }
+}
 
 // Function to save profile changes
 document.getElementById("edit-profile-form").addEventListener("submit", async (e) => {
@@ -444,11 +444,9 @@ async function displayLatestEntries() {
 
     // Function to display comments with proper nesting
     async function displayComments(postId, parentElement, parentId = null, indentLevel = 0) {
-
         if (parentId === null) {
-            parentElement.innerHTML = ""; // Clear top-level comments only
+            parentElement.innerHTML = ""; // ✅ Clear top-level comments only
         }
-
 
         const commentsRef = window.db
             .collection("guestbook")
@@ -459,28 +457,54 @@ async function displayLatestEntries() {
 
         const querySnapshot = await commentsRef.get();
 
-        querySnapshot.forEach((doc) => {
+        querySnapshot.forEach(async (doc) => {
             const commentData = doc.data();
             const commentId = doc.id;
+
+            let commentUserData = {
+                profilePicture: "images/default-avatar.png", // ✅ Default image
+                name: "Unknown",
+                username: "NoUsername",
+            };
+
+            if (commentData.userId) {
+                try {
+                    const commentUserDoc = await window.db.collection("users").doc(commentData.userId).get();
+                    if (commentUserDoc.exists) {
+                        commentUserData = commentUserDoc.data();
+                    }
+                } catch (error) {
+                    console.error("Error fetching comment user data:", error);
+                }
+            }
 
             const commentDiv = document.createElement("div");
             commentDiv.classList.add("comment");
             commentDiv.style.marginLeft = parentId === null ? "20px" : "40px";
             commentDiv.style.textAlign = "left"; // Align text to the left
-            commentDiv.innerHTML = `
-<p class="comment-text">
-<strong class="comment-author">
-    <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
-        ${commentData.author} (${commentData.username})
-    </a>
-</strong>: ${commentData.message}
-</p>
-`;
 
+            // ✅ Comment format (same as reply format)
+            commentDiv.innerHTML = `
+        <div style="display: flex; align-items: center;">
+            <img src="${commentUserData.profilePicture}" 
+                 alt="Profile Picture" 
+                 style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+            <p>
+                <strong>
+                    <a href="userProfile.html?userId=${commentData.userId}" class="user-link">
+                        ${commentUserData.name} (${commentUserData.username})
+                    </a>
+                </strong>: ${commentData.message}
+            </p>
+        </div>
+      `;
+
+            // ✅ Reply button
             const replyButton = document.createElement("button");
             replyButton.textContent = "Reply";
             replyButton.classList.add("reply-button");
 
+            // ✅ Reply section (initially hidden)
             const replySection = document.createElement("div");
             replySection.classList.add("reply-section");
             replySection.style.display = "none";
@@ -498,13 +522,14 @@ async function displayLatestEntries() {
             cancelReplyButton.textContent = "Cancel";
             cancelReplyButton.classList.add("cancel-reply-button");
 
+            // ✅ Hide reply section when cancel is clicked
             cancelReplyButton.addEventListener("click", () => {
-                replySection.style.display = "none"; // Hide reply section
-                replyInput.value = ""; // Clear input
+                replySection.style.display = "none";
+                replyInput.value = "";
             });
 
+            // ✅ Submit reply logic
             submitReplyButton.addEventListener("click", async () => {
-                // Check if the user is authenticated
                 const user = firebase.auth().currentUser;
                 if (!user) {
                     alert("You must be logged in to submit a reply.");
@@ -518,73 +543,77 @@ async function displayLatestEntries() {
                 }
 
                 try {
-
-
-
-                    // Fetch the user data for the current user
                     const userDoc = await window.db.collection("users").doc(user.uid).get();
                     const userData = userDoc.exists ? userDoc.data() : null;
 
                     if (!userData || !userData.username) {
-                        console.error("Error: Username for current user not found.");
                         alert("Your profile is missing a username. Please update it before replying.");
                         return;
                     }
 
-                    // Ensure 'commentData.username' exists for the person being replied to
-                    const repliedTo = commentData.username || "UnknownUser"; // Fallback if username is missing
+                    const repliedTo = commentUserData.username || "UnknownUser";
 
-                    // Add the reply to Firestore
+                    // ✅ Store reply in Firestore
                     await window.db.collection("guestbook").doc(postId).collection("comments").add({
-                        author: userData.name || "Anonymous User", // Current reply author
-                        username: userData.username || "NoUsername", // Current reply author's username
-                        userId: user.uid, // ID of the current reply author
-                        message: `@${repliedTo} ${replyText}`, // Prefix reply text with the replied-to username
-                        parentCommentId: commentId, // Parent comment ID for nesting
+                        author: userData.name || "Anonymous User",
+                        username: userData.username || "NoUsername",
+                        userId: user.uid,
+                        message: `@${repliedTo} ${replyText}`, // ✅ Prefix reply text with username
+                        parentCommentId: commentId,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     });
-                    // Clear input and hide reply box
+
+                    // ✅ Clear input and hide reply box
                     replyInput.value = "";
                     replySection.style.display = "none";
 
-                    // Dynamically append the new reply to the DOM
+                    // ✅ Append the new reply dynamically (same format as comments)
                     const newReplyDiv = document.createElement("div");
                     newReplyDiv.classList.add("comment");
-                    newReplyDiv.style.marginLeft = `${(indentLevel + 1) * 20}px`; // Indent reply properly
-                    newReplyDiv.style.textAlign = "left";
+                    newReplyDiv.style.marginLeft = `${(indentLevel + 1) * 20}px`;
                     newReplyDiv.innerHTML = `
-<p>
-<strong>
-    <a href="userProfile.html?userId=${user.uid}" class="user-link">
-        ${userData?.name || "Anonymous User"} (${userData?.username || "NoUsername"})
-    </a>
-</strong>: ${replyText}
-</p>
-`;
+            <div style="display: flex; align-items: center;">
+                <img src="${userData.profilePicture || 'images/default-avatar.png'}" 
+                     alt="Profile Picture" 
+                     style="width: 30px; height: 30px; border-radius: 50%; margin-right: 10px;">
+                <p>
+                    <strong>
+                        <a href="userProfile.html?userId=${user.uid}" class="user-link">
+                            ${userData.name || "Anonymous User"} (${userData.username || "NoUsername"})
+                        </a>
+                    </strong>: ${replyText}
+                </p>
+            </div>
+          `;
 
-                    // Append the new reply
-                    parentElement.appendChild(newReplyDiv);
+                    if (parentElement) {
+                        parentElement.appendChild(newReplyDiv);
+                    }
+
                 } catch (error) {
                     console.error("Error submitting reply:", error);
                     alert("Failed to submit reply. Please try again.");
                 }
             });
 
+            // ✅ Toggle reply section on button click
             replyButton.addEventListener("click", () => {
-                replySection.style.display =
-                    replySection.style.display === "none" ? "block" : "none";
+                replySection.style.display = replySection.style.display === "none" ? "block" : "none";
             });
 
+            // ✅ Append reply input and buttons
             replySection.appendChild(replyInput);
             replySection.appendChild(submitReplyButton);
             replySection.appendChild(cancelReplyButton);
 
+            // ✅ Append buttons to comment
             commentDiv.appendChild(replyButton);
             commentDiv.appendChild(replySection);
 
+            // ✅ Append comment to parent element
             parentElement.appendChild(commentDiv);
 
-            // Fetch replies for this comment
+            // ✅ Recursively fetch and display replies
             displayComments(postId, parentElement, commentId, indentLevel + 1);
         });
     }
