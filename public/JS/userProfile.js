@@ -51,9 +51,12 @@ async function loadUserProfile() {
     profileImage.style.margin = "auto";
 
     const profileName = document.createElement("h2");
-    profileName.textContent = userData.name || "Anonymous User";
+    profileName.innerHTML = `<span style="color: black;">${userData.name || "Anonymous User"}</span> 
+                         <span style="color: black; font-size: 0.9em;">(@${userData.username || "NoUsername"})</span>`;
     profileName.style.textAlign = "center";
-    profileName.style.color = "#fff"; // Ensure visibility on dark background
+    profileName.style.backgroundColor = "#FFD700"; // Adding background for contrast
+    profileName.style.padding = "10px";
+    profileName.style.borderRadius = "5px";
 
     // Append elements to profile section
     profileSection.appendChild(profileImage);
@@ -310,7 +313,7 @@ async function displayLatestEntries() {
                 <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
             `;
 
-        
+
         const timestampElement = document.createElement("p");
         timestampElement.innerHTML = `
   <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
