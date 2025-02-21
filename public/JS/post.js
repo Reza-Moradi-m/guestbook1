@@ -20,8 +20,8 @@ async function displayPost(authUser) {
       window.location.href = "guestbook.html";
       return;
     }
-   
-  
+
+
 
     const data = postDoc.data();
     let userId = authUser ? authUser.uid : null;
@@ -52,13 +52,50 @@ async function displayPost(authUser) {
               </div>
           `;
 
-    // Create the message and timestamp container
     const messageElement = document.createElement("p");
-    messageElement.innerHTML = `
-              <strong>Message:</strong>
-              <a href="post.html?postId=${postId}" class="post-link">${data.message}</a>
-          `;
+    messageElement.innerHTML = `<strong>Message:</strong> ${formatMessageWithLinksAndNewlines(data.message)}`;
 
+    // Function to handle both links and newlines
+    function formatMessageWithLinksAndNewlines(message, link = "") {
+      if (!message) message = ""; // Ensure message is never null
+  
+      // Replace newlines with `<br>` to maintain formatting
+      let formattedMessage = message.replace(/\n/g, "<br>");
+  
+      // Regular expression to detect URLs
+      const urlRegex = /(https?:\/\/[^\s]+)/g;
+  
+      formattedMessage = formattedMessage.replace(urlRegex, function(url) {
+          if (url.includes("youtube.com") || url.includes("youtu.be")) {
+              const videoId = url.includes("youtu.be")
+                  ? url.split("/").pop()
+                  : new URL(url).searchParams.get("v");
+  
+              return videoId
+                  ? `<br><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" 
+                      frameborder="0" allowfullscreen></iframe><br>`
+                  : `<a href="${url}" target="_blank">${url}</a>`;
+          }
+  
+          return `<a href="${url}" target="_blank">${url}</a>`; // Standard links
+      });
+  
+      // Handle cases where a separate `link` field exists
+      if (link) {
+          if (link.includes("youtube.com") || link.includes("youtu.be")) {
+              const videoId = link.includes("youtu.be")
+                  ? link.split("/").pop()
+                  : new URL(link).searchParams.get("v");
+  
+              return formattedMessage + `<br><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" 
+                      frameborder="0" allowfullscreen></iframe><br>`;
+          }
+          formattedMessage += `<br><a href="${link}" target="_blank" class="post-link">🔗 ${link}</a>`;
+      }
+  
+      return formattedMessage;
+  }
+  
     const timestampElement = document.createElement("p");
     timestampElement.innerHTML = `
               <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}
@@ -321,9 +358,10 @@ async function displayPost(authUser) {
 
     entryPreviewDiv.appendChild(entryDiv);
   }
-catch (error) {
-  console.error("Error fetching latest entries:", error);
-};}
+  catch (error) {
+    console.error("Error fetching latest entries:", error);
+  };
+}
 
 
 

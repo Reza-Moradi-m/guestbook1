@@ -79,6 +79,46 @@ messageForm.addEventListener("submit", async (event) => {
     }
 });
 
+function formatMessageWithLinksAndNewlines(message, link = "") {
+    if (!message) message = ""; // Prevent null messages
+
+    // Preserve line breaks by replacing `\n` with `<br>`
+    let formattedMessage = message.replace(/\n/g, "<br>");
+
+    // Regular expression to detect URLs
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+
+    formattedMessage = formattedMessage.replace(urlRegex, function (url) {
+        if (url.includes("youtube.com") || url.includes("youtu.be")) {
+            const videoId = url.includes("youtu.be")
+                ? url.split("/").pop()
+                : new URL(url).searchParams.get("v");
+
+            return videoId
+                ? `<br><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" 
+                    frameborder="0" allowfullscreen></iframe><br>`
+                : `<a href="${url}" target="_blank">${url}</a>`;
+        }
+
+        return `<a href="${url}" target="_blank">${url}</a>`; // Standard links
+    });
+
+    // Handle cases where a separate `link` field exists
+    if (link) {
+        if (link.includes("youtube.com") || link.includes("youtu.be")) {
+            const videoId = link.includes("youtu.be")
+                ? link.split("/").pop()
+                : new URL(link).searchParams.get("v");
+
+            return formattedMessage + `<br><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" 
+                    frameborder="0" allowfullscreen></iframe><br>`;
+        }
+        formattedMessage += `<br><a href="${link}" target="_blank" class="post-link">🔗 ${link}</a>`;
+    }
+
+    return formattedMessage;
+}
+
 // Fetch and display messages from Firestore
 async function displayMessages() {
     messagesDiv.innerHTML = "";
@@ -114,13 +154,12 @@ async function displayMessages() {
                     : "";
 
             messageElement.innerHTML = `
-                    <p><strong>${data.name} (${data.username}):</strong>
-                      <a href="post.html?postId=${doc.id}" class="post-link">${data.message}</a>
-                    </p>
+                    <p><strong>${data.name} (${data.username}):</strong></p>
+                    <p>${formatMessageWithLinksAndNewlines(data.message, data.link)}</p>
                     ${fileLink}
-                    ${linkPreview} <!-- ✅ Show link preview -->
                     ${deleteButton}
-                  `;
+                `;
+
             messagesDiv.appendChild(messageElement);
         });
     } catch (error) {
@@ -128,6 +167,8 @@ async function displayMessages() {
         alert("Failed to load messages.");
     }
 }
+
+
 
 // Delete Post
 async function deletePost(postId) {

@@ -9,7 +9,7 @@ body {
 
 /* Main Content Styling */
 main {
-    max-width: 800px;
+    max-width: 90%;
     margin: 30px auto;
     padding: 20px;
     background-color: #ffffff;
@@ -24,18 +24,17 @@ form {
     align-items: center;
     gap: 20px;
     background-color: #f9f9f9;
-    padding: 20px;
     border: 1px solid #ddd;
     border-radius: 10px;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     margin-bottom: 30px;
+    max-width: 100%;
 }
 
 form textarea {
     width: 100%;
-    max-width: 600px;
-    min-height: 80px;
-    padding: 10px;
+    max-width: 100%;
+    min-height: 450px;
     border: 1px solid #ccc;
     border-radius: 5px;
     font-size: 1rem;
@@ -54,6 +53,16 @@ form input[type="file"] {
     cursor: pointer;
 }
 
+form input[type="text"] {
+    
+    width: 80%
+   
+}
+form input[type="text"]{
+    height: 50px
+}
+
+form
 form button {
     background-color: #007bff;
     color: white;
