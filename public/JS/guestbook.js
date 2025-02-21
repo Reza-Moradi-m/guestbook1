@@ -139,9 +139,10 @@ async function displayMessages() {
                 ? `<a href="${data.fileURL}" target="_blank">View Attachment</a>`
                 : "";
 
-            const isYouTube = data.link && data.link.includes("youtube.com/watch?v=");
-            const embeddedVideo = isYouTube
-                ? `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${new URL(data.link).searchParams.get("v")}" frameborder="0" allowfullscreen></iframe>`
+            const isYouTube = data.link && isYouTubeLink(data.link);
+            const videoId = isYouTube ? extractYouTubeVideoId(data.link) : null;
+            const embeddedVideo = videoId
+                ? `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`
                 : "";
 
             const linkPreview = data.link

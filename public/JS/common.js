@@ -1,18 +1,18 @@
- // Firebase configuration
- const firebaseConfig = {
-    apiKey: "AIzaSyDjQvmQKE77NmdCNMjwQ9D8dEtxdo0ZrUc",
-    authDomain: "astronomy-guestbook.firebaseapp.com",
-    projectId: "astronomy-guestbook",
-    storageBucket: "astronomy-guestbook.firebasestorage.app",
-    messagingSenderId: "680979689903",
-    appId: "1:680979689903:web:b31210872fff1d641b7f5a",
-    measurementId: "G-LDFCYT5NGY"
-  };
+// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyDjQvmQKE77NmdCNMjwQ9D8dEtxdo0ZrUc",
+  authDomain: "astronomy-guestbook.firebaseapp.com",
+  projectId: "astronomy-guestbook",
+  storageBucket: "astronomy-guestbook.firebasestorage.app",
+  messagingSenderId: "680979689903",
+  appId: "1:680979689903:web:b31210872fff1d641b7f5a",
+  measurementId: "G-LDFCYT5NGY"
+};
 
-  // Initialize Firebase only if it hasn't been initialized already
+// Initialize Firebase only if it hasn't been initialized already
 if (!firebase.apps.length) {
-    firebase.initializeApp(firebaseConfig);
-  }
+  firebase.initializeApp(firebaseConfig);
+}
 
 // Attach Firestore and Storage to `window` for global access
 window.db = firebase.firestore();
@@ -20,18 +20,18 @@ window.storage = firebase.storage();
 
 // Toggle the hamburger menu
 document.addEventListener("DOMContentLoaded", () => {
-    const hamburgerMenu = document.getElementById("hamburger-menu");
-    const menuList = document.getElementById("menu-list");
+  const hamburgerMenu = document.getElementById("hamburger-menu");
+  const menuList = document.getElementById("menu-list");
 
-    if (!hamburgerMenu || !menuList) {
-        console.error("Hamburger menu or menu list not found on this page.");
-        return;
-    }
+  if (!hamburgerMenu || !menuList) {
+    console.error("Hamburger menu or menu list not found on this page.");
+    return;
+  }
 
-    hamburgerMenu.addEventListener("click", () => {
-        menuList.classList.toggle("active");
-        console.log("Menu toggled:", menuList.classList.contains("active"));
-    });
+  hamburgerMenu.addEventListener("click", () => {
+    menuList.classList.toggle("active");
+    console.log("Menu toggled:", menuList.classList.contains("active"));
+  });
 });
 
 // Firebase Auth
@@ -87,3 +87,25 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
 
 // Initialize user status for every page
 updateUserStatus();
+
+// common.js
+
+// ✅ Function to check if a link is a YouTube video
+function isYouTubeLink(url) {
+  return typeof url === "string" && (url.includes("youtube.com/watch?v=") || url.includes("youtu.be"));
+}
+
+// ✅ Extracts YouTube video ID safely
+function extractYouTubeVideoId(url) {
+  if (!isYouTubeLink(url)) return null;
+
+  try {
+    if (url.includes("youtu.be")) {
+      return url.split("/").pop().split("?")[0]; // Extract from short URL
+    }
+    return new URL(url).searchParams.get("v");
+  } catch (error) {
+    console.error("Error extracting YouTube video ID:", error);
+    return null;
+  }
+}
