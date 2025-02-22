@@ -45,7 +45,7 @@ async function loadUserProfile() {
         document.getElementById("profile-name").innerText = userData.name || "Anonymous User";
         document.getElementById("profile-username").innerText = userData.username || "NoUsername";
         document.getElementById("profile-email").innerText = userData.email || "No Email";
-        document.getElementById("profile-bio").innerText = userData.biography || "No biography available."; Í
+        document.getElementById("profile-bio").innerText = userData.biography || "No biography available.";
         document.getElementById("profile-picture").src = userData.profilePicture || "images/default-avatar.png";
 
         console.log("User profile loaded successfully:", userData);

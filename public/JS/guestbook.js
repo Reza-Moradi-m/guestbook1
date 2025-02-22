@@ -159,9 +159,9 @@ async function displayMessages() {
                 );
             }
 
-            if (typeof isYouTubeLink === "function") {
-                const isYouTube = data.link && isYouTubeLink(data.link);
-            }
+            // ✅ Ensure `isYouTube` is always declared
+            const isYouTube = data.link ? isYouTubeLink(data.link) : false;
+
             // ✅ Function to extract YouTube Video ID
             function extractYouTubeVideoId(url) {
                 try {
@@ -195,6 +195,7 @@ async function displayMessages() {
                     <p><strong>${data.name} (${data.username}):</strong></p>
                     <p><strong><a href="post.html?postId=${doc.id}" class="post-link">Message:</a></strong> ${formatMessageWithLinksAndNewlines(data.message, data.link)}</p>
                     ${fileLink}
+                    ${linkPreview}
                     ${deleteButton}
                 `;
 
