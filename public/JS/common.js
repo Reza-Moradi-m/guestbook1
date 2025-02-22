@@ -88,24 +88,3 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
 // Initialize user status for every page
 updateUserStatus();
 
-// common.js
-
-// ✅ Function to check if a link is a YouTube video
-function isYouTubeLink(url) {
-  return typeof url === "string" && (url.includes("youtube.com/watch?v=") || url.includes("youtu.be"));
-}
-
-// ✅ Extracts YouTube video ID safely
-function extractYouTubeVideoId(url) {
-  if (!isYouTubeLink(url)) return null;
-
-  try {
-    if (url.includes("youtu.be")) {
-      return url.split("/").pop().split("?")[0]; // Extract from short URL
-    }
-    return new URL(url).searchParams.get("v");
-  } catch (error) {
-    console.error("Error extracting YouTube video ID:", error);
-    return null;
-  }
-}

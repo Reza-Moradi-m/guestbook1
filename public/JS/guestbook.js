@@ -80,43 +80,55 @@ messageForm.addEventListener("submit", async (event) => {
 });
 
 function formatMessageWithLinksAndNewlines(message, link = "") {
-    if (!message) message = ""; // Prevent null messages
+    message = message || ""; // Ensure message is always a string
+    link = link || ""; // Ensure link is always a string
 
-    // Preserve line breaks by replacing `\n` with `<br>`
+    // Preserve line breaks
     let formattedMessage = message.replace(/\n/g, "<br>");
 
-    // Regular expression to detect URLs
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    // ✅ Check if the link is already an iframe (to prevent errors)
+    function isYouTubeIframe(link) {
+        return typeof link === "string" && link.includes("youtube.com/embed/");
+    }
 
-    formattedMessage = formattedMessage.replace(urlRegex, function (url) {
-        if (url.includes("youtube.com") || url.includes("youtu.be")) {
-            const videoId = url.includes("youtu.be")
-                ? url.split("/").pop()
-                : new URL(url).searchParams.get("v");
-
-            return videoId
-                ? `<br><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" 
-                    frameborder="0" allowfullscreen></iframe><br>`
-                : `<a href="${url}" target="_blank">${url}</a>`;
+    // ✅ Extract YouTube Video ID Safely
+    function extractYouTubeVideoId(url) {
+        try {
+            if (url.includes("youtu.be")) {
+                return url.split("/").pop().split("?")[0];
+            } else if (url.includes("youtube.com/watch?v=")) {
+                return new URL(url).searchParams.get("v");
+            }
+        } catch (error) {
+            console.error("Invalid YouTube URL:", url);
+            return null;
         }
+        return null;
+    }
 
-        return `<a href="${url}" target="_blank">${url}</a>`; // Standard links
-    });
+    // ✅ Check if the provided link is a YouTube URL
+    function isYouTubeLink(url) {
+        return (
+            typeof url === "string" &&
+            (url.includes("youtube.com/watch?v=") || url.includes("youtu.be"))
+        );
+    }
 
-    // Handle cases where a separate `link` field exists
-    if (link) {
-        if (link.includes("youtube.com") || link.includes("youtu.be")) {
-            const videoId = link.includes("youtu.be")
-                ? link.split("/").pop()
-                : new URL(link).searchParams.get("v");
-
-            return formattedMessage + `<br><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" 
-                    frameborder="0" allowfullscreen></iframe><br>`;
+    // ✅ Ensure that a valid YouTube link gets embedded properly
+    let embeddedVideo = "";
+    if (link && !isYouTubeIframe(link) && isYouTubeLink(link)) {
+        const videoId = extractYouTubeVideoId(link);
+        if (videoId) {
+            embeddedVideo = `<br><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe><br>`;
         }
+    }
+
+    // ✅ Ensure all links are clickable
+    if (link && !isYouTubeIframe(link)) {
         formattedMessage += `<br><a href="${link}" target="_blank" class="post-link">🔗 ${link}</a>`;
     }
 
-    return formattedMessage;
+    return formattedMessage + embeddedVideo;
 }
 
 // Fetch and display messages from Firestore
