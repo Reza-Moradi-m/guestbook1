@@ -116,15 +116,15 @@ function formatMessageWithLinksAndNewlines(message, link = "") {
 
     // ✅ Ensure that a valid YouTube link gets embedded properly
     let embeddedVideo = "";
-    if (link && !isYouTubeIframe(link) && isYouTubeLink(link)) {
+    if (link && isYouTubeLink(link)) {
         const videoId = extractYouTubeVideoId(link);
-        if (videoId) {
+        if (videoId && !link.includes("youtube.com/embed/")) {  // Prevent duplicate iframe embedding
             embeddedVideo = `<br><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe><br>`;
         }
     }
 
-    // ✅ Ensure all links are clickable
-    if (link && !isYouTubeIframe(link)) {
+    // ✅ Ensure all standard links are clickable, but avoid duplicating YouTube links
+    if (link && !isYouTubeLink(link)) {
         formattedMessage += `<br><a href="${link}" target="_blank" class="post-link">🔗 ${link}</a>`;
     }
 
@@ -151,7 +151,32 @@ async function displayMessages() {
                 ? `<a href="${data.fileURL}" target="_blank">View Attachment</a>`
                 : "";
 
-            const isYouTube = data.link && isYouTubeLink(data.link);
+            // ✅ Function to check if a URL is a YouTube link
+            function isYouTubeLink(url) {
+                return (
+                    typeof url === "string" &&
+                    (url.includes("youtube.com/watch?v=") || url.includes("youtu.be"))
+                );
+            }
+
+            if (typeof isYouTubeLink === "function") {
+                const isYouTube = data.link && isYouTubeLink(data.link);
+            }
+            // ✅ Function to extract YouTube Video ID
+            function extractYouTubeVideoId(url) {
+                try {
+                    if (url.includes("youtu.be")) {
+                        return url.split("/").pop().split("?")[0];
+                    } else if (url.includes("youtube.com/watch?v=")) {
+                        return new URL(url).searchParams.get("v");
+                    }
+                } catch (error) {
+                    console.error("Invalid YouTube URL:", url);
+                    return null;
+                }
+                return null;
+            }
+
             const videoId = isYouTube ? extractYouTubeVideoId(data.link) : null;
             const embeddedVideo = videoId
                 ? `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`
