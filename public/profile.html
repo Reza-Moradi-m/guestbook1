@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Profile</title>
-  <link rel= "icon" href = "images/logo.png" type = "image/x-icon">
+  <link rel="icon" href="images/logo.png" type="image/x-icon">
   <link rel="stylesheet" href="CSS/responsive.css">
   <link rel="stylesheet" href="CSS/profile.css">
   <link rel="stylesheet" href="CSS/posts.css">
@@ -13,6 +14,7 @@
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 </head>
+
 <body>
   <header>
     <nav id="main-nav">
@@ -29,23 +31,25 @@
     </nav>
     <img id="logo" src="images/logo.png" alt="Logo">
     <h1>STELLARIOUSS</h1>
-   
 
-</header>
-  
+
+  </header>
+
   <main>
     <section id="profile-header" style="background-color: #ffffff;">
       <h1>Your Profile</h1>
-    <p>Manage your account and activity on this page.</p>
-  </section>
-    
+      <p>Manage your account and activity on this page.</p>
+    </section>
+
 
     <!-- Profile Section -->
     <section id="profile" style="background-color: #f4f4f4; padding: 20px; border-radius: 10px;">
-      <img id="profile-picture" src="images/default-avatar.png" alt="Profile Picture" style="width: 150px; height: 150px; border-radius: 50%; margin-bottom: 15px;">
+      <img id="profile-picture" src="images/default-avatar.png" alt="Profile Picture"
+        style="width: 150px; height: 150px; border-radius: 50%; margin-bottom: 15px;">
       <p><strong>Name:</strong> <span id="profile-name" style="color: #333;">Name Placeholder</span></p>
       <p><strong>Username:</strong> <span id="profile-username" style="color: #333;">Username Placeholder</span></p>
       <p><strong>Email:</strong> <span id="profile-email" style="color: #333;">Email Placeholder</span></p>
+      <p><strong>Biography:</strong> <span id="profile-bio" style="color: #333;">No biography available.</span></p>
       <button id="edit-profile-button" style="margin-top: 10px;">Edit Profile</button>
     </section>
 
@@ -55,6 +59,7 @@
         <input type="text" id="edit-name" placeholder="Name">
         <input type="text" id="edit-username" placeholder="Username">
         <input type="email" id="edit-email" placeholder="Email">
+        <textarea id="edit-bio" rows="4" placeholder="Tell us about yourself..."></textarea>
         <input type="password" id="edit-password" placeholder="New Password">
         <input type="file" id="edit-profile-picture" accept="image/*">
         <button type="submit">Save Changes</button>
@@ -83,4 +88,5 @@
   <script src="JS/common.js" defer></script>
   <script src="JS/profile.js" defer></script>
 </body>
+
 </html>

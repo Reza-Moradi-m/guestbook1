@@ -45,6 +45,7 @@ async function loadUserProfile() {
         document.getElementById("profile-name").innerText = userData.name || "Anonymous User";
         document.getElementById("profile-username").innerText = userData.username || "NoUsername";
         document.getElementById("profile-email").innerText = userData.email || "No Email";
+        document.getElementById("profile-bio").innerText = userData.biography || "No biography available."; Í
         document.getElementById("profile-picture").src = userData.profilePicture || "images/default-avatar.png";
 
         console.log("User profile loaded successfully:", userData);
@@ -59,6 +60,7 @@ function setDefaultProfile() {
     document.getElementById("profile-name").innerText = "Anonymous User";
     document.getElementById("profile-username").innerText = "NoUsername";
     document.getElementById("profile-email").innerText = "No Email";
+    document.getElementById("profile-bio").innerText = userData.biography || "No biography available.";
     document.getElementById("profile-picture").src = "images/default-avatar.png";
 }
 const authUser = firebase.auth().currentUser;
@@ -77,6 +79,7 @@ async function isUsernameTaken(username, currentUserId) {
 }
 
 // Function to save profile changes
+// Function to save profile changes
 document.getElementById("edit-profile-form").addEventListener("submit", async (e) => {
     e.preventDefault();
 
@@ -89,6 +92,7 @@ document.getElementById("edit-profile-form").addEventListener("submit", async (e
     const newName = document.getElementById("edit-name").value.trim();
     const newUsername = document.getElementById("edit-username").value.trim();
     const newEmail = document.getElementById("edit-email").value.trim();
+    const newBiography = document.getElementById("edit-bio").value.trim();  // ✅ Fetch Biography Input
     const newProfilePicture = document.getElementById("edit-profile-picture").files[0];
 
     try {
@@ -102,6 +106,7 @@ document.getElementById("edit-profile-form").addEventListener("submit", async (e
         const updates = {};
         if (newName) updates.name = newName;
         if (newUsername) updates.username = newUsername;
+        if (newBiography) updates.biography = newBiography; // ✅ Add Biography Update
 
         // ✅ Step 3: Upload profile picture if a file is selected
         if (newProfilePicture) {
@@ -119,7 +124,12 @@ document.getElementById("edit-profile-form").addEventListener("submit", async (e
         }
 
         alert("Profile updated successfully!");
-        window.location.reload(); // Reload the page to reflect changes
+
+        // ✅ Instantly update displayed profile info
+        document.getElementById("profile-name").innerText = newName || "Anonymous User";
+        document.getElementById("profile-username").innerText = newUsername || "NoUsername";
+        document.getElementById("profile-bio").innerText = newBiography || "No biography available."; // ✅ Update Biography Instantly
+
     } catch (error) {
         console.error("Error updating profile:", error);
         alert("Failed to update profile. Please try again.");

@@ -21,7 +21,12 @@ async function loadUserProfile() {
       return;
     }
     // ✅ Ensure userData is declared before using it
-    userData = userDoc.data() || { name: "Anonymous User", username: "NoUsername", profilePicture: "images/default-avatar.png" };
+    userData = userDoc.data() || {
+      name: "Anonymous User",
+      username: "NoUsername",
+      profilePicture: "images/default-avatar.png",
+      biography: "" // ✅ Ensure a biography field exists
+    };
 
 
     let mainContainer = document.getElementById("main-container"); // Ensure there's a container
@@ -58,9 +63,20 @@ async function loadUserProfile() {
     profileName.style.padding = "10px";
     profileName.style.borderRadius = "5px";
 
+    // ✅ Create a biography element
+    const profileBio = document.createElement("p");
+    profileBio.id = "profile-bio";
+    profileBio.innerHTML = `<strong>Biography:</strong> ${userData.biography || "No biography available."}`;
+    profileBio.style.textAlign = "center";
+    profileBio.style.color = "black";
+    profileBio.style.padding = "10px";
+
+
     // Append elements to profile section
     profileSection.appendChild(profileImage);
     profileSection.appendChild(profileName);
+    profileSection.appendChild(profileBio);
+
 
 
 
