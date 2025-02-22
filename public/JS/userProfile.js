@@ -67,7 +67,7 @@ async function loadUserProfile() {
     const profileBio = document.createElement("p");
     profileBio.id = "profile-bio";
     profileBio.innerHTML = `<strong>Biography:</strong> ${userData.biography || "No biography available."}`;
-    profileBio.style.textAlign = "center";
+    profileBio.style.textAlign = "left";
     profileBio.style.color = "black";
     profileBio.style.padding = "10px";
 
