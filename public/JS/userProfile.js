@@ -49,8 +49,8 @@ async function loadUserProfile() {
     const profileImage = document.createElement("img");
     profileImage.src = userData.profilePicture || "images/default-avatar.png";
     profileImage.alt = "Profile Picture";
-    profileImage.style.width = "100px";
-    profileImage.style.height = "100px";
+    profileImage.style.width = "220px";
+    profileImage.style.height = "220px";
     profileImage.style.borderRadius = "50%";
     profileImage.style.display = "block";
     profileImage.style.margin = "auto";
