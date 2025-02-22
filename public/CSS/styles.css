@@ -28,7 +28,8 @@ main {
 main a {
     text-align: center;
     margin-top: 20px;
-    font-stretch: semi-expanded; /* Use a valid value for font-stretch */
+    font-stretch: semi-expanded;
+    /* Use a valid value for font-stretch */
     font-weight: 500;
 }
 
@@ -49,5 +50,18 @@ main a {
 }
 
 
-
-
+header h4 {
+    font-size: 1.1rem;
+    /* Adjust for visibility */
+    font-weight: bold;
+    text-align: center;
+    color: #FFD700;
+    /* Gold color for emphasis */
+    background: linear-gradient(90deg, #1a1a1a, #333, #1a1a1a);
+    /* Subtle gradient */
+    padding: 15px;
+    border-radius: 8px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
+    /* Soft shadow for contrast */
+    letter-spacing: 1px;
+}
