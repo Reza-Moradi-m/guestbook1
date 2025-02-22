@@ -239,4 +239,5 @@
     margin-bottom: 20px; /* Adds space between posts */
     padding-bottom: 10px; /* Space between content and line */
     border-bottom: 4px solid black; /* Adds a black line below each post */
+    text-align: left;
 }

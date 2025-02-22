@@ -158,7 +158,7 @@ async function displayLatestEntries(authUser) {
           `;
 
       const messageElement = document.createElement("p");
-      messageElement.innerHTML = `<strong>Message:</strong> ${formatMessageWithLinksAndNewlines(data.message)}`;
+      messageElement.innerHTML = `<strong><a href="post.html?postId=${doc.id}" class="post-link">Message:</a></strong> ${formatMessageWithLinksAndNewlines(data.message)}`;
 
       // Function to handle both links and newlines
       function formatMessageWithLinksAndNewlines(message, link = "") {
@@ -200,7 +200,7 @@ async function displayLatestEntries(authUser) {
 
         return formattedMessage;
       }
-      
+
       const timestampElement = document.createElement("p");
       timestampElement.innerHTML = `
               <strong>Posted on:</strong> ${new Date(data.timestamp.seconds * 1000).toLocaleString()}

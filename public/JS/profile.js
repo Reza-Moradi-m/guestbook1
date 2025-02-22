@@ -189,7 +189,7 @@ async function displayLatestEntries() {
             `;
 
             const messageElement = document.createElement("p");
-            messageElement.innerHTML = `<strong>Message:</strong> ${formatMessageWithLinksAndNewlines(data.message)}`;
+            messageElement.innerHTML = `<strong><a href="post.html?postId=${doc.id}" class="post-link">Message:</a></strong> ${formatMessageWithLinksAndNewlines(data.message)}`;
 
             // Function to handle both links and newlines
             function formatMessageWithLinksAndNewlines(message, link = "") {

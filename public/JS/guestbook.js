@@ -168,7 +168,7 @@ async function displayMessages() {
 
             messageElement.innerHTML = `
                     <p><strong>${data.name} (${data.username}):</strong></p>
-                    <p>${formatMessageWithLinksAndNewlines(data.message, data.link)}</p>
+                    <p><strong><a href="post.html?postId=${doc.id}" class="post-link">Message:</a></strong> ${formatMessageWithLinksAndNewlines(data.message, data.link)}</p>
                     ${fileLink}
                     ${deleteButton}
                 `;
