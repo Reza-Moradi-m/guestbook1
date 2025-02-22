@@ -179,8 +179,7 @@ async function displayMessages() {
 
             const videoId = isYouTube ? extractYouTubeVideoId(data.link) : null;
             const embeddedVideo = videoId
-                ? `<iframe width="100%" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe>`
-                : "";
+            
 
             const linkPreview = data.link
                 ? isYouTube ? embeddedVideo : `<a href="${data.link}" target="_blank" class="post-link">🔗 ${data.link}</a>`
