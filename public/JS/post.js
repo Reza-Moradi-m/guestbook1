@@ -35,25 +35,29 @@ async function displayPost(authUser) {
 
     // Fetch user profile picture and details
     const userDoc = await window.db.collection("users").doc(data.userId).get();
-    const postUserData = userDoc.exists ? userDoc.data() : null;
+    const postUserData = userDoc.exists ? userDoc.data() : {
+      profilePicture: '/images/default-avatar.png',
+      name: 'Unknown',
+      username: 'NoUsername'
+    };
 
     // Create the profile picture and username container
     const nameElement = document.createElement("div");
     nameElement.classList.add("post-user-info");
     nameElement.innerHTML = `
-              <div style="display: flex; align-items: center;">
-                  <img src="${postUserData?.profilePicture || '/images/default-avatar.png'}"
-     onerror="this.onerror=null; this.src='/images/default-avatar.png';" 
-                       alt="Profile Picture"  
-                       style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
-                  <a href="userProfile.html?userId=${data.userId}" class="user-link">
-                      ${postUserData?.name || "Unknown"} (${postUserData?.username || "NoUsername"})
-                  </a>
-              </div>
-          `;
+    <div style="display: flex; align-items: center;">
+        <img src="${postUserData.profilePicture}"
+            onerror="this.onerror=null; this.src='/images/default-avatar.png';" 
+            alt="Profile Picture"  
+            style="width: 40px; height: 40px; border-radius: 50%; margin-right: 10px;">
+        <a href="userProfile.html?userId=${data.userId}" class="user-link">
+            ${postUserData.name} (${postUserData.username})
+        </a>
+    </div>
+`;
 
     const messageElement = document.createElement("p");
-    messageElement.innerHTML = `<strong><a href="post.html?postId=${doc.id}" class="post-link">Message:</a></strong> ${formatMessageWithLinksAndNewlines(data.message, data.link)}`;
+    messageElement.innerHTML = `<strong><a href="post.html?postId=${postId}" class="post-link">Message:</a></strong> ${formatMessageWithLinksAndNewlines(data.message, data.link)}`;
 
     // Function to handle both links and newlines
     function formatMessageWithLinksAndNewlines(message, link = "") {
