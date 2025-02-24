@@ -436,6 +436,15 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         // Submit reply logic
         submitReplyButton.addEventListener("click", async () => {
             const replyText = replyInput.value.trim();
+
+            // ✅ Get the logged-in user
+            const user = firebase.auth().currentUser;
+
+            if (!user) {
+                alert("You must be logged in to reply.");
+                return; // Stop execution if user is not logged in
+            }
+
             if (replyText) {
                 await window.db
                     .collection("guestbook")
@@ -444,12 +453,13 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
                     .add({
                         author: commentUserData.name || "Anonymous User",
                         username: commentUserData.username || "NoUsername",
-                        userId: user.uid, // ✅ Save the userId in Firestore
-        
+                        userId: user.uid, // ✅ Now it's defined correctly
+
                         message: replyText,
                         parentCommentId: commentId,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     });
+
                 replyInput.value = ""; // Clear input field
                 replySection.style.display = "none"; // Hide reply section
                 displayComments(postId, parentElement, parentId, indentLevel + 1); // Refresh comments
