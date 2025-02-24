@@ -342,7 +342,8 @@ async function displayLatestEntries() {
                 : new URL(url).searchParams.get("v");
 
               return videoId
-                ? `<br><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" 
+                ? `<br><iframe width="65%" height="auto" 
+    style="aspect-ratio: 16 / 9;" src="https://www.youtube.com/embed/${videoId}" 
                           frameborder="0" allowfullscreen></iframe><br>`
                 : `<a href="${url}" target="_blank">${url}</a>`;
             }
@@ -357,7 +358,8 @@ async function displayLatestEntries() {
                 ? link.split("/").pop()
                 : new URL(link).searchParams.get("v");
 
-              return formattedMessage + `<br><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" 
+              return formattedMessage + `<br><iframe width="65%" height="auto" 
+    style="aspect-ratio: 16 / 9;" src="https://www.youtube.com/embed/${videoId}" 
                           frameborder="0" allowfullscreen></iframe><br>`;
             }
             formattedMessage += `<br><a href="${link}" target="_blank" class="post-link">🔗 ${link}</a>`;

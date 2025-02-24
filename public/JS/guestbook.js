@@ -119,7 +119,8 @@ function formatMessageWithLinksAndNewlines(message, link = "") {
     if (link && isYouTubeLink(link)) {
         const videoId = extractYouTubeVideoId(link);
         if (videoId && !link.includes("youtube.com/embed/")) {  // Prevent duplicate iframe embedding
-            embeddedVideo = `<br><iframe width="560" height="315" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe><br>`;
+            embeddedVideo = `<br><iframe width="65%" height="auto" 
+    style="aspect-ratio: 16 / 9;" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen></iframe><br>`;
         }
     }
 
