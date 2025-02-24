@@ -4,21 +4,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Astronomy Guestbook</title>
+    <title>STELLARIOUSS - Donate</title>
     <meta name="description"
         content="Welcome to the Astronomy Guestbook! Explore the wonders of the universe with our vibrant community.">
     <meta name="keywords" content="Astronomy, Guestbook, Stargazing, Celestial, Stars, Planets, Cosmic Events">
     <meta name="author" content="Your Name">
     <link rel="icon" href="images/logo.png" type="image/x-icon">
     <link rel="stylesheet" href="CSS/responsive.css">
-    <link rel="stylesheet" href="CSS/styles.css">
-    <link rel="stylesheet" href="CSS/posts.css">
+    <link rel="stylesheet" href="CSS/donation.css">
 </head>
 
 <body>
     <header>
         <nav id="main-nav">
-            <span class="hamburger-menu" id="hamburger-menu">&#9776;</span> <!-- Add Hamburger Icon -->
+            <span class="hamburger-menu" id="hamburger-menu">&#9776;</span>
             <ul id="menu-list">
                 <li><a href="index.html">Home</a></li>
                 <li><a href="guestbook.html">Upload</a></li>
@@ -29,36 +28,39 @@
                 <li><a href="messenger.html">Messenger</a></li>
             </ul>
         </nav>
-        <img id="logo" src="images/logo.png" alt="Logo">
+        <img id="logo" src="images/logo.png" alt="Stellarious Logo">
         <h1>STELLARIOUSS</h1>
-        <h4>Your space to discuss space and everything beyond. Unravel the mysteries of the universe with open,
-            uncensored conversations on science, physics, and more.</h4>
-        <div class="donation-button-container">
-            <a href="donation.html" class="donation-button">Donate</a>
-        </div>
-        <h5>In Home page you will see posts by users you follow! To find or follow more people and posts, go to Explore
-            page!</h5>
-
-
+        <h2>Donate</h2>
     </header>
 
-    <main>
-        <section id="latest-entry">
-            <h2>Latest Guestbook Entries</h2>
+    <div class="container">
+        <p class="description">
+            Our platform is currently free for all users, allowing unrestricted access to valuable knowledge,
+            discussions, and insights.
+            However, running this website comes with expenses, and the only way we can continue operating is through
+            generous donations
+            from users like you. Your support helps us cover server costs, maintenance, and improvements. If you enjoy
+            using Stellarious,
+            please consider making a donation. Every contribution, big or small, helps keep this platform alive and
+            growing.
+        </p>
 
-            <div id="entry-preview">
-                <!-- Content will be dynamically inserted here -->
-            </div>
-        </section>
-    </main>
+        <h2>Donate via Zelle</h2>
+        <p>Scan the QR code below to send your donation:</p>
+        <img src="images/zelle.jpg" alt="Zelle QR Code" class="qr-code">
+
+        <p class="contact-info">
+            If you experience any issues with your donation, feel free to contact us at:
+            <a href="mailto:mehrzadm207@gmail.com">mehrzadm207@gmail.com</a>
+        </p>
+    </div>
+
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="JS/common.js" defer></script>
-    <script src="JS/app.js" defer></script>
-
-
+    <script src="JS/donation.js" defer></script>
 </body>
 
 </html>

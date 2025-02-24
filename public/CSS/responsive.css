@@ -116,3 +116,27 @@ header {
     text-align: center;
     padding: 20px;
 }
+
+
+/* donation button */
+
+.donation-button-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.donation-button {
+  display: inline-block;
+  background-color: #4b0082; /* Purple Zelle-like color */
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  padding: 12px 25px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.donation-button:hover {
+  background-color: #3a0066; /* Darker purple */
+}
