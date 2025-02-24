@@ -277,6 +277,7 @@ async function displayLatestEntries(authUser) {
                         .add({
                             author: userData.name || "Anonymous",
                             username: userData.username || "NoUsername",
+                            userId: user.uid, // ✅ Save the userId in Firestore
                             message: commentText,
                             parentCommentId: null,
                             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -443,7 +444,8 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
                     .add({
                         author: commentUserData.name || "Anonymous User",
                         username: commentUserData.username || "NoUsername",
-                        userId: commentData.userId,
+                        userId: user.uid, // ✅ Save the userId in Firestore
+        
                         message: replyText,
                         parentCommentId: commentId,
                         timestamp: firebase.firestore.FieldValue.serverTimestamp(),

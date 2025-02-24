@@ -557,6 +557,7 @@ async function displayLatestEntries() {
               .add({
                 author: userData.name || "Unknown",
                 username: userData.username || "NoUsername",
+                userId: user.uid, // ✅ Save the userId in Firestore
                 message: commentText,
                 parentCommentId: null,
                 timestamp: firebase.firestore.FieldValue.serverTimestamp(),
