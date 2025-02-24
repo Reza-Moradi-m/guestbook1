@@ -39,10 +39,10 @@ async function loadChatHeader(userId) {
     const chatHeaderContent = document.getElementById("chatroom-header-content");
 
     chatHeaderContent.innerHTML = `
-      <button id="back-button" class="back-button">Back</button>
-      <img src="${profilePicture || 'default-avatar.png'}" alt="Profile Picture" class="profile-picture">
-      <span>${username || 'Unknown User'}</span>
-    `;
+  <button id="back-button" class="back-button">Back</button>
+  <img src="${profilePicture || 'default-avatar.png'}" alt="Profile Picture" class="profile-picture">
+  <a href="userProfile.html?userId=${otherParticipantId}" class="chat-username-link">${username || 'Unknown User'}</a>
+`;
 
     // Add the event listener for the dynamically created Back button
     const backButton = document.getElementById("back-button");

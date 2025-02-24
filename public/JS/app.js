@@ -363,12 +363,19 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
         commentDiv.style.marginLeft = parentId === null ? "20px" : "40px";
         commentDiv.style.textAlign = "left"; // Align text to the left
 
-        let commentUserData = { profilePicture: null }; // Default if user data is missing
+        let commentUserData = { profilePicture: "images/default-avatar.png", username: "NoUsername", name: "Anonymous" };
+
         if (commentData.userId) {
             try {
                 const commentUserDoc = await window.db.collection("users").doc(commentData.userId).get();
                 if (commentUserDoc.exists) {
-                    commentUserData = { ...commentUserDoc.data(), userId: commentData.userId }; // Attach userId explicitly
+                    const userData = commentUserDoc.data();
+                    commentUserData = {
+                        profilePicture: userData.profilePicture || "images/default-avatar.png",
+                        username: userData.username || "NoUsername",
+                        name: userData.name || "Anonymous",
+                        userId: commentData.userId,
+                    };
                 } else {
                     console.warn("No user data found for userId:", commentData.userId);
                 }
@@ -389,7 +396,7 @@ async function displayComments(postId, parentElement, parentId = null, indentLev
   <p>
       <strong>
           <a href="userProfile.html?userId=${commentUserData.userId || '#'}" class="user-link">
-              ${commentData.author || "Anonymous"} (${commentData.username || "NoUsername"})
+    ${commentUserData.name} (${commentUserData.username})
           </a>
       </strong>: ${commentData.message}
   </p>
