@@ -1,120 +1,129 @@
 /* General Screen Size Rules */
 #main-nav {
-  position: fixed; /* Keeps it visible while scrolling */
+  position: fixed;
+  /* Keeps it visible while scrolling */
   top: 0;
   left: 0;
-  width: 100%; /* Ensures it spans the full width */
-  background-color: #000; /* Adjust as needed */
-  z-index: 1000; /* Keeps it above other elements */
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Adds shadow for better visibility */
+  width: 100%;
+  /* Ensures it spans the full width */
+  background-color: #000;
+  /* Adjust as needed */
+  z-index: 1000;
+  /* Keeps it above other elements */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  /* Adds shadow for better visibility */
   padding-top: 0.8%;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-  }
-  
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+#main-nav ul {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 0;
+}
+
+#main-nav li {
+  list-style: none;
+}
+
+#main-nav a {
+  text-decoration: none;
+  color: #fff;
+  padding: 10px 20px;
+}
+
+/* Hamburger Menu for Small Screens */
+.hamburger-menu {
+  display: none;
+  cursor: pointer;
+  font-size: 2rem;
+  color: white;
+}
+
+@media (max-width: 768px) {
   #main-nav ul {
+    display: none;
+    flex-direction: column;
+    background-color: #000;
+  }
+
+  #main-nav ul.active {
     display: flex;
-    justify-content: space-between;
-    margin: 0;
-    padding: 0;
   }
-  
+
   #main-nav li {
-    list-style: none;
+    margin-bottom: 10px;
+    /* Add space between menu items */
   }
-  
+
   #main-nav a {
-    text-decoration: none;
-    color: #fff;
-    padding: 10px 20px;
+    font-size: 1.5rem;
+    /* Increase font size for menu links */
+    padding: 15px 20px;
+    /* Increase padding for easier tapping */
   }
-  
-  /* Hamburger Menu for Small Screens */
+
+  .hamburger-menu {
+    display: block;
+    font-size: 2.5rem;
+    /* Adjust hamburger icon size if needed */
+  }
+}
+
+@media (min-width: 769px) {
   .hamburger-menu {
     display: none;
-    cursor: pointer;
-    font-size: 2rem;
-    color: white;
   }
-  
-  @media (max-width: 768px) {
-    #main-nav ul {
-        display: none;
-        flex-direction: column;
-        background-color: #000;
-    }
 
-    #main-nav ul.active {
-        display: flex;
-    }
-
-    #main-nav li {
-        margin-bottom: 10px; /* Add space between menu items */
-    }
-
-    #main-nav a {
-        font-size: 1.5rem; /* Increase font size for menu links */
-        padding: 15px 20px; /* Increase padding for easier tapping */
-    }
-
-    .hamburger-menu {
-        display: block;
-        font-size: 2.5rem; /* Adjust hamburger icon size if needed */
-    }
+  #main-nav ul {
+    display: flex;
+  }
 }
-  
-  @media (min-width: 769px) {
-    .hamburger-menu {
-      display: none;
-    }
-  
-    #main-nav ul {
-      display: flex;
-    }
-  }
-  
-  /* Responsive Form Styles */
-  form {
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
-  }
-  
-  button {
-    width: 100%;
-    padding: 10px;
-  }
-  
-  /* Responsive Content Container */
-  .container {
-    width: 90%;
-    max-width: 1200px;
-    margin: 0 auto;
-  }
-  
-  @media (max-width: 768px) {
-    .container {
-      width: 100%;
-    }
-  }
 
-  #logo {
-    width: 150px;
-    height: auto;
-    display: block;
-    margin: 30px auto 10px auto;
-    padding-top: 3%;
+/* Responsive Form Styles */
+form {
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+button {
+  width: 100%;
+  padding: 10px;
+}
+
+/* Responsive Content Container */
+.container {
+  width: 90%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .container {
+    width: 100%;
+  }
+}
+
+#logo {
+  width: 150px;
+  height: auto;
+  display: block;
+  margin: 30px auto 10px auto;
+  padding-top: 3%;
 }
 
 header {
-    background-color: #000000;
-    color: #fff;
-    text-align: center;
-    padding: 20px;
+  background-color: #000000;
+  color: #fff;
+  text-align: center;
+  padding: 20px;
 }
 
 
@@ -127,7 +136,8 @@ header {
 
 .donation-button {
   display: inline-block;
-  background-color: #343434; /* Purple Zelle-like color */
+  background-color: #343434;
+  /* Purple Zelle-like color */
   color: white;
   font-size: 1.2rem;
   font-weight: bold;
@@ -138,5 +148,25 @@ header {
 }
 
 .donation-button:hover {
-  background-color: #afafaf;; /* Darker purple */
+  background-color: #afafaf;
+  ;
+  /* Darker purple */
+}
+
+@media (max-width: 768px) {
+  #message-input {
+    flex-direction: column;
+    /* ✅ Stack elements on small screens */
+    align-items: stretch;
+    /* ✅ Make elements full width */
+  }
+
+  #message-field,
+  #file-input,
+  #send-message {
+    width: 100%;
+    /* ✅ Ensure full width */
+    max-width: none;
+    /* ✅ Allow button to grow */
+  }
 }
