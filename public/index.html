@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="CSS/responsive.css">
     <link rel="stylesheet" href="CSS/styles.css">
     <link rel="stylesheet" href="CSS/posts.css">
+    <link rel="manifest" href="/manifest.json">
 </head>
 
 <body>
@@ -33,6 +34,7 @@
         <h1>STELLARIOUSS</h1>
         <h4>Your space to discuss space and everything beyond. Unravel the mysteries of the universe with open,
             uncensored conversations on science, physics, and more.</h4>
+        <button id="install-button" style="display: none;">Install Stellarious</button>
         <div class="donation-button-container">
             <a href="donation.html" class="donation-button">Donate</a>
         </div>
@@ -57,6 +59,13 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
     <script src="JS/common.js" defer></script>
     <script src="JS/app.js" defer></script>
+    <script>
+        if ("serviceWorker" in navigator) {
+            navigator.serviceWorker.register("/service-worker.js")
+                .then(() => console.log("Service Worker Registered"))
+                .catch((error) => console.log("Service Worker Registration Failed", error));
+        }
+    </script>
 
 
 </body>

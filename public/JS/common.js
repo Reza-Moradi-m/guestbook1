@@ -88,3 +88,22 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
 // Initialize user status for every page
 updateUserStatus();
 
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", (event) => {
+  event.preventDefault();
+  deferredPrompt = event;
+  document.getElementById("install-button").style.display = "block";
+});
+
+document.getElementById("install-button").addEventListener("click", () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === "accepted") {
+        console.log("User installed the app");
+      }
+      deferredPrompt = null;
+    });
+  }
+});
