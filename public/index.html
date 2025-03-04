@@ -67,27 +67,6 @@
         }
     </script>
 
-    <script>
-        let installPrompt;
-
-        window.addEventListener("beforeinstallprompt", (event) => {
-            event.preventDefault();
-            installPrompt = event;
-            document.getElementById("install-button").style.display = "block";
-        });
-
-        document.getElementById("install-button").addEventListener("click", async () => {
-            if (installPrompt) {
-                installPrompt.prompt();
-                const { outcome } = await installPrompt.userChoice;
-                if (outcome === "accepted") {
-                    console.log("PWA installed");
-                }
-                installPrompt = null;
-                document.getElementById("install-button").style.display = "none";
-            }
-        });
-    </script>
 
 
 </body>

@@ -90,20 +90,29 @@ updateUserStatus();
 
 let deferredPrompt;
 
-window.addEventListener("beforeinstallprompt", (event) => {
-  event.preventDefault();
-  deferredPrompt = event;
-  document.getElementById("install-button").style.display = "block";
-});
+document.addEventListener("DOMContentLoaded", () => {
+  const installButton = document.getElementById("install-button");
 
-document.getElementById("install-button").addEventListener("click", () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice.then((choiceResult) => {
-      if (choiceResult.outcome === "accepted") {
+  if (!installButton) {
+    console.error("Install button not found in the DOM.");
+    return;
+  }
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredPrompt = event;
+    installButton.style.display = "block"; // Show the install button when available
+  });
+
+  installButton.addEventListener("click", async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
         console.log("User installed the app");
       }
       deferredPrompt = null;
-    });
-  }
+      installButton.style.display = "none"; // Hide button after installation
+    }
+  });
 });
