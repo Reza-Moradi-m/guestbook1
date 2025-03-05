@@ -171,3 +171,14 @@ body {
   background-color: #ddd;
   border-radius: 4px;
 }
+
+.chat-entry.unread {
+  font-weight: bold;
+  background-color: #ffcccb; /* Light Red */
+}
+
+.unread-badge {
+  color: red;
+  font-weight: bold;
+  margin-left: 5px;
+}

@@ -9,7 +9,9 @@ service cloud.firestore {
 
   match /chatMessages/{messageId} {
     allow read, create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/messages/$(chatId)).data.participants;
-    allow update, delete: if false;
+    allow update: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/messages/$(chatId)).data.participants &&
+    request.resource.data.keys().hasOnly(["readBy"]);
+    allow delete: if false;
   }
 }
 

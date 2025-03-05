@@ -39,7 +39,51 @@ async function displayChatList(userId) {
     // Fetch the username of the other participant
     const userRef = window.db.collection("users").doc(otherParticipant);
     const userDoc = await userRef.get();
-    chatDiv.textContent = userDoc.exists ? userDoc.data().username || "Unknown User" : "Unknown User";
+    async function displayChatList(userId) {
+      const chatListDiv = document.createElement("div");
+      chatListDiv.id = "chat-list";
+      document.body.appendChild(chatListDiv);
+
+      const chatRef = window.db.collection("messages");
+      chatRef.where("participants", "array-contains", userId).onSnapshot(async (snapshot) => {
+        chatListDiv.innerHTML = "";
+
+        for (const doc of snapshot.docs) {
+          const data = doc.data();
+          const otherParticipant = data.participants.find((id) => id !== userId);
+
+          const chatDiv = document.createElement("div");
+          chatDiv.classList.add("chat-entry");
+
+          // Fetch username of other participant
+          const userRef = window.db.collection("users").doc(otherParticipant);
+          const userDoc = await userRef.get();
+          chatDiv.textContent = userDoc.exists ? userDoc.data().username || "Unknown User" : "Unknown User";
+
+          // Check for unread messages
+          const chatMessagesRef = chatRef.doc(doc.id).collection("chatMessages");
+          const unreadMessages = await chatMessagesRef.where("readBy", "not-in", [userId]).get();
+          if (!unreadMessages.empty) {
+            chatDiv.innerHTML += ' <span class="unread-badge">🔴</span>';
+            chatDiv.classList.add("unread");
+          }
+
+          // Open chat on click
+          chatDiv.addEventListener("click", async () => {
+            window.location.href = `chatroom.html?chatId=${doc.id}`;
+
+            // Mark messages as read
+            unreadMessages.forEach((message) => {
+              chatMessagesRef.doc(message.id).update({
+                readBy: firebase.firestore.FieldValue.arrayUnion(userId),
+              });
+            });
+          });
+
+          chatListDiv.appendChild(chatDiv);
+        }
+      });
+    }
 
     // Add event listener to open the chatroom
     chatDiv.addEventListener("click", () => {

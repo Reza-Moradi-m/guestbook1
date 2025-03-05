@@ -25,31 +25,34 @@ firebase.auth().onAuthStateChanged((user) => {
   }
 });
 
-async function loadChatHeader(userId) {
+function loadChatHeader(userId) {
   const chatRef = window.db.collection("messages").doc(chatId);
-  const chatDoc = await chatRef.get();
-  const participants = chatDoc.data().participants;
 
-  const otherParticipantId = participants.find((id) => id !== userId);
-  const userRef = window.db.collection("users").doc(otherParticipantId);
-  const userDoc = await userRef.get();
+  chatRef.onSnapshot(async (chatDoc) => {
+    if (!chatDoc.exists) return;
 
-  if (userDoc.exists) {
-    const { username, profilePicture } = userDoc.data();
-    const chatHeaderContent = document.getElementById("chatroom-header-content");
+    const participants = chatDoc.data().participants;
+    const otherParticipantId = participants.find((id) => id !== userId);
+    const userRef = window.db.collection("users").doc(otherParticipantId);
 
-    chatHeaderContent.innerHTML = `
-  <button id="back-button" class="back-button">Back</button>
-  <img src="${profilePicture || 'default-avatar.png'}" alt="Profile Picture" class="profile-picture">
-  <a href="userProfile.html?userId=${otherParticipantId}" class="chat-username-link">${username || 'Unknown User'}</a>
-`;
+    userRef.onSnapshot((userDoc) => {
+      if (userDoc.exists) {
+        const { username, profilePicture } = userDoc.data();
+        const chatHeaderContent = document.getElementById("chatroom-header-content");
 
-    // Add the event listener for the dynamically created Back button
-    const backButton = document.getElementById("back-button");
-    backButton.addEventListener("click", () => {
-      window.location.href = "messenger.html";
+        chatHeaderContent.innerHTML = `
+          <button id="back-button" class="back-button">Back</button>
+          <img src="${profilePicture || 'default-avatar.png'}" alt="Profile Picture" class="profile-picture">
+          <a href="userProfile.html?userId=${otherParticipantId}" class="chat-username-link">${username || 'Unknown User'}</a>
+        `;
+
+        // Add the event listener for the dynamically created Back button
+        document.getElementById("back-button").addEventListener("click", () => {
+          window.location.href = "messenger.html";
+        });
+      }
     });
-  }
+  });
 }
 
 async function loadChatMessages(userId) {
@@ -82,6 +85,7 @@ async function loadChatMessages(userId) {
 
     // Load messages from the nested collection
     chatRef.collection("chatMessages").orderBy("timestamp").onSnapshot((snapshot) => {
+      const unreadMessages = [];
       chatMessagesContainer.innerHTML = "";
 
       const fetchMessages = async () => {
@@ -135,9 +139,27 @@ async function loadChatMessages(userId) {
             <small>${messageData.timestamp ? new Date(messageData.timestamp.toDate()).toLocaleString() : "Unknown time"}</small>
           `;
           chatMessagesContainer.appendChild(messageDiv);
+
+          if (!messageData.readBy?.includes(userId)) {
+            unreadMessages.push(doc.id);
+          }
+
+          // Batch update all unread messages at once
+          if (unreadMessages.length > 0) {
+            const batch = window.db.batch();
+            unreadMessages.forEach((messageId) => {
+              const messageRef = chatRef.collection("chatMessages").doc(messageId);
+              batch.update(messageRef, {
+                readBy: firebase.firestore.FieldValue.arrayUnion(userId),
+              });
+            });
+            await batch.commit();
+          }
         }
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
       };
+
+
 
       fetchMessages();
     });
@@ -157,42 +179,46 @@ function handleVideoClick(event) {
 }
 
 function setupMessageSending(userId) {
-  sendButton.addEventListener("click", async () => {
-    const text = messageField.value.trim();
-    const fileInput = document.getElementById("file-input");
-    const file = fileInput?.files?.[0];
+  sendButton.removeEventListener("click", sendMessageHandler); // Ensure only one listener exists
+  sendButton.addEventListener("click", sendMessageHandler);
+}
 
-    if (!text && !file) {
-      alert("Please enter a message or select a file.");
+async function sendMessageHandler() {
+  const text = messageField.value.trim();
+  const fileInput = document.getElementById("file-input");
+  const file = fileInput?.files?.[0];
+
+  if (!text && !file) {
+    alert("Please enter a message or select a file.");
+    return;
+  }
+
+  let fileUrl = "";
+  if (file) {
+    try {
+      const storageRef = firebase.storage().ref(`uploads/${file.name}`);
+      const snapshot = await storageRef.put(file);
+      fileUrl = await snapshot.ref.getDownloadURL();
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      alert("Failed to upload file. Please try again.");
       return;
     }
+  }
 
-    let fileUrl = "";
-    if (file) {
-      try {
-        const storageRef = firebase.storage().ref(`uploads/${file.name}`);
-        const snapshot = await storageRef.put(file);
-        fileUrl = await snapshot.ref.getDownloadURL();
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("Failed to upload file. Please try again.");
-        return;
-      }
-    }
-
-    try {
-      const chatRef = window.db.collection("messages").doc(chatId);
-      await chatRef.collection("chatMessages").add({
-        text: text || null, // Support sending files without text
-        fileUrl: fileUrl || null, // Support sending messages without files
-        sender: userId,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      });
-      messageField.value = "";
-      if (fileInput) fileInput.value = ""; // Reset the file input
-    } catch (error) {
-      console.error("Error loading chat messages:", error.message);
-      alert("We encountered an issue loading messages. Please refresh the page or try again later.");
-    }
-  });
-}   
+  try {
+    const chatRef = window.db.collection("messages").doc(chatId);
+    await chatRef.collection("chatMessages").add({
+      text: text || null, 
+      fileUrl: fileUrl || null,
+      sender: firebase.auth().currentUser.uid,
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      readBy: [firebase.auth().currentUser.uid], // Set readBy only for sender
+    });
+    messageField.value = "";
+    if (fileInput) fileInput.value = "";
+  } catch (error) {
+    console.error("Error sending message:", error.message);
+    alert("We encountered an issue sending the message. Please try again.");
+  }
+}
