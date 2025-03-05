@@ -492,3 +492,33 @@ firebase.auth().onAuthStateChanged((authUser) => {
         entryPreviewDiv.innerHTML = "<p>You must log in to see posts from followed users.</p>";
     }
 });
+
+
+let deferredPrompt;
+
+document.addEventListener("DOMContentLoaded", () => {
+  const installButton = document.getElementById("install-button");
+
+  if (!installButton) {
+    console.error("Install button not found in the DOM.");
+    return;
+  }
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredPrompt = event;
+    installButton.style.display = "block"; // Show the install button when available
+  });
+
+  installButton.addEventListener("click", async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === "accepted") {
+        console.log("User installed the app");
+      }
+      deferredPrompt = null;
+      installButton.style.display = "none"; // Hide button after installation
+    }
+  });
+});
