@@ -3,6 +3,16 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     
+   match /messages/{chatId} {
+  allow read: if request.auth != null;
+  allow create: if request.auth != null;
+
+  match /chatMessages/{messageId} {
+    allow read, create: if request.auth != null && request.auth.uid in get(/databases/$(database)/documents/messages/$(chatId)).data.participants;
+    allow update, delete: if false;
+  }
+}
+
     // Guestbook posts, likes, and comments
     match /guestbook/{postId} {
       // Everyone can view posts
@@ -53,28 +63,12 @@ service cloud.firestore {
       }
       match /following/{followedId} {
         allow create, delete: if request.auth != null && request.auth.uid == userId;
-        allow read: if request.auth != null; // Authenticated users can read}
+        allow read: if request.auth != null; // Authenticated users can read
+        }
     }
 
-   match /messages/{chatId} {
-    // ✅ Allow users to read and list only chats they are part of
-    allow read, list: if request.auth != null && resource.data.participants.hasAny([request.auth.uid]);
-
-    // ✅ Allow users to create a chat only if they are in `participants`
-    allow create: if request.auth != null && request.auth.uid in request.resource.data.participants;
-
-    match /chatMessages/{messageId} {
-        // ✅ Ensure users can only access chat messages in chats they are part of
-        allow read, create: if request.auth != null && 
-            get(/databases/$(database)/documents/messages/$(chatId)).data.participants.hasAny([request.auth.uid]);
-
-        // ❌ Prevent direct updates or deletions
-        allow update, delete: if false;
-    }
+    
 }
-  
   }
-  }
-
   
-
+  
