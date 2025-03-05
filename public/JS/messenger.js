@@ -15,8 +15,17 @@ async function displayChatList(userId) {
   chatListDiv.id = "chat-list";
   document.body.appendChild(chatListDiv);
 
-  const chatRef = window.db.collection("messages").where("participants", "array-contains", userId);
-  const chatSnapshot = await chatRef.get();
+  const chatRef = window.db.collection("messages");
+  const chatSnapshot = await chatRef.where("participants", "array-contains", userId).get();
+
+  chatSnapshot.forEach(async (doc) => {
+    const chatMessagesRef = chatRef.doc(doc.id).collection("chatMessages");
+    const messagesSnapshot = await chatMessagesRef.get();
+
+    if (!messagesSnapshot.empty) {
+      displayChat(doc.id, messagesSnapshot.docs);
+    }
+  });
 
   chatListDiv.innerHTML = "";
   for (const doc of chatSnapshot.docs) {
@@ -29,14 +38,8 @@ async function displayChatList(userId) {
 
     // Fetch the username of the other participant
     const userRef = window.db.collection("users").doc(otherParticipant);
-    userRef.get().then((userDoc) => {
-      if (userDoc.exists) {
-        const username = userDoc.data().username || "Unknown User";
-        chatDiv.textContent = `${username}`;
-      } else {
-        chatDiv.textContent = `Unknown User`;
-      }
-    });
+    const userDoc = await userRef.get();
+    chatDiv.textContent = userDoc.exists ? userDoc.data().username || "Unknown User" : "Unknown User";
 
     // Add event listener to open the chatroom
     chatDiv.addEventListener("click", () => {
@@ -49,68 +52,67 @@ async function displayChatList(userId) {
 }
 
 async function createOrGetChatRoom(currentUserId, targetUserId) {
-    const chatRef = window.db.collection("messages");
-  
-    // Check if a chat already exists
-    const existingChat = await chatRef
-  .where("participants", "array-contains", currentUserId)
-  .get();
+  const chatRef = window.db.collection("messages");
 
-for (const doc of existingChat.docs) {
-  const data = doc.data();
-  if (data.participants.includes(targetUserId)) {
-    return doc.id; // Return the existing chat ID
+  // Check if a chat already exists
+  const existingChat = await chatRef
+    .where("participants", "array-contains", currentUserId)
+    .where("participants", "array-contains", targetUserId)
+    .get();
+
+  if (!existingChat.empty) {
+    return existingChat.docs[0].id;
+  }
+
+  // Create a new chat room if none exists
+  try {
+    const newChat = await chatRef.add({
+      participants: [currentUserId, targetUserId],
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    return newChat.id;
+  } catch (error) {
+    console.error("Error creating chat:", error);
+    alert("Error creating a chat. Please check your permissions.");
+    return null;
   }
 }
-  
-    // Create a new chat room if none exists
-    try {
-        const newChat = await chatRef.add({
-          participants: [currentUserId, targetUserId],
-          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        });
-        return newChat.id;
-      } catch (error) {
-        console.error("Error creating chat:", error);
-        alert("Error creating a chat. Please check your permissions.");
-      }
-  }
 
 // Set up functionality to create a new individual or group chat
 function setupNewChatCreation(userId) {
-    const createChatButton = document.getElementById("new-chat-button");
-  
-    createChatButton.addEventListener("click", async () => {
-      const username = prompt("Enter the username to chat with:");
-      if (!username) return;
-  
-      try {
-        // Find the target user by username
-        const usersRef = window.db.collection("users");
-        const userSnapshot = await usersRef.where("username", "==", username).get();
-  
-        if (userSnapshot.empty) {
-          alert("User not found.");
-          return;
-        }
-  
-        const targetUserId = userSnapshot.docs[0].id;
-  
-        // Create or get a chat room
-        const chatId = await createOrGetChatRoom(userId, targetUserId);
-        window.location.href = `chatroom.html?chatId=${chatId}`;
-      } catch (error) {
-        console.error("Error creating new chat:", error);
-        alert("Failed to create a new chat. Please try again.");
+  const createChatButton = document.getElementById("new-chat-button");
+
+  createChatButton.addEventListener("click", async () => {
+    const username = prompt("Enter the username to chat with:");
+    if (!username) return;
+
+    try {
+      // Find the target user by username
+      const usersRef = window.db.collection("users");
+      const userSnapshot = await usersRef.where("username", "==", username).get();
+
+      if (userSnapshot.empty) {
+        alert("User not found.");
+        return;
       }
-    });
-  }
-  firebase.auth().onAuthStateChanged((user) => {
-    if (!user) {
-      console.error("No user is signed in.");
-      alert("You need to sign in to perform this action.");
-      window.location.href = "auth.html"; // Redirect to login
-    } else {
-      console.log("Current user ID:", user.uid);
+
+      const targetUserId = userSnapshot.docs[0].id;
+
+      // Create or get a chat room
+      const chatId = await createOrGetChatRoom(userId, targetUserId);
+      window.location.href = `chatroom.html?chatId=${chatId}`;
+    } catch (error) {
+      console.error("Error creating new chat:", error);
+      alert("Failed to create a new chat. Please try again.");
     }
   });
+}
+firebase.auth().onAuthStateChanged((user) => {
+  if (!user) {
+    console.error("No user is signed in.");
+    alert("You need to sign in to perform this action.");
+    window.location.href = "auth.html"; // Redirect to login
+  } else {
+    console.log("Current user ID:", user.uid);
+  }
+});
