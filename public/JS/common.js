@@ -88,3 +88,4 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
 // Initialize user status for every page
 updateUserStatus();
 
+

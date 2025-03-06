@@ -153,7 +153,12 @@ async function loadChatMessages(userId) {
                 readBy: firebase.firestore.FieldValue.arrayUnion(userId),
               });
             });
-            await batch.commit();
+            try {
+              await batch.commit();
+            } catch (error) {
+              console.error("Failed to update read status:", error);
+              alert("You don't have permission to update message status.");
+            }
           }
         }
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
@@ -209,7 +214,7 @@ async function sendMessageHandler() {
   try {
     const chatRef = window.db.collection("messages").doc(chatId);
     await chatRef.collection("chatMessages").add({
-      text: text || null, 
+      text: text || null,
       fileUrl: fileUrl || null,
       sender: firebase.auth().currentUser.uid,
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
