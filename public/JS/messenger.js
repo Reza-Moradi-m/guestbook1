@@ -60,7 +60,7 @@ for (const doc of chatSnapshot.docs) {
   if (!otherParticipant) {
     console.warn("No other participant found in this chat.");
     chatDiv.textContent = "Unknown User";  // ✅ chatDiv is now defined before setting textContent
-    return;
+    continue;
   }
 
 
