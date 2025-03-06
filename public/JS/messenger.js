@@ -32,12 +32,12 @@ async function displayChatList(userId) {
     let chatDiv = document.getElementById(`chat-${chatId}`);
     if (!chatDiv) {
       chatDiv = document.createElement("div");
-      chatDiv.id = `chat-${chatId}`;
+      chatDiv.id = `chat-${doc.id}`;
       chatDiv.classList.add("chat-entry");
       chatListDiv.appendChild(chatDiv);
     }
   }
-};
+}
 
 chatSnapshot.forEach(async (doc) => {
   const chatMessagesRef = chatRef.doc(doc.id).collection("chatMessages");
@@ -69,9 +69,9 @@ for (const doc of chatSnapshot.docs) {
   const userDoc = await userRef.get();
 
 
-  const chatRef = window.db.collection("messages");
+  
   // Check for unread messages
-  const chatMessagesRef = chatRef.doc(chatId).collection("chatMessages");
+  
   try {
     const unreadMessages = await chatMessagesRef.where("readBy", "not-in", [userId]).get();
     if (!unreadMessages.empty) {
@@ -83,7 +83,11 @@ for (const doc of chatSnapshot.docs) {
   }
 
   chatRef.where("participants", "array-contains", userId).onSnapshot(async (snapshot) => {
-    chatListDiv.innerHTML = "";
+
+    const existingChat = document.getElementById(`chat-${doc.id}`);
+    if (!existingChat) {
+      chatListDiv.appendChild(chatDiv);
+    }
 
     for (const doc of snapshot.docs) {
       const data = doc.data();
@@ -93,17 +97,18 @@ for (const doc of chatSnapshot.docs) {
       chatDiv.classList.add("chat-entry");
 
       // Fetch username of other participant
-      const userRef = window.db.collection("users").doc(otherParticipant);
-      userRef.get().then(async (userDoc) => {
+
+      const userRefInner = window.db.collection("users").doc(otherParticipant);
+      userRefInner.get().then(async (userDoc) => {
         if (userDoc.exists) {
-          chatDiv.textContent = userDoc.data().username || "Unknown User";  // ✅ Now properly handles missing usernames
+          chatDiv.textContent = userDoc.data().username || "Unknown User";
         } else {
           chatDiv.textContent = "Unknown User";
         }
       });
 
       // Check for unread messages
-      const chatMessagesRef = chatRef.doc(doc.id).collection("chatMessages");
+      
       try {
         const unreadMessages = await chatMessagesRef.where("readBy", "not-in", [userId]).get();
         if (!unreadMessages.empty) {
