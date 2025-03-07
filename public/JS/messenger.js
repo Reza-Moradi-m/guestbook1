@@ -52,22 +52,23 @@ async function displayChatList(userId) {
         });
       }
 
-      // Fetch username of the other participant
+
       // Fetch username of the other participant
       const userRef = window.db.collection("users").doc(otherParticipant);
       userRef.get().then((userDoc) => {
         if (userDoc.exists && userDoc.data().username) {
           chatDiv.textContent = userDoc.data().username;
+          chatListDiv.appendChild(chatDiv);
         } else {
-          console.warn(`User ID ${otherParticipant} not found in database.`);
-          chatDiv.remove(); // ✅ REMOVE BLANK SPACES INSTEAD OF SHOWING "Unknown User"
+          console.warn(`Skipping empty chat entry for User ID: ${otherParticipant}`);
+          chatDiv.remove(); // ✅ REMOVE EMPTY SPACES
         }
       }).catch(error => {
         console.error("Error fetching user details:", error);
         chatDiv.remove(); // ✅ REMOVE INVALID ENTRIES
       });
 
-      // Check for unread messages
+
       // Check for unread messages
       const chatMessagesRef = chatRef.doc(doc.id).collection("chatMessages");
       try {
@@ -91,15 +92,32 @@ async function displayChatList(userId) {
         window.location.href = `chatroom.html?chatId=${doc.id}`;
 
         // Mark messages as read
+        // Mark messages as read
         try {
-          const unreadMessages = await chatMessagesRef.where("readBy", "not-in", [userId]).get();
+          const unreadMessages = await window.db
+            .collection("messages")
+            .doc(doc.id)
+            .collection("chatMessages")
+            .where("readBy", "not-in", [userId])
+            .get();
+
+          const batch = window.db.batch();
           unreadMessages.forEach((message) => {
-            chatMessagesRef.doc(message.id).update({
+            const messageRef = window.db
+              .collection("messages")
+              .doc(doc.id)
+              .collection("chatMessages")
+              .doc(message.id);
+
+            batch.update(messageRef, {
               readBy: firebase.firestore.FieldValue.arrayUnion(userId),
             });
           });
+
+          await batch.commit();
+          console.log("✅ Messages marked as read successfully.");
         } catch (error) {
-          console.error("Error marking messages as read:", error);
+          console.error("🚨 Failed to update read status:", error);
         }
       };
     });
