@@ -25,12 +25,16 @@ async function displayChatList(userId) {
     snapshot.docChanges().forEach(async (change) => {
       const doc = change.doc;
       const data = doc.data();
-      const otherParticipant = data.participants.find((id) => id !== userId);
+      const otherParticipant = data.participants.find((id) => id !== userId) || null;
+
+      let chatDiv = document.createElement("div");
+      chatDiv.id = `chat-${doc.id}`;
+      chatDiv.classList.add("chat-entry");
+      
 
       if (!otherParticipant) {
         console.warn(`No other participant found in chat ${doc.id}, but still displaying.`);
         chatDiv.textContent = "Unknown User";
-        chatListDiv.appendChild(chatDiv);
       } else {
         // Fetch username of the other participant
         const userRef = window.db.collection("users").doc(otherParticipant);
@@ -45,13 +49,13 @@ async function displayChatList(userId) {
           console.error("Error fetching user details:", error);
           chatDiv.textContent = "Unknown User";
         });
-
-        chatListDiv.appendChild(chatDiv);
       }
 
+      chatListDiv.appendChild(chatDiv);
+
       // Check if chat entry already exists
       // Check if chat entry already exists
-      let chatDiv = document.getElementById(`chat-${doc.id}`);
+      
       if (!chatDiv) {
         chatDiv = document.createElement("div");
         chatDiv.id = `chat-${doc.id}`;
