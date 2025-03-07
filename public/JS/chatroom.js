@@ -145,19 +145,21 @@ async function loadChatMessages(userId) {
           }
 
           // Batch update all unread messages at once
+          // Batch update all unread messages at once
           if (unreadMessages.length > 0) {
             const batch = window.db.batch();
             unreadMessages.forEach((messageId) => {
               const messageRef = chatRef.collection("chatMessages").doc(messageId);
               batch.update(messageRef, {
-                readBy: firebase.firestore.FieldValue.arrayUnion(userId),
+                readBy: firebase.firestore.FieldValue.arrayUnion(userId) || [],
               });
             });
             try {
               await batch.commit();
+              console.log("✅ Messages marked as read successfully.");
             } catch (error) {
-              console.error("Failed to update read status:", error);
-              alert("You don't have permission to update message status.");
+              console.error("🚨 Failed to update read status:", error);
+              alert("Error updating message status. Please check your Firestore rules and try again.");
             }
           }
         }
