@@ -149,7 +149,11 @@ async function loadChatMessages(userId) {
           if (unreadMessages.length > 0) {
             const batch = window.db.batch();
             unreadMessages.forEach((messageId) => {
-              const messageRef = chatRef.collection("chatMessages").doc(messageId);
+              const messageRef = window.db
+                .collection("messages")
+                .doc(chatId)
+                .collection("chatMessages")
+                .doc(messageId);
               batch.update(messageRef, {
                 readBy: firebase.firestore.FieldValue.arrayUnion(userId) || [],
               });
