@@ -144,7 +144,7 @@ async function loadChatMessages(userId) {
             unreadMessages.push(doc.id);
           }
 
-          // Batch update all unread messages at once
+          
           // Batch update all unread messages at once
           if (unreadMessages.length > 0) {
             const batch = window.db.batch();

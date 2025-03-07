@@ -28,8 +28,25 @@ async function displayChatList(userId) {
       const otherParticipant = data.participants.find((id) => id !== userId);
 
       if (!otherParticipant) {
-        console.warn("No other participant found in this chat.");
-        return;
+        console.warn(`No other participant found in chat ${doc.id}, but still displaying.`);
+        chatDiv.textContent = "Unknown User";
+        chatListDiv.appendChild(chatDiv);
+      } else {
+        // Fetch username of the other participant
+        const userRef = window.db.collection("users").doc(otherParticipant);
+        userRef.get().then((userDoc) => {
+          if (userDoc.exists && userDoc.data().username) {
+            chatDiv.textContent = userDoc.data().username;
+          } else {
+            console.warn(`User ID ${otherParticipant} not found in database.`);
+            chatDiv.textContent = "Unknown User";
+          }
+        }).catch(error => {
+          console.error("Error fetching user details:", error);
+          chatDiv.textContent = "Unknown User";
+        });
+
+        chatListDiv.appendChild(chatDiv);
       }
 
       // Check if chat entry already exists
@@ -91,6 +108,7 @@ async function displayChatList(userId) {
       chatDiv.onclick = async () => {
         window.location.href = `chatroom.html?chatId=${doc.id}`;
 
+
         // Mark messages as read
         // Mark messages as read
         try {
@@ -116,6 +134,13 @@ async function displayChatList(userId) {
 
           await batch.commit();
           console.log("✅ Messages marked as read successfully.");
+
+          // ✅ REMOVE GREEN CIRCLE FROM UI
+          let chatDiv = document.getElementById(`chat-${doc.id}`);
+          if (chatDiv) {
+            chatDiv.classList.remove("unread");
+            chatDiv.querySelector(".unread-badge")?.remove();
+          }
         } catch (error) {
           console.error("🚨 Failed to update read status:", error);
         }
