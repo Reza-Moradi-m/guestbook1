@@ -6,13 +6,10 @@ const chatMessagesContainer = document.getElementById("chatroom-messages");
 const messageField = document.getElementById("message-field");
 const sendButton = document.getElementById("send-message");
 
-
-
 if (!chatId) {
   alert("No chat specified!");
   window.location.href = "messenger.html";
 }
-
 
 firebase.auth().onAuthStateChanged((user) => {
   if (user) {
@@ -103,7 +100,6 @@ async function loadChatMessages(userId) {
               if (contentType.startsWith("image/")) {
                 fileContent = `
                   <img src="${messageData.fileUrl}" alt="Image" class="chat-image"
-                    
                     onclick="window.open('${messageData.fileUrl}', '_blank')">
                 `;
               } else if (contentType.startsWith("video/")) {
@@ -143,34 +139,31 @@ async function loadChatMessages(userId) {
           if (!messageData.readBy?.includes(userId)) {
             unreadMessages.push(doc.id);
           }
-
-          
-          // Batch update all unread messages at once
-          if (unreadMessages.length > 0) {
-            const batch = window.db.batch();
-            unreadMessages.forEach((messageId) => {
-              const messageRef = window.db
-                .collection("messages")
-                .doc(chatId)
-                .collection("chatMessages")
-                .doc(messageId);
-              batch.update(messageRef, {
-                readBy: firebase.firestore.FieldValue.arrayUnion(userId) || [],
-              });
-            });
-            try {
-              await batch.commit();
-              console.log("✅ Messages marked as read successfully.");
-            } catch (error) {
-              console.error("🚨 Failed to update read status:", error);
-              alert("Error updating message status. Please check your Firestore rules and try again.");
-            }
-          }
         }
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
+
+        // Batch update all unread messages at once
+        if (unreadMessages.length > 0) {
+          const batch = window.db.batch();
+          unreadMessages.forEach((messageId) => {
+            const messageRef = chatRef.collection("chatMessages").doc(messageId);
+            batch.update(messageRef, {
+              readBy: firebase.firestore.FieldValue.arrayUnion(userId),
+            });
+          });
+          try {
+            await batch.commit();
+            console.log("✅ Messages marked as read successfully.");
+            // Remove user from unreadBy after marking messages as read
+            await chatRef.update({
+              unreadBy: firebase.firestore.FieldValue.arrayRemove(userId),
+            });
+          } catch (error) {
+            console.error("🚨 Failed to update read status:", error);
+            alert("Error updating message status. Please check your Firestore rules and try again.");
+          }
+        }
       };
-
-
 
       fetchMessages();
     });
@@ -178,7 +171,7 @@ async function loadChatMessages(userId) {
     console.error("Error loading chat messages:", error);
     alert("Failed to load chat messages. Please try again.");
   }
-} //
+}
 
 // Function to handle video click: play on single tap, open in new tab on double tap
 function handleVideoClick(event) {
@@ -219,6 +212,11 @@ async function sendMessageHandler() {
 
   try {
     const chatRef = window.db.collection("messages").doc(chatId);
+    const chatDoc = await chatRef.get();
+    const participants = chatDoc.data().participants;
+    const otherParticipant = participants.find((id) => id !== firebase.auth().currentUser.uid);
+
+    // Add message to chatMessages subcollection
     await chatRef.collection("chatMessages").add({
       text: text || null,
       fileUrl: fileUrl || null,
@@ -226,6 +224,12 @@ async function sendMessageHandler() {
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
       readBy: [firebase.auth().currentUser.uid], // Set readBy only for sender
     });
+
+    // Update unreadBy to include the other participant
+    await chatRef.update({
+      unreadBy: firebase.firestore.FieldValue.arrayUnion(otherParticipant),
+    });
+
     messageField.value = "";
     if (fileInput) fileInput.value = "";
   } catch (error) {

@@ -25,6 +25,7 @@ async function displayChatList(userId) {
     snapshot.forEach(async (doc) => {
       const data = doc.data();
       const otherParticipant = data.participants.find((id) => id !== userId) || null;
+      const unreadBy = data.unreadBy || []; // Get unreadBy field, default to empty array if not set
 
       let chatDiv = document.getElementById(`chat-${doc.id}`);
       if (!chatDiv) {
@@ -45,48 +46,18 @@ async function displayChatList(userId) {
         chatDiv.textContent = "Unknown User";
       }
 
-      // ✅ Check for unread messages BEFORE opening the chat
-      const chatMessagesRef = chatRef.doc(doc.id).collection("chatMessages");
-      try {
-        const unreadMessages = await chatMessagesRef.where("readBy", "not-in", [userId]).get();
-        
-        if (!unreadMessages.empty) {
-          chatDiv.innerHTML += ' <span class="unread-badge">🟢</span>'; // ✅ Green indicator for unread messages
-          chatDiv.classList.add("unread");
-        } else {
-          chatDiv.classList.remove("unread");
-          chatDiv.querySelector(".unread-badge")?.remove();
-        }
-      } catch (error) {
-        console.error("Error fetching unread messages:", error);
+      // Check if the current user has unread messages using unreadBy
+      if (unreadBy.includes(userId)) {
+        chatDiv.innerHTML += ' <span class="unread-badge">🟢</span>'; // Green indicator for unread messages
+        chatDiv.classList.add("unread");
+      } else {
+        chatDiv.classList.remove("unread");
+        chatDiv.querySelector(".unread-badge")?.remove();
       }
 
-      // ✅ Open chat on click and update read status
-      chatDiv.onclick = async () => {
+      // Open chat on click (no marking as read here)
+      chatDiv.onclick = () => {
         window.location.href = `chatroom.html?chatId=${doc.id}`;
-
-        try {
-          const unreadMessages = await chatMessagesRef.where("readBy", "not-in", [userId]).get();
-
-          if (!unreadMessages.empty) {
-            const batch = window.db.batch();
-            unreadMessages.forEach((message) => {
-              const messageRef = chatMessagesRef.doc(message.id);
-              batch.update(messageRef, {
-                readBy: firebase.firestore.FieldValue.arrayUnion(userId),
-              });
-            });
-
-            await batch.commit();
-            console.log("✅ Messages marked as read.");
-
-            // ✅ Remove green indicator from UI immediately
-            chatDiv.classList.remove("unread");
-            chatDiv.querySelector(".unread-badge")?.remove();
-          }
-        } catch (error) {
-          console.error("🚨 Failed to update read status:", error);
-        }
       };
     });
   });
@@ -109,6 +80,7 @@ async function createOrGetChatRoom(currentUserId, targetUserId) {
     const newChat = await chatRef.add({
       participants: [currentUserId, targetUserId],
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      unreadBy: [], // Initialize unreadBy as empty for new chats
     });
     return newChat.id;
   } catch (error) {
