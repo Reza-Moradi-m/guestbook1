@@ -38,11 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
 const auth = firebase.auth();
 const db = firebase.firestore();
 
-// Function to update user status in the navigation bar
 function updateUserStatus() {
   const userStatus = document.getElementById("user-status");
 
-  // Check if user-status element exists in the DOM
   if (!userStatus) {
     console.warn("User status element not found in the DOM.");
     return;
@@ -50,30 +48,33 @@ function updateUserStatus() {
 
   auth.onAuthStateChanged(async (user) => {
     if (user) {
-      // Fetch user data from Firestore
       const userDoc = await db.collection("users").doc(user.uid).get();
       const userData = userDoc.data();
 
-      // Display username or email with a logout button
-      userStatus.innerHTML = `
-        <span>Signed in as <a href="profile.html">${userData?.username || user.email}</a></span>
-        <button id="logout-button" style="margin-left: 10px;">Log Out</button>
-      `;
+      if (!userData.username) {
+        userStatus.innerHTML = `
+          <span>Please <a href="set-username.html">set your username</a></span>
+          <button id="logout-button" style="margin-left: 10px;">Log Out</button>
+        `;
+      } else {
+        userStatus.innerHTML = `
+          <span>Signed in as <a href="profile.html">${userData.username}</a></span>
+          <button id="logout-button" style="margin-left: 10px;">Log Out</button>
+        `;
+      }
 
-      // Add logout button functionality dynamically
       const logoutButton = document.getElementById("logout-button");
       logoutButton?.addEventListener("click", async () => {
         try {
           await auth.signOut();
           alert("Logged out successfully.");
-          updateUserStatus(); // Update the status after logging out
+          updateUserStatus();
         } catch (error) {
           console.error("Error logging out:", error.message);
           alert(error.message);
         }
       });
     } else {
-      // Show "Sign In" link if no user is signed in
       userStatus.innerHTML = `<a href="auth.html">Sign In</a>`;
     }
   });

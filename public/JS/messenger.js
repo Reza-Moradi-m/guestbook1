@@ -36,10 +36,12 @@ async function displayChatList(userId) {
         chatDiv.classList.add("chat-entry");
 
         // Fetch username of the other participant
+        // Example in messenger.js
         if (otherParticipant) {
           const userRef = window.db.collection("users").doc(otherParticipant);
           userRef.get().then((userDoc) => {
-            chatDiv.textContent = userDoc.exists ? userDoc.data().username : "Unknown User";
+            const userData = userDoc.data();
+            chatDiv.textContent = userData.username || userData.name || "Unknown User";
           });
         } else {
           chatDiv.textContent = "Unknown User";

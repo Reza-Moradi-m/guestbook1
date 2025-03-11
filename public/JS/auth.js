@@ -86,17 +86,26 @@ googleSignInButton.addEventListener("click", async () => {
     // Check if the user already exists in Firestore
     const userDoc = await db.collection("users").doc(user.uid).get();
     if (!userDoc.exists) {
-      // If not, create a new user in Firestore
+      // Create a new user in Firestore without a username initially
       await db.collection("users").doc(user.uid).set({
         name: user.displayName,
         email: user.email,
         photoURL: user.photoURL,
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       });
+      // Redirect to set username page
+      window.location.href = "set-username.html";
+    } else {
+      // Check if username is set
+      const userData = userDoc.data();
+      if (!userData.username) {
+        // Redirect to set username page
+        window.location.href = "set-username.html";
+      } else {
+        alert(`Welcome, ${userData.username}!`);
+        updateUserStatus();
+      }
     }
-
-    alert(`Welcome, ${user.displayName}!`);
-    updateUserStatus();
   } catch (error) {
     console.error("Error signing in with Google:", error.message);
     alert(error.message);
