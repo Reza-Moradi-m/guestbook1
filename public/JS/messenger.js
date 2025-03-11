@@ -21,46 +21,44 @@ async function displayChatList(userId) {
 
   const chatRef = window.db.collection("messages");
 
-  chatRef.where("participants", "array-contains", userId).onSnapshot(async (snapshot) => {
-    snapshot.forEach(async (doc) => {
-      const data = doc.data();
-      const otherParticipant = data.participants.find((id) => id !== userId) || null;
-      const unreadBy = data.unreadBy || []; // Get unreadBy field, default to empty array if not set
+  chatRef
+    .where("participants", "array-contains", userId)
+    .orderBy("lastMessageAt", "desc") // Sort by latest message, newest first
+    .onSnapshot(async (snapshot) => {
+      chatListDiv.innerHTML = ""; // Clear the existing list
+      snapshot.forEach(async (doc) => {
+        const data = doc.data();
+        const otherParticipant = data.participants.find((id) => id !== userId) || null;
+        const unreadBy = data.unreadBy || [];
 
-      let chatDiv = document.getElementById(`chat-${doc.id}`);
-      if (!chatDiv) {
-        chatDiv = document.createElement("div");
+        const chatDiv = document.createElement("div");
         chatDiv.id = `chat-${doc.id}`;
         chatDiv.classList.add("chat-entry");
-        chatListDiv.appendChild(chatDiv);
-      }
 
-      // Fetch username of the other participant
-      if (otherParticipant) {
-        const userRef = window.db.collection("users").doc(otherParticipant);
-        userRef.get().then((userDoc) => {
-          chatDiv.textContent = userDoc.exists ? userDoc.data().username : "Unknown User";
-        });
-      } else {
-        console.warn(`No other participant found in chat ${doc.id}.`);
-        chatDiv.textContent = "Unknown User";
-      }
+        // Fetch username of the other participant
+        if (otherParticipant) {
+          const userRef = window.db.collection("users").doc(otherParticipant);
+          userRef.get().then((userDoc) => {
+            chatDiv.textContent = userDoc.exists ? userDoc.data().username : "Unknown User";
+          });
+        } else {
+          chatDiv.textContent = "Unknown User";
+        }
 
-      // Check if the current user has unread messages using unreadBy
-      if (unreadBy.includes(userId)) {
-        chatDiv.innerHTML += ' <span class="unread-badge">🟢</span>'; // Green indicator for unread messages
-        chatDiv.classList.add("unread");
-      } else {
-        chatDiv.classList.remove("unread");
-        chatDiv.querySelector(".unread-badge")?.remove();
-      }
+        // Highlight if there are unread messages
+        if (unreadBy.includes(userId)) {
+          chatDiv.innerHTML += ' <span class="unread-badge">🟢</span>'; // Green dot for unread
+          chatDiv.classList.add("unread");
+        }
 
-      // Open chat on click (no marking as read here)
-      chatDiv.onclick = () => {
-        window.location.href = `chatroom.html?chatId=${doc.id}`;
-      };
+        // Open chat on click
+        chatDiv.onclick = () => {
+          window.location.href = `chatroom.html?chatId=${doc.id}`;
+        };
+
+        chatListDiv.appendChild(chatDiv); // Append in snapshot order
+      });
     });
-  });
 }
 
 // Function to create or get a chat room
@@ -80,6 +78,7 @@ async function createOrGetChatRoom(currentUserId, targetUserId) {
     const newChat = await chatRef.add({
       participants: [currentUserId, targetUserId],
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(), // Initialize with creation time
       unreadBy: [], // Initialize unreadBy as empty for new chats
     });
     return newChat.id;

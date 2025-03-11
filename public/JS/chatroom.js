@@ -104,13 +104,13 @@ async function loadChatMessages(userId) {
                 `;
               } else if (contentType.startsWith("video/")) {
                 fileContent = `
-      <video controls class="chat-video"
-        ondblclick="window.open('${messageData.fileUrl}', '_blank')"
-        onclick="handleVideoClick(event)">
-        <source src="${messageData.fileUrl}" type="${contentType}">
-        Your browser does not support the video tag.
-      </video>
-    `;
+                  <video controls class="chat-video"
+                    ondblclick="window.open('${messageData.fileUrl}', '_blank')"
+                    onclick="handleVideoClick(event)">
+                    <source src="${messageData.fileUrl}" type="${contentType}">
+                    Your browser does not support the video tag.
+                  </video>
+                `;
               } else {
                 fileContent = `
                   <a href="${messageData.fileUrl}" target="_blank" class="chat-generic-link">
@@ -185,55 +185,56 @@ function handleVideoClick(event) {
 function setupMessageSending(userId) {
   sendButton.removeEventListener("click", sendMessageHandler); // Ensure only one listener exists
   sendButton.addEventListener("click", sendMessageHandler);
-}
 
-async function sendMessageHandler() {
-  const text = messageField.value.trim();
-  const fileInput = document.getElementById("file-input");
-  const file = fileInput?.files?.[0];
+  async function sendMessageHandler() {
+    const text = messageField.value.trim();
+    const fileInput = document.getElementById("file-input");
+    const file = fileInput?.files?.[0];
 
-  if (!text && !file) {
-    alert("Please enter a message or select a file.");
-    return;
-  }
-
-  let fileUrl = "";
-  if (file) {
-    try {
-      const storageRef = firebase.storage().ref(`uploads/${file.name}`);
-      const snapshot = await storageRef.put(file);
-      fileUrl = await snapshot.ref.getDownloadURL();
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      alert("Failed to upload file. Please try again.");
+    if (!text && !file) {
+      alert("Please enter a message or select a file.");
       return;
     }
-  }
 
-  try {
-    const chatRef = window.db.collection("messages").doc(chatId);
-    const chatDoc = await chatRef.get();
-    const participants = chatDoc.data().participants;
-    const otherParticipant = participants.find((id) => id !== firebase.auth().currentUser.uid);
+    let fileUrl = "";
+    if (file) {
+      try {
+        const storageRef = firebase.storage().ref(`uploads/${file.name}`);
+        const snapshot = await storageRef.put(file);
+        fileUrl = await snapshot.ref.getDownloadURL();
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        alert("Failed to upload file. Please try again.");
+        return;
+      }
+    }
 
-    // Add message to chatMessages subcollection
-    await chatRef.collection("chatMessages").add({
-      text: text || null,
-      fileUrl: fileUrl || null,
-      sender: firebase.auth().currentUser.uid,
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-      readBy: [firebase.auth().currentUser.uid], // Set readBy only for sender
-    });
+    try {
+      const chatRef = window.db.collection("messages").doc(chatId);
+      const chatDoc = await chatRef.get();
+      const participants = chatDoc.data().participants;
+      const otherParticipant = participants.find((id) => id !== firebase.auth().currentUser.uid);
 
-    // Update unreadBy to include the other participant
-    await chatRef.update({
-      unreadBy: firebase.firestore.FieldValue.arrayUnion(otherParticipant),
-    });
+      // Add the new message to the subcollection
+      await chatRef.collection("chatMessages").add({
+        text: text || null,
+        fileUrl: fileUrl || null,
+        sender: firebase.auth().currentUser.uid,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        readBy: [firebase.auth().currentUser.uid],
+      });
 
-    messageField.value = "";
-    if (fileInput) fileInput.value = "";
-  } catch (error) {
-    console.error("Error sending message:", error.message);
-    alert("We encountered an issue sending the message. Please try again.");
+      // Update the chat document with the latest message timestamp and unread status
+      await chatRef.update({
+        lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(), // Update to now
+        unreadBy: firebase.firestore.FieldValue.arrayUnion(otherParticipant), // Mark as unread for the other user
+      });
+
+      messageField.value = "";
+      if (fileInput) fileInput.value = "";
+    } catch (error) {
+      console.error("Error sending message:", error.message);
+      alert("We encountered an issue sending the message. Please try again.");
+    }
   }
 }
