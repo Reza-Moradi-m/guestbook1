@@ -186,55 +186,50 @@ function setupMessageSending(userId) {
   sendButton.removeEventListener("click", sendMessageHandler); // Ensure only one listener exists
   sendButton.addEventListener("click", sendMessageHandler);
 
-  async function sendMessageHandler() {
-    const text = messageField.value.trim();
-    const fileInput = document.getElementById("file-input");
-    const file = fileInput?.files?.[0];
-
-    if (!text && !file) {
-      alert("Please enter a message or select a file.");
+  async function sendMessage(chatId, text, fileUrl) {
+    const user = firebase.auth().currentUser;
+    if (!user) {
+      alert("You must be signed in to send messages.");
+      window.location.href = "auth.html";
       return;
     }
 
-    let fileUrl = "";
-    if (file) {
-      try {
-        const storageRef = firebase.storage().ref(`uploads/${file.name}`);
-        const snapshot = await storageRef.put(file);
-        fileUrl = await snapshot.ref.getDownloadURL();
-      } catch (error) {
-        console.error("Error uploading file:", error);
-        alert("Failed to upload file. Please try again.");
-        return;
-      }
+    const chatRef = window.db.collection("messages").doc(chatId);
+    const chatDoc = await chatRef.get();
+
+    if (!chatDoc.exists) {
+      alert("Chat does not exist.");
+      return;
+    }
+
+    const participants = chatDoc.data().participants;
+    if (!participants.includes(user.uid)) {
+      alert("You don’t have permission to send messages in this chat.");
+      return;
+    }
+
+    const otherParticipant = participants.find(id => id !== user.uid);
+    if (!otherParticipant) {
+      alert("No other participant found.");
+      return;
     }
 
     try {
-      const chatRef = window.db.collection("messages").doc(chatId);
-      const chatDoc = await chatRef.get();
-      const participants = chatDoc.data().participants;
-      const otherParticipant = participants.find((id) => id !== firebase.auth().currentUser.uid);
-
-      // Add the new message to the subcollection
       await chatRef.collection("chatMessages").add({
         text: text || null,
         fileUrl: fileUrl || null,
-        sender: firebase.auth().currentUser.uid,
+        sender: user.uid,
         timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-        readBy: [firebase.auth().currentUser.uid],
+        readBy: [user.uid]
       });
 
-      // Update the chat document with the latest message timestamp and unread status
       await chatRef.update({
-        lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(), // Update to now
-        unreadBy: firebase.firestore.FieldValue.arrayUnion(otherParticipant), // Mark as unread for the other user
+        lastMessageAt: firebase.firestore.FieldValue.serverTimestamp(),
+        unreadBy: firebase.firestore.FieldValue.arrayUnion(otherParticipant)
       });
-
-      messageField.value = "";
-      if (fileInput) fileInput.value = "";
     } catch (error) {
-      console.error("Error sending message:", error.message);
-      alert("We encountered an issue sending the message. Please try again.");
+      console.error("Error sending message:", error);
+      alert("Failed to send message: " + error.message);
     }
   }
 }

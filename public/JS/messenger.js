@@ -23,10 +23,10 @@ async function displayChatList(userId) {
 
   chatRef
     .where("participants", "array-contains", userId)
-    .orderBy("lastMessageAt", "desc") // Sort by latest message, newest first
+    .orderBy("lastMessageAt", "desc")
     .onSnapshot(async (snapshot) => {
-      chatListDiv.innerHTML = ""; // Clear the existing list
-      snapshot.forEach(async (doc) => {
+      chatListDiv.innerHTML = ""; // Clear the list
+      const chatPromises = snapshot.docs.map(async (doc) => {
         const data = doc.data();
         const otherParticipant = data.participants.find((id) => id !== userId) || null;
         const unreadBy = data.unreadBy || [];
@@ -35,31 +35,32 @@ async function displayChatList(userId) {
         chatDiv.id = `chat-${doc.id}`;
         chatDiv.classList.add("chat-entry");
 
-        // Fetch username of the other participant
-        // Example in messenger.js
         if (otherParticipant) {
           const userRef = window.db.collection("users").doc(otherParticipant);
-          userRef.get().then((userDoc) => {
-            const userData = userDoc.data();
-            chatDiv.textContent = userData.username || userData.name || "Unknown User";
-          });
+          const userDoc = await userRef.get();
+          const userData = userDoc.exists ? userDoc.data() : {};
+          chatDiv.textContent = userData.username || userData.name || "Unknown User";
         } else {
           chatDiv.textContent = "Unknown User";
         }
 
-        // Highlight if there are unread messages
         if (unreadBy.includes(userId)) {
-          chatDiv.innerHTML += ' <span class="unread-badge">🟢</span>'; // Green dot for unread
+          chatDiv.innerHTML += ' <span class="unread-badge">🟢</span>';
           chatDiv.classList.add("unread");
         }
 
-        // Open chat on click
         chatDiv.onclick = () => {
           window.location.href = `chatroom.html?chatId=${doc.id}`;
         };
 
-        chatListDiv.appendChild(chatDiv); // Append in snapshot order
+        return chatDiv;
       });
+
+      const chatDivs = await Promise.all(chatPromises);
+      chatDivs.forEach((chatDiv) => chatListDiv.appendChild(chatDiv));
+    }, (error) => {
+      console.error("Error fetching chats:", error);
+      alert("Failed to load chats: " + error.message);
     });
 }
 
