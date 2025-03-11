@@ -80,13 +80,16 @@ async function loadChatMessages(userId) {
 
     chatMessagesContainer.innerHTML = "";
 
-    // Load messages from the nested collection
+    // Load messages from the nested collection and reverse their order
     chatRef.collection("chatMessages").orderBy("timestamp").onSnapshot((snapshot) => {
       const unreadMessages = [];
       chatMessagesContainer.innerHTML = "";
 
+      // Reverse the messages array so that the newest messages appear at the bottom
+      const reversedMessages = snapshot.docs.slice().reverse();
+
       const fetchMessages = async () => {
-        for (const doc of snapshot.docs) {
+        for (const doc of reversedMessages) {
           const messageData = doc.data();
           const messageDiv = document.createElement("div");
           messageDiv.className = `message ${messageData.sender === userId ? "user" : "other"}`;
@@ -140,6 +143,7 @@ async function loadChatMessages(userId) {
             unreadMessages.push(doc.id);
           }
         }
+        // Scroll to the bottom of the container after messages are rendered
         chatMessagesContainer.scrollTop = chatMessagesContainer.scrollHeight;
 
         // Batch update all unread messages at once
